@@ -566,8 +566,8 @@ public class Settings {
                 highestLevelOnlyGetsItemsForTrainerPokemon));
 
         // 49 pickup item randomization
-        out.write(makeByteSelected(pickupItemsMod == PickupItemsMod.UNCHANGED,
-                pickupItemsMod == PickupItemsMod.RANDOM, banBadRandomPickupItems));
+        out.write(makeByteSelected(pickupItemsMod == PickupItemsMod.RANDOM,
+                pickupItemsMod == PickupItemsMod.UNCHANGED, banBadRandomPickupItems));
 
         try {
             byte[] romName = this.romName.getBytes("US-ASCII");
