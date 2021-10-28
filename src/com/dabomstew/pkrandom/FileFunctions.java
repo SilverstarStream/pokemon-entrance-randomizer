@@ -3,7 +3,8 @@ package com.dabomstew.pkrandom;
 /*----------------------------------------------------------------------------*/
 /*--  FileFunctions.java - functions relating to file I/O.                  --*/
 /*--                                                                        --*/
-/*--  Part of "Universal Pokemon Randomizer ZX" by the UPR-ZX team          --*/
+/*--  Part of "Pokemon Entrance Randomizer" by SilverstarStream             --*/
+/*--  Modified from "Universal Pokemon Randomizer ZX" by the UPR-ZX team    --*/
 /*--  Originally part of "Universal Pokemon Randomizer" by Dabomstew        --*/
 /*--  Pokemon and any associated names and the like are                     --*/
 /*--  trademark and (C) Nintendo 1996-2020.                                 --*/
@@ -23,6 +24,8 @@ package com.dabomstew.pkrandom;
 /*--  You should have received a copy of the GNU General Public License     --*/
 /*--  along with this program. If not, see <http://www.gnu.org/licenses/>.  --*/
 /*----------------------------------------------------------------------------*/
+
+import com.dabomstew.pkrandom.pokemon.*;
 
 import java.io.*;
 import java.net.URL;
@@ -332,5 +335,12 @@ public class FileFunctions {
             out[i] = (byte) arg[i];
         }
         return out;
+    }
+
+    public static LeaderTeams getLeaderTeams(List<String> leaderNames, int gymCount, String gameAbbr) throws FileNotFoundException {
+        String filename = gameAbbr + "_leader_teams.txt";
+        File file = new File(SysConstants.leaderTeamsFolder + "/" + filename);
+        LeaderTeams teams = new LeaderTeams(leaderNames, gymCount, file);
+        return teams;
     }
 }

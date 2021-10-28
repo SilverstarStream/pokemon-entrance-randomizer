@@ -3,7 +3,8 @@ package com.dabomstew.pkrandom.constants;
 /*----------------------------------------------------------------------------*/
 /*--  Gen4Constants.java - Constants for DPPt and HGSS                      --*/
 /*--                                                                        --*/
-/*--  Part of "Universal Pokemon Randomizer ZX" by the UPR-ZX team          --*/
+/*--  Part of "Pokemon Entrance Randomizer" by SilverstarStream             --*/
+/*--  Modified from "Universal Pokemon Randomizer ZX" by the UPR-ZX team    --*/
 /*--  Originally part of "Universal Pokemon Randomizer" by Dabomstew        --*/
 /*--  Pokemon and any associated names and the like are                     --*/
 /*--  trademark and (C) Nintendo 1996-2020.                                 --*/
@@ -2054,5 +2055,698 @@ public class Gen4Constants {
             }
         }
     }
+    public static Map<Integer,Integer> scriptValues() {
+        int headerEnd = scriptListTerminator; // 0 arg bytes
+        int enableBadge = 0x015C; // 2 arg bytes
+        int jump = 0x0016; // 4 arg bytes
+        // setVar varies between dppt and hgss apparently, this needs to be updated if hgss get included.
+        // What can likely be done is to have a function in this file for each set of games,
+        // and all functions call this function with shared values.
+        int setVar = dpptSetVarScript; // 2 instruction bytes, 4 argument bytes
+        int setTrainerID = 0x0023; // 2 instruction, 2 arg
+        int setFlag = 0x001F; // 2 instruction, 2 arg
+        int clearFlag = 0x001E; // 2 instruction, 2 arg
+        int checkBadge = 0x015B; // 4 arg
+        int jumpReturn = 0x001A; // 1 inst word, 1 target long
+        int compareJump = 0x001C; // 1 inst word, 1 compare byte, 1 target long
+        int compareJumpReturn = 0x001D; // 1 inst word, 1 compare byte, 1 target long
+        int playFanfare = 0x0049; // 2 args
+        int lockAll = 0x0060; // 0 args
+        int facePlayer = 0x0068; // 0 args
+        int ifInst = 0x0011; // 4 args
+        int x01CD = 0x01CD; // 10 args
+        int message = 0x002C; // 1 arg
+        int closeMessage = 0x0034; // 0 args
+        int battle = 0x00E5; // 4 args
+        int checkLoss = 0x00EC; // 2 args
+        int setHero = 0x00CD; // 1 arg
+        int playSound = 0x004E; // 2 args
+        int fadeMusic = 0x004F; // 0 args
+        int x0260 = 0x0260; // 2 args
+        int x02C9 = 0x02C9; // 0 args
+        int end = 0x0002; // 0 args
+        int x0174 = 0x0174; // 0 args
+        int x016F = 0x016F; // 0 args
+        int x0170 = 0x0170; // 0 args
+        int x0173 = 0x0173; // 0 args
+        int checkFlag = 0x0020; // 2 args
+        int x0175 = 0x0175; // 1 arg
+        int x0176 = 0x0176; // 1 arg
+        int wait = 0x0031; // 0 args
+        int removePeople = 0x0065; // 2 args
+        int releaseAll = 0x0061; // 0 args
+        int checkPosition = 0x01BD; // 2 args
+        int setRival = 0x00CE; // 1 arg
+        int applyMovement = 0x005E; // 6 args
+        int waitMovement = 0x005F; // 0 args
 
+        Map<Integer, Integer> map = new HashMap<>();
+        map.put(headerEnd, 0);
+        map.put(enableBadge, 2);
+        map.put(jump, 4);
+        map.put(setVar, 4);
+        map.put(setTrainerID, 2);
+        map.put(setFlag, 2);
+        map.put(clearFlag, 2);
+        map.put(checkBadge,4);
+        map.put(jumpReturn,4);
+        map.put(compareJump,5);
+        map.put(compareJumpReturn,5);
+        map.put(playFanfare,2);
+        map.put(lockAll,0);
+        map.put(facePlayer,0);
+        map.put(ifInst,4);
+        map.put(x01CD,10);
+        map.put(message,1);
+        map.put(closeMessage,0);
+        map.put(battle,4);
+        map.put(checkLoss,2);
+        map.put(setHero,1);
+        map.put(playSound,2);
+        map.put(fadeMusic,0);
+        map.put(x0260,2);
+        map.put(x02C9,0);
+        map.put(end,0);
+        map.put(x0174,0);
+        map.put(x016F,0);
+        map.put(x0170,0);
+        map.put(x0173,0);
+        map.put(checkFlag,2);
+        map.put(x0175,1);
+        map.put(x0176,1);
+        map.put(wait,0);
+        map.put(removePeople,2);
+        map.put(releaseAll,0);
+        map.put(checkPosition,2);
+        map.put(setRival,1);
+        map.put(applyMovement,6);
+        map.put(waitMovement,0);
+
+        return map;
+    }
+
+    public static List<Location> locationDataPt(Map<Integer, Integer> em) {
+        List<Location> locations = new ArrayList<>();
+        Location l;
+        l = new Location(0, "Jubilife City", false);
+        l.addExit(0,"Route 218",375,new int[] {0},em);
+        l.addExit(0,"Oreburgh Gate",330,new int[] {0},em);
+        l.addExit(0,"Ravaged Path",331,new int[] {0},em);
+        locations.add(l);
+
+        Location JubiOreCave = new Location(7, "Oreburgh Gate", false);
+        JubiOreCave.addExit(0,"Jubilife City [Route 203]",251,new int[] {0},em);
+        JubiOreCave.addExit(0,"Oreburgh City",251,new int[] {1},em);
+        JubiOreCave.addWildGroup(0, new int[] {54});
+        JubiOreCave.addWildGroup(1, new int[] {55});
+        JubiOreCave.addTrainerGroup(0, new int[] {265,329});
+        locations.add(JubiOreCave);
+
+        Location Oreburgh = new Location(0,"Oreburgh City", true);
+        Oreburgh.addExit(2,"Cycling Road",336,new int[] {0,1,10,11},em);
+        Oreburgh.addExit(2,"S. Coronet Cave",339,new int[] {0},em);
+        Oreburgh.addExit(0,"Oreburgh Gate",44,new int[] {10},em);
+        locations.add(Oreburgh);
+
+        l = new Location(8,"Ravaged Path", false);
+        l.addExit(1,"Jubilife City [Route 204]",247,new int[] {0},em);
+        l.addExit(1,"Floaroma Town",247,new int[] {1},em);
+        l.addWildGroup(0, new int[] {53});
+        // For Rock Smash:
+        l.prereqs.add(JubiOreCave); // Rock Smash HM
+        l.prereqs.add(Oreburgh); // Badge for Rock Smash
+        locations.add(l);
+
+        l = new Location(8, "Eterna Forest", false);
+        l.addExit(0,"Floaroma Town [Route 205]",201,new int[] {0,1},em);
+        l.addExit(0,"Eterna City",201,new int[] {2,3},em);
+        l.addWildGroup(1, new int[] {8});
+        l.addWildGroup(2, new int[] {125,126,127,128,129,130,131,132,133});
+        l.addTrainerGroup(1, new int[] {201,204,206,205,202,203,395,398}); // Forest trainers
+        locations.add(l);
+
+        l = new Location(1, "Eterna City & Floaroma Town", true);
+        l.addExit(1,"N. Coronet Cave",351,new int[] {0},em);
+        l.addExit(1,"Cycling Road",64,new int[] {8,9},em);
+        l.addExit(2,"Ravaged Path",332,new int[] {0},em);
+        l.addExit(2,"Eterna Forest [Route 205 entrance]",333,new int[] {0,1},em);
+        l.addExit(1,"Eterna Forest [Eterna entrance]",335,new int[] {0,1},em);
+        locations.add(l);
+
+        l = new Location(8, "Cycling Road", false);
+        l.addExit(2,"Eterna City",79,new int[] {0,4,5},em);
+        l.addExit(2,"Oreburgh City [Route 206]",337,new int[] {1,4,5},em);
+        l.addTrainerGroup(2, new int[] {25,29,26,30,27,28,32,31}); // We're bikers we're bikers we're bikers
+        locations.add(l);
+
+        // max of 7 because Mt. Coronet's Summit is accessed through here.
+        l = new Location(7, "S. Coronet Cave", false);
+        l.addExit(0,"Oreburgh City [Route 207]",204,new int[] {0},em);
+        l.addExit(0,"Route 208",204,new int[] {1},em);
+        l.addWildGroup(2, new int[] {10});
+        locations.add(l);
+
+        l = new Location(8, "Route 208", false);
+        l.addExit(0,"S. Coronet Cave",340,new int[] {3},em);
+        l.addExit(0,"Hearthome City",340,new int[] {0,1},em);
+        l.addWildGroup(2, new int[] {149});
+        l.addTrainerGroup(2, new int[] {41,42,39,44,45});
+        locations.add(l);
+
+        l = new Location(2, "Hearthome City", true);
+        l.addExit(0,"Route 208",108,new int[] {1},em);
+        l.addExit(0,"Pastoria City [Route 212]",85,new int[] {15,16},em);
+        l.addExit(3,"Solaceon Town [Route 209]",109,new int[] {1},em);
+        locations.add(l);
+
+        Location Celestic = new Location(7, "Solaceon & Celestic Towns", false);
+        Celestic.addExit(0,"Hearthome City",342,new int[] {0,1},em);
+        Celestic.addExit(5,"N. Coronet Cave",352,new int[] {0},em);
+        Celestic.addExit(0,"Veilstone City",368,new int[] {0,1},em);
+        Celestic.addWildGroup(3, new int[] {150}); // r209
+        Celestic.addWildGroup(3, new int[] {151,152,153,154,155}); // lost tower
+        Celestic.addWildGroup(3, new int[] {156}); // r210
+        Celestic.addWildGroup(3, new int[] {29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46}); // ruins
+        Celestic.addWildGroup(3, new int[] {164}); // r215
+        Celestic.addTrainerGroup(3, new int[] {46,49,294,53,308,47,48,55});
+        Celestic.addTrainerGroup(3, new int[] {553});
+        Celestic.addTrainerGroup(3, new int[] {532,529,530,531,533,534});
+        Celestic.addTrainerGroup(3, new int[] {306,292,290,65,56,57});
+        Celestic.addTrainerGroup(3, new int[] {366,276,275});
+        Celestic.addTrainerGroup(3, new int[] {304,307,128,127,129,130,278,287});
+        locations.add(Celestic);
+
+        l = new Location(3, "Veilstone City", true);
+        l.addExit(0,"Solaceon Town [Route 215]",148,new int[] {1},em);
+        l.addExit(0,"Valor Lakefront [Route 214]",367,new int[] {1},em);
+        locations.add(l);
+
+        Location Valor = new Location(8, "Valor Lakefront", false); // + R213 & R214
+        Valor.addExit(0,"Veilstone City",366,new int[] {0,1},em);
+        Valor.addExit(0,"Pastoria City",359,new int[] {0,1},em);
+        Valor.addWildGroup(4, new int[] {163});
+        Valor.addWildGroup(4, new int[] {138});
+        Valor.addWildGroup(4, new int[] {162});
+        Valor.addWildGroup(4, new int[] {114,115,116});
+        Valor.addTrainerGroup(4, new int[] {120,121,273,491,119,272,114,382,113}); // r214
+        Valor.addTrainerGroup(4, new int[] {536,551,544,552,539,535,548,540,549,537,541,550,542,543,538,547,545,546}); // restaurant
+        Valor.addTrainerGroup(4, new int[] {108,107,111,346}); // r213
+        locations.add(Valor);
+
+        Location Pastoria = new Location(4, "Pastoria City", true);
+        Pastoria.addExit(0,"Valor Lakefront [Route 213]",360,new int[] {0},em);
+        Pastoria.addExit(5,"Hearthome City",110,new int[] {0},em);
+        locations.add(Pastoria);
+
+        l = new Location(8, "Route 218", false);
+        l.addExit(5,"Canalave City",374,new int[] {0,1},em);
+        l.addExit(5,"Jubilife City",374,new int[] {2,3},em);
+        l.addWildGroup(5, new int[] {167});
+        l.addTrainerGroup(5, new int[] {153,154,338,300});
+        // For Surf:
+        l.prereqs.add(Celestic); // Surf HM
+        l.prereqs.add(Pastoria); // Badge for Surf
+        l.prereqs.add(Valor); // Secret Potion to access Celestic
+        locations.add(l);
+
+        l = new Location(5, "Canalave City", true);
+        l.addExit(0,"Route 218",376,new int[] {1},em); // to Route 218
+        locations.add(l);
+
+        // max of 7 because a map can't have all its exits closed if this is the last route to be placed
+        l = new Location(7, "N. Coronet Cave [lower]", false);
+        l.addExit(6,"Eterna City",215,new int[] {2},em);
+        l.addExit(6,"Celestic Town",215,new int[] {3},em);
+        l.addExit(6,"N. Coronet Cave [upper]",215,new int[] {1},em,371);
+        // Only including this EncounterSet because its very low level in vanilla, and this route's properties usually make it a very late game placement.
+        l.addWildGroup(1, new int[] {21});
+        locations.add(l);
+
+        l = new Location(8, "N. Coronet Cave [upper]", false);
+        l.addExit(0,"N. Coronet Cave [lower]",216,new int[] {0},em,374);
+        l.addExit(0,"Snowpoint City [Route 216]",214,new int[] {1},em);
+        l.addWildGroup(6, new int[] {22,20});
+        locations.add(l);
+
+        l = new Location(6, "Snowpoint City", true);
+        l.addExit(6,"N. Coronet Cave [upper]",369,new int[] {0},em);
+        locations.add(l);
+
+        // Wild and Trainer Groups only include those Encounters and Trainers that will be randomized.
+        // Since there are badgeRegions that do not have any Encounters or Trainers,
+        // these filler groups manually add the missing level averages for these regions, used for scaling.
+        // Easiest to just tack them onto the last Location
+        l.addWildFiller(7, 39); // from Route 222
+        l.addWildFiller(8, 42); // from Victory Road
+        l.addTrainerFiller(6, 37); // from Route 217
+        l.addTrainerFiller(7, 42); // from Mt. Coronet and Route 222
+        l.addTrainerFiller(8, 46); // from Victory Road
+
+        // Sunyshore: in vanilla, Route 222 is inaccessible until after Distortion World
+        // So, Sunyshore should only be placed after Route 222.
+        // If it's not, then no previously placed routes can connect there and if they could be then it's a meaningless connection
+        // since it's basically bonus.
+
+        return locations;
+    }
+
+    public static List<Location> gymLocationDataPt(Map<Integer, Integer> em) {
+        List<Location> gyms = new ArrayList<>();
+        Location l;
+        l = new Location(0, "Oreburgh Gym", false);
+        l.addExit(0,"",46,new int[] {0},em);
+        l.addTrainerGroup(0, new int[] {244,245});
+        gyms.add(l);
+
+        l = new Location(1, "Eterna Gym", false);
+        l.addExit(1,"",66,new int[] {0},em);
+        l.addTrainerGroup(1, new int[] {324,259,260});
+        gyms.add(l);
+
+        l = new Location(2, "Hearthome Gym", false);
+        l.addExit(2,"",87,new int[] {3},em);
+        l.addTrainerGroup(2, new int[] {357,325,340,343,280,284});
+        gyms.add(l);
+
+        l = new Location(3, "Veilstone Gym", false);
+        l.addExit(3,"",132,new int[] {0},em);
+        l.addTrainerGroup(3, new int[] {309,310,311,312});
+        gyms.add(l);
+
+        l = new Location(4, "Pastoria Gym", false);
+        l.addExit(4,"",121,new int[] {0},em);
+        l.addTrainerGroup(4, new int[] {497,401,339,498,293,483});
+        gyms.add(l);
+
+        l = new Location(5, "Canalave Gym", false);
+        l.addExit(5,"",34,new int[] {0},em);
+        l.addTrainerGroup(5, new int[] {314,257,256,279,367,232,283});
+        gyms.add(l);
+
+        l = new Location(6, "Snowpoint Gym", false);
+        l.addExit(6,"",166,new int[] {0},em);
+        l.addTrainerGroup(6, new int[] {827,271,270,268,828,269});
+        gyms.add(l);
+
+        l = new Location(7, "Sunyshore Gym", false);
+        l.addExit(7,"",153,new int[] {0},em);
+        l.addTrainerGroup(7, new int[] {344,341,301,331,303,285,302,281});
+        gyms.add(l);
+
+        return gyms;
+    }
+
+    public static List<Location> gymCityLocationDataPt(Map<Integer, Integer> em) {
+        List<Location> cities = new ArrayList<>();
+        Location l;
+        l = new Location(0, "Oreburgh City", true);
+        l.addExit(0,"",44,new int[] {0},em);
+        cities.add(l);
+
+        l = new Location(1, "Eterna City", true);
+        l.addExit(1,"",64,new int[] {10},em);
+        cities.add(l);
+
+        l = new Location(2, "Hearthome City", true);
+        l.addExit(2,"",85,new int[] {8},em);
+        cities.add(l);
+
+        l = new Location(3, "Veilstone City", true);
+        l.addExit(3,"",131,new int[] {13},em);
+        cities.add(l);
+
+        l = new Location(4, "Pastoria City", true);
+        l.addExit(4,"",119,new int[] {0},em);
+        cities.add(l);
+
+        l = new Location(5, "Canalave City", true);
+        l.addExit(5,"",32,new int[] {0},em);
+        cities.add(l);
+
+        l = new Location(6, "Snowpoint City", true);
+        l.addExit(6,"",164,new int[] {5},em);
+        cities.add(l);
+
+        l = new Location(7, "Sunyshore City", true);
+        l.addExit(7,"",149,new int[] {12},em);
+        cities.add(l);
+
+        return cities;
+    }
+
+    public static List<Location> e4LocationDataPt(Map<Integer, Integer> em) {
+        // E4 Locations include the member's room and the hall before the room.
+        List<Location> locations = new ArrayList<>();
+        Location l;
+        l = new Location(0, "League Entrance", false);
+        l.addExit(0,"to Aaron",174,new int[] {0},em);
+        locations.add(l);
+
+        l = new Location(0, "Aaron", false);
+        l.addExit(0,"from League Entrance",175,new int[] {1},em);
+        l.addExit(0,"to Bertha",176,new int[] {0},em);
+        l.addTrainerGroup(0, new int[] {0x105,0x362}); // normal fight is index 0, rematch is index 1
+        locations.add(l);
+
+        l = new Location(0, "Bertha", false);
+        l.addExit(0,"from Aaron",177,new int[] {1},em);
+        l.addExit(0,"to Flint",178,new int[] {0},em);
+        l.addTrainerGroup(0, new int[] {0x106,0x363});
+        locations.add(l);
+
+        l = new Location(0, "Flint", false);
+        l.addExit(0,"from Bertha",179,new int[] {1},em);
+        l.addExit(0,"to Lucian",180,new int[] {0},em);
+        l.addTrainerGroup(0, new int[] {0x107,0x364});
+        locations.add(l);
+
+        l = new Location(0, "Lucian", false);
+        l.addExit(0,"from Flint",181,new int[] {1},em);
+        l.addExit(0,"to Cynthia",182,new int[] {0},em);
+        l.addTrainerGroup(0, new int[] {0x108,0x365});
+        locations.add(l);
+
+        l = new Location(0, "Cynthia", false);
+        l.addExit(0,"from Lucian",183,new int[] {1},em);
+        locations.add(l);
+
+        return locations;
+    }
+
+    // The plan is to eventually convert all this to json format in an external file, and refit the LeaderTeams parser to read the json format
+    public static Map<String, List<TrainerPokemon>> gymLeaderTeamsPt(List<Pokemon> pokemonList) {
+        Map<String, List<TrainerPokemon>> rosters = new HashMap<>();
+        rosters.put("Roark1", null);
+        List<TrainerPokemon> roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(74), 20, 446, 157, 222, 120, 0, 6)); // Stealth Rock Rock Slide Magnitude Selfdestruct
+        roster.add(new TrainerPokemon(pokemonList.get(95), 20, 446, 157, 103, 46, 0, 6)); // Stealth Rock Rock Slide Screech Roar
+        roster.add(new TrainerPokemon(pokemonList.get(408), 22, 29, 242, 43, 184, 158, 6)); // Headbutt Crunch Leer Scary Face
+        rosters.put("Roark2", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(75), 24, 446, 157, 222, 120, 0, 12)); // Stealth Rock Rock Slide Magnitude Selfdestruct
+        roster.add(new TrainerPokemon(pokemonList.get(408), 24, 38, 242, 157, 184, 0, 12)); // Double Edge Crunch Rock Slide Scary Face
+        roster.add(new TrainerPokemon(pokemonList.get(476), 26, 246, 85, 86, 201, 158, 12)); // Ancient Power Thunderbolt Thunder Wave Sandstorm
+        rosters.put("Roark3", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(75), 28, 446, 157, 222, 120, 0, 18)); // Stealth Rock Rock Slide Magnitude Selfdestruct
+        roster.add(new TrainerPokemon(pokemonList.get(476), 29, 246, 85, 86, 201, 0, 18)); // Ancient Power Thunderbolt Thunder Wave Sandstorm
+        roster.add(new TrainerPokemon(pokemonList.get(409), 32, 38, 242, 428, 359, 158, 18)); // Double Edge Crunch Zen Headbutt Hammer Arm
+        rosters.put("Roark4", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(75), 33, 446, 444, 89, 153, 0, 24)); // Stealth Rock Stone Edge Earthquake Explosion
+        roster.add(new TrainerPokemon(pokemonList.get(476), 34, 246, 85, 86, 430, 0, 24)); // Ancient Power Thunderbolt Thunder Wave Flash Cannon
+        roster.add(new TrainerPokemon(pokemonList.get(409), 37, 38, 242, 428, 276, 158, 24)); // Double Edge Crunch Zen Headbutt Superpower
+        rosters.put("Roark5", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(476), 37, 246, 85, 446, 86, 0, 24)); // Ancient Power Thunderbolt Stealth Rock Thunder Wave
+        roster.add(new TrainerPokemon(pokemonList.get(464), 38, 89, 444, 401, 9, 0, 24)); // Earthquake Stone Edge Aqua Tail ThunderPunch
+        roster.add(new TrainerPokemon(pokemonList.get(409), 41, 38, 242, 428, 276, 158, 24)); // Double Edge Crunch Zen Headbutt Superpower
+        rosters.put("Roark6", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(476), 40, 246, 85, 446, 86, 0, 30)); // Ancient Power Thunderbolt Stealth Rock Thunder Wave
+        roster.add(new TrainerPokemon(pokemonList.get(409), 40, 38, 242, 428, 276, 0, 30)); // Double Edge Crunch Zen Headbutt Superpower
+        roster.add(new TrainerPokemon(pokemonList.get(464), 42, 89, 444, 401, 9, 0, 30)); // Earthquake Stone Edge Aqua Tail ThunderPunch
+        roster.add(new TrainerPokemon(pokemonList.get(142), 44, 444, 424, 422, 332, 158, 30)); // Stone Edge Fire Fang Thunder Fang Aerial Ace
+        rosters.put("Roark7", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(476), 46, 246, 85, 446, 86, 0, 30)); // Ancient Power Thunderbolt Stealth Rock Thunder Wave
+        roster.add(new TrainerPokemon(pokemonList.get(409), 46, 457, 242, 428, 276, 0, 30)); // Head Smash Crunch Zen Headbutt Superpower
+        roster.add(new TrainerPokemon(pokemonList.get(464), 48, 89, 444, 401, 9, 0, 30)); // Earthquake Stone Edge Aqua Tail ThunderPunch
+        roster.add(new TrainerPokemon(pokemonList.get(142), 50, 444, 424, 422, 332, 158, 30)); // Stone Edge Fire Fang Thunder Fang Aerial Ace
+        rosters.put("Roark8", roster);
+
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(387), 12, 447, 241, 115, 0, 0, 6)); // Grass Knot Sunny Day Reflect
+        roster.add(new TrainerPokemon(pokemonList.get(420), 12, 447, 241, 219, 0, 0, 6)); // Grass Knot Sunny Day Safeguard
+        roster.add(new TrainerPokemon(pokemonList.get(315), 14, 447, 40, 78, 0, 0, 6)); // Grass Knot Poison Sting Stun Spore
+        rosters.put("Gardenia1", roster);
+        rosters.put("Gardenia2", null);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(388), 24, 75, 44, 115, 174, 0, 12)); // Razor Leaf Bite Reflect Curse
+        roster.add(new TrainerPokemon(pokemonList.get(421), 24, 447, 241, 345, 92, 0, 12)); // Grass Knot Sunny Day Magical Leaf Toxic
+        roster.add(new TrainerPokemon(pokemonList.get(407), 26, 202, 398, 326, 79, 158, 12)); // Giga Drain Poison Jab Extrasensory Sleep Powder
+        rosters.put("Gardenia3", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(421), 28, 447, 241, 345, 92, 0, 18)); // Grass Knot Sunny Day Magical Leaf Toxic
+        roster.add(new TrainerPokemon(pokemonList.get(407), 29, 202, 188, 326, 79, 0, 18)); // Giga Drain Sludge Bomb Extrasensory Sleep Powder
+        roster.add(new TrainerPokemon(pokemonList.get(389), 32, 89, 402, 174, 235, 158, 18)); // Earthquake Seed Bomb Curse Synthesis
+        rosters.put("Gardenia4", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(470), 33, 402, 404, 332, 235, 0, 24)); // Seed Bomb X-Scissor Aerial Ace Synthesis
+        roster.add(new TrainerPokemon(pokemonList.get(407), 34, 447, 188, 326, 79, 0, 24)); // Grass Knot Sludge Bomb Extrasensory Sleep Powder
+        roster.add(new TrainerPokemon(pokemonList.get(389), 37, 89, 402, 242, 444, 158, 24)); // Earthquake Seed Bomb Crunch Stone Edge
+        rosters.put("Gardenia5", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(470), 37, 402, 404, 332, 235, 0, 24)); // Seed Bomb X-Scissor Aerial Ace Synthesis
+        roster.add(new TrainerPokemon(pokemonList.get(407), 38, 447, 188, 326, 79, 0, 24)); // Grass Knot Sludge Bomb Extrasensory Sleep Powder
+        roster.add(new TrainerPokemon(pokemonList.get(389), 41, 89, 452, 242, 444, 158, 24)); // Earthquake Wood Hammer Crunch Stone Edge
+        rosters.put("Gardenia6", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(470), 40, 348, 404, 332, 235, 0, 30)); // Leaf Blade X-Scissor Aerial Ace Synthesis
+        roster.add(new TrainerPokemon(pokemonList.get(460), 40, 447, 411, 352, 59, 0, 30)); // Grass Knot Focus Blast Water Pulse Blizzard
+        roster.add(new TrainerPokemon(pokemonList.get(407), 42, 447, 188, 326, 79, 0, 30)); // Grass Knot Sludge Bomb Extrasensory Sleep Powder
+        roster.add(new TrainerPokemon(pokemonList.get(389), 44, 89, 452, 276, 444, 158, 30)); // Earthquake Wood Hammer Superpower Stone Edge
+        rosters.put("Gardenia7", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(470), 46, 348, 404, 332, 235, 0, 30)); // Leaf Blade X-Scissor Aerial Ace Synthesis
+        roster.add(new TrainerPokemon(pokemonList.get(460), 46, 447, 411, 352, 59, 0, 30)); // Grass Knot Focus Blast Water Pulse Blizzard
+        roster.add(new TrainerPokemon(pokemonList.get(407), 48, 447, 188, 326, 79, 0, 30)); // Grass Knot Sludge Bomb Extrasensory Sleep Powder
+        roster.add(new TrainerPokemon(pokemonList.get(389), 50, 89, 452, 276, 444, 158, 30)); // Earthquake Wood Hammer Superpower Stone Edge
+        rosters.put("Gardenia8", roster);
+
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(355), 12, 261, 248, 425, 0, 0, 6)); // Will-o-Wisp Future Sight Shadow Sneak
+        roster.add(new TrainerPokemon(pokemonList.get(200), 12, 247, 345, 109, 0, 0, 6)); // Shadow Ball Magical Leaf Confuse Ray
+        roster.add(new TrainerPokemon(pokemonList.get(93), 14, 421, 389, 95, 0, 0, 6)); // Shadow Claw Sucker Punch Hypnosis
+        rosters.put("Fantina1", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(355), 20, 261, 248, 425, 228, 0, 6)); // Will-o-Wisp Future Sight Shadow Sneak Pursuit
+        roster.add(new TrainerPokemon(pokemonList.get(200), 20, 421, 389, 95, 109, 0, 6)); // Shadow Claw Sucker Punch Hypnosis Confuse Ray
+        roster.add(new TrainerPokemon(pokemonList.get(429), 22, 47, 345, 109, 60, 158, 6)); // Shadow Ball Magical Leaf Confuse Ray Psybeam
+        rosters.put("Fantina2", roster);
+        rosters.put("Fantina3", null);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(426), 28, 261, 19, 421, 254, 0, 18)); // Will-o-Wisp Fly Shadow Claw Stockpile
+        roster.add(new TrainerPokemon(pokemonList.get(94), 29, 421, 188, 412, 109, 0, 18)); // Shadow Claw Sludge Bomb Energy Ball Confuse Ray
+        roster.add(new TrainerPokemon(pokemonList.get(429), 32, 47, 85, 94, 109, 158, 18)); // Shadow Ball Thunderbolt Psychic Confuse Ray
+        rosters.put("Fantina4", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(426), 33, 261, 19, 421, 254, 0, 24)); // Will-o-Wisp Fly Shadow Claw Stockpile
+        roster.add(new TrainerPokemon(pokemonList.get(94), 34, 421, 188, 412, 109, 0, 24)); // Shadow Claw Sludge Bomb Energy Ball Confuse Ray
+        roster.add(new TrainerPokemon(pokemonList.get(429), 37, 47, 85, 94, 109, 158, 24)); // Shadow Ball Thunderbolt Psychic Confuse Ray
+        rosters.put("Fantina5", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(356), 37, 261, 220, 425, 174, 0, 24)); // Will-o-Wisp Pain Split Shadow Sneak Curse
+        roster.add(new TrainerPokemon(pokemonList.get(94), 38, 421, 188, 412, 109, 0, 24)); // Shadow Claw Sludge Bomb Energy Ball Confuse Ray
+        roster.add(new TrainerPokemon(pokemonList.get(429), 41, 47, 85, 94, 196, 158, 24)); // Shadow Ball Thunderbolt Psychic Icy Wind
+        rosters.put("Fantina6", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(477), 40, 261, 220, 325, 104, 0, 30)); // Will-o-Wisp Pain Split Shadow Punch Double Team
+        roster.add(new TrainerPokemon(pokemonList.get(426), 40, 261, 19, 421, 254, 0, 30)); // Will-o-Wisp Fly Shadow Claw Stockpile
+        roster.add(new TrainerPokemon(pokemonList.get(429), 42, 47, 85, 94, 196, 0, 30)); // Shadow Ball Magical Leaf Psychic Icy Wind
+        roster.add(new TrainerPokemon(pokemonList.get(94), 44, 47, 188, 85, 411, 158, 30)); // Shadow Ball Sludge Bomb Thunderbolt Focus Blast
+        rosters.put("Fantina7", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(477), 46, 261, 220, 325, 104, 0, 30)); // Will-o-Wisp Pain Split Shadow Punch Double Team
+        roster.add(new TrainerPokemon(pokemonList.get(426), 46, 261, 19, 421, 254, 0, 30)); // Will-o-Wisp Fly Shadow Claw Stockpile
+        roster.add(new TrainerPokemon(pokemonList.get(429), 48, 47, 85, 94, 196, 0, 30)); // Shadow Ball Magical Leaf Psychic Icy Wind
+        roster.add(new TrainerPokemon(pokemonList.get(94), 50, 47, 188, 85, 411, 158, 30)); // Shadow Ball Sludge Bomb Thunderbolt Focus Blast
+        rosters.put("Fantina8", roster);
+
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(307), 12, 409, 93, 252, 0, 0, 6)); // Drain Punch Confusion Fake Out
+        roster.add(new TrainerPokemon(pokemonList.get(66), 12, 2, 116, 317, 0, 0, 6)); // Karate Chop Focus Energy Rock Tomb
+        roster.add(new TrainerPokemon(pokemonList.get(448), 14, 395, 232, 98, 0, 0, 6)); // Force Palm Metal Claw Quick Attack
+        rosters.put("Maylene1", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(307), 20, 409, 93, 252, 317, 0, 6)); // Drain Punch Confusion Fake Out Rock Tomb
+        roster.add(new TrainerPokemon(pokemonList.get(66), 20, 2, 116, 317, 70, 0, 6)); // Karate Chop Focus Energy Rock Tomb Strength
+        roster.add(new TrainerPokemon(pokemonList.get(448), 22, 395, 232, 409, 198, 0, 6)); // Force Palm Metal Claw Quick Attack Bone Rush
+        rosters.put("Maylene2", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(307), 24, 409, 93, 252, 317, 0, 12)); // Drain Punch Confusion Fake Out Rock Tomb
+        roster.add(new TrainerPokemon(pokemonList.get(67), 24, 2, 116, 317, 70, 0, 12)); // Karate Chop Focus Energy Rock Tomb Strength
+        roster.add(new TrainerPokemon(pokemonList.get(448), 26, 395, 232, 409, 198, 0, 12)); // Force Palm Metal Claw Drain Punch Bone Rush
+        rosters.put("Maylene3", roster);
+        rosters.put("Maylene4", null);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(308), 33, 136, 428, 7, 8, 0, 24)); // Hi Jump Kick Zen Headbutt Fire Punch Ice Punch
+        roster.add(new TrainerPokemon(pokemonList.get(67), 34, 280, 409, 9, 371, 0, 24)); // Brick Break Drain Punch ThunderPunch Payback
+        roster.add(new TrainerPokemon(pokemonList.get(448), 37, 396, 231, 399, 198, 0, 24)); // Aura Sphere Iron Tail Dark Pulse Bone Rush
+        rosters.put("Maylene5", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(308), 37, 136, 428, 7, 8, 0, 24)); // Hi Jump Kick Zen Headbutt Fire Punch Ice Punch
+        roster.add(new TrainerPokemon(pokemonList.get(68), 38, 280, 409, 9, 371, 0, 24)); // Brick Break Drain Punch ThunderPunch Payback
+        roster.add(new TrainerPokemon(pokemonList.get(448), 41, 396, 231, 399, 198, 0, 24)); // Aura Sphere Iron Tail Dark Pulse Bone Rush
+        rosters.put("Maylene6", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(308), 40, 136, 428, 7, 8, 0, 30)); // Hi Jump Kick Zen Headbutt Fire Punch Ice Punch
+        roster.add(new TrainerPokemon(pokemonList.get(286), 40, 147, 409, 402, 183, 0, 30)); // Spore Drain Punch Seed Bomb Mach Punch
+        roster.add(new TrainerPokemon(pokemonList.get(68), 42, 444, 409, 9, 371, 0, 30)); // Stone Edge Drain Punch ThunderPunch Payback
+        roster.add(new TrainerPokemon(pokemonList.get(448), 44, 370, 430, 47, 198, 0, 30)); // Close Combat Flash Cannon Shadow Ball Bone Rush
+        rosters.put("Maylene7", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(308), 46, 136, 428, 7, 8, 0, 30)); // Hi Jump Kick Zen Headbutt Fire Punch Ice Punch
+        roster.add(new TrainerPokemon(pokemonList.get(286), 46, 147, 409, 402, 183, 0, 30)); // Spore Drain Punch Seed Bomb Mach Punch
+        roster.add(new TrainerPokemon(pokemonList.get(68), 48, 444, 409, 9, 371, 0, 30)); // Stone Edge Drain Punch ThunderPunch Payback
+        roster.add(new TrainerPokemon(pokemonList.get(448), 51, 370, 430, 245, 198, 0, 30)); // Close Combat Flash Cannon ExtremeSpeed Bone Rush
+        rosters.put("Maylene8", roster);
+
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(194), 12, 352, 341, 0, 0, 0, 6)); // Water Pulse Mud Shot
+        roster.add(new TrainerPokemon(pokemonList.get(418), 12, 362, 228, 98, 0, 0, 6)); // Brine Pursuit Quick Attack
+        roster.add(new TrainerPokemon(pokemonList.get(394), 14, 362, 365, 97, 0, 0, 6)); // Brine Pluck Agility
+        rosters.put("Wake1", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(394), 20, 61, 365, 97, 196, 0, 6)); // Bubblebeam Pluck Agility Icy Wind
+        roster.add(new TrainerPokemon(pokemonList.get(418), 21, 362, 228, 453, 29, 0, 6)); // Brine Pursuit Aqua Jet Headbutt
+        roster.add(new TrainerPokemon(pokemonList.get(130), 22, 362, 44, 239, 46, 158, 6)); // Brine Bite Twister Roar
+        rosters.put("Wake2", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(130), 24, 362, 127, 44, 239, 0, 12)); // Brine Waterfall Bite Twister
+        roster.add(new TrainerPokemon(pokemonList.get(195), 24, 352, 341, 317, 133, 0, 12)); // Water Pulse Mud Shot Rock Tomb Amnesia
+        roster.add(new TrainerPokemon(pokemonList.get(419), 26, 362, 242, 423, 453, 158, 12)); // Brine Crunch Ice Fang Aqua Jet
+        rosters.put("Wake3", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(130), 28, 362, 127, 44, 239, 0, 18)); // Brine Waterfall Bite Twister
+        roster.add(new TrainerPokemon(pokemonList.get(195), 29, 352, 341, 317, 133, 0, 18)); // Water Pulse Mud Shot Rock Tomb Amnesia
+        roster.add(new TrainerPokemon(pokemonList.get(419), 32, 362, 242, 423, 453, 158, 18)); // Brine Crunch Ice Fang Aqua Jet
+        rosters.put("Wake4", roster);
+        rosters.put("Wake5", null);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(130), 37, 423, 127, 44, 406, 0, 24)); // Ice Fang Waterfall Bite Dragon Pulse
+        roster.add(new TrainerPokemon(pokemonList.get(195), 38, 362, 89, 157, 281, 0, 24)); // Brine Earthquake Rock Slide Yawn
+        roster.add(new TrainerPokemon(pokemonList.get(419), 41, 127, 242, 423, 453, 158, 24)); // Waterfall Crunch Ice Fang Aqua Jet
+        rosters.put("Wake6", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(319), 40, 242, 56, 423, 453, 0, 30)); // Crunch Hydro Pump Ice Fang Aqua Jet
+        roster.add(new TrainerPokemon(pokemonList.get(195), 40, 362, 89, 444, 281, 0, 30)); // Brine Earthquake Stone Edge Yawn
+        roster.add(new TrainerPokemon(pokemonList.get(130), 42, 423, 127, 44, 53, 0, 30)); // Ice Fang Waterfall Bite Flamethrower
+        roster.add(new TrainerPokemon(pokemonList.get(419), 44, 127, 242, 423, 453, 158, 30)); // Waterfall Crunch Ice Fang Aqua Jet
+        rosters.put("Wake7", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(319), 46, 242, 56, 423, 453, 0, 30)); // Crunch Hydro Pump Ice Fang Aqua Jet
+        roster.add(new TrainerPokemon(pokemonList.get(195), 46, 362, 89, 444, 281, 0, 30)); // Brine Earthquake Stone Edge Yawn
+        roster.add(new TrainerPokemon(pokemonList.get(130), 48, 423, 127, 44, 53, 0, 30)); // Ice Fang Waterfall Bite Flamethrower
+        roster.add(new TrainerPokemon(pokemonList.get(419), 50, 127, 242, 423, 453, 158, 30)); // Waterfall Crunch Ice Fang Aqua Jet
+        rosters.put("Wake8", roster);
+
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(81), 12, 430, 351, 86, 0, 0, 6)); // Flash Cannon Shock Wave Thunder Wave
+        roster.add(new TrainerPokemon(pokemonList.get(436), 12, 430, 93, 95, 0, 0, 6)); // Flash Cannon Confusion Hypnosis
+        roster.add(new TrainerPokemon(pokemonList.get(410), 14, 430, 157, 319, 0, 0, 6)); // Flash Cannon Rock Slide Metal Sound
+        rosters.put("Byron1", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(81), 20, 430, 351, 86, 319, 0, 6)); // Flash Cannon Shock Wave Thunder Wave Metal Sound
+        roster.add(new TrainerPokemon(pokemonList.get(436), 20, 430, 326, 95, 109, 0, 6)); // Flash Cannon Extrasensory Hypnosis Confuse Ray
+        roster.add(new TrainerPokemon(pokemonList.get(410), 22, 430, 157, 334, 319, 158, 6)); // Flash Cannon Rock Slide Iron Defense Metal Sound
+        rosters.put("Byron2", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(81), 24, 430, 351, 86, 319, 0, 12)); // Flash Cannon Shock Wave Thunder Wave Metal Sound
+        roster.add(new TrainerPokemon(pokemonList.get(436), 24, 430, 326, 95, 109, 0, 12)); // Flash Cannon Extrasensory Hypnosis Confuse Ray
+        roster.add(new TrainerPokemon(pokemonList.get(410), 26, 430, 157, 334, 319, 158, 12)); // Flash Cannon Rock Slide Iron Defense Metal Sound
+        rosters.put("Byron3", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(81), 28, 430, 85, 86, 319, 0, 18)); // Flash Cannon Thunderbolt Thunder Wave Metal Sound
+        roster.add(new TrainerPokemon(pokemonList.get(208), 29, 430, 89, 423, 201, 0, 18)); // Flash Cannon Earthquake Ice Fang Sandstorm
+        roster.add(new TrainerPokemon(pokemonList.get(411), 32, 368, 444, 334, 269, 158, 18)); // Metal Burst Stone Edge Iron Defense Taunt
+        rosters.put("Byron4", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(82), 33, 430, 85, 161, 319, 0, 24)); // Flash Cannon Thunderbolt Tri Attack Metal Sound
+        roster.add(new TrainerPokemon(pokemonList.get(208), 34, 430, 89, 423, 201, 0, 24)); // Flash Cannon Earthquake Ice Fang Sandstorm
+        roster.add(new TrainerPokemon(pokemonList.get(411), 37, 368, 444, 334, 269, 158, 24)); // Metal Burst Stone Edge Iron Defense Taunt
+        rosters.put("Byron5", roster);
+        rosters.put("Byron6", null);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(437), 40, 360, 94, 95, 446, 0, 30)); // Gyro Ball Psychic Hypnosis Stealh Rock
+        roster.add(new TrainerPokemon(pokemonList.get(462), 40, 430, 85, 86, 115, 0, 30)); // Flash Cannon Thunderbolt Thunder Wave Reflect
+        roster.add(new TrainerPokemon(pokemonList.get(411), 42, 368, 246, 126, 87, 0, 30)); // Metal Burst AncientPower Fire Blast Thunder
+        roster.add(new TrainerPokemon(pokemonList.get(306), 44, 442, 444, 89, 419, 158, 30)); // Iron Head Stone Edge Earthquake Avalanche
+        rosters.put("Byron7", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(437), 46, 360, 94, 95, 446, 0, 30)); // Gyro Ball Psychic Hypnosis Stealh Rock
+        roster.add(new TrainerPokemon(pokemonList.get(462), 46, 430, 85, 86, 115, 0, 30)); // Flash Cannon Thunderbolt Thunder Wave Reflect
+        roster.add(new TrainerPokemon(pokemonList.get(411), 48, 368, 246, 126, 87, 0, 30)); // Metal Burst Ancient Power Fire Blast Thunder
+        roster.add(new TrainerPokemon(pokemonList.get(306), 50, 442, 444, 89, 419, 158, 30)); // Iron Head Stone Edge Earthquake Avalanche
+        rosters.put("Byron8", roster);
+
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(361), 12, 419, 44, 104, 0, 0, 6)); // Avalanche Bite Double Team
+        roster.add(new TrainerPokemon(pokemonList.get(459), 12, 419, 75, 54, 0, 0, 6)); // Avalanche Razor Leaf Mist
+        roster.add(new TrainerPokemon(pokemonList.get(215), 14, 419, 185, 98, 0, 0, 6)); // Avalanche Faint Attack Quick Attack
+        rosters.put("Candice1", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(361), 20, 419, 44, 104, 313, 0, 6)); // Avalanche Bite Double Team Fake Tears
+        roster.add(new TrainerPokemon(pokemonList.get(459), 20, 419, 75, 54, 352, 0, 6)); // Avalanche Razor Leaf Mist Water Pulse
+        roster.add(new TrainerPokemon(pokemonList.get(215), 22, 420, 185, 280, 91, 158, 6)); // Ice Shard Faint Attack Brick Break Dig
+        rosters.put("Candice2", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(459), 24, 419, 75, 258, 352, 0, 12)); // Avalanche Razor Leaf Hail Water Pulse
+        roster.add(new TrainerPokemon(pokemonList.get(215), 24, 420, 185, 280, 332, 0, 12)); // Ice Shard Faint Attack Brick Break Aerial Ace
+        roster.add(new TrainerPokemon(pokemonList.get(478), 26, 466, 104, 351, 419, 158, 12)); // Ominous Wind Double Team Shock Wave Avalanche
+        rosters.put("Candice3", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(459), 28, 419, 75, 258, 352, 0, 18)); // Avalanche Razor Leaf Hail Water Pulse
+        roster.add(new TrainerPokemon(pokemonList.get(215), 29, 420, 185, 280, 332, 0, 18)); // Ice Shard Faint Attack Brick Break Aerial Ace
+        roster.add(new TrainerPokemon(pokemonList.get(478), 32, 247, 104, 351, 59, 158, 18)); // Shadow Ball Double Team Shock Wave Blizzard
+        rosters.put("Candice4", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(215), 33, 420, 185, 280, 332, 0, 24)); // Ice Shard Faint Attack Brick Break Aerial Ace
+        roster.add(new TrainerPokemon(pokemonList.get(221), 34, 258, 89, 444, 419, 0, 24)); // Hail Earthquake Stone Edge Avalanche
+        roster.add(new TrainerPokemon(pokemonList.get(478), 37, 247, 104, 94, 59, 158, 24)); // Shadow Ball Double Team Psychic Blizzard
+        rosters.put("Candice5", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(221), 37, 258, 89, 444, 419, 0, 24)); // Hail Earthquake Stone Edge Avalanche
+        roster.add(new TrainerPokemon(pokemonList.get(460), 38, 202, 411, 352, 419, 0, 24)); // Giga Drain Focus Blast Water Pulse Avalanche
+        roster.add(new TrainerPokemon(pokemonList.get(478), 41, 247, 104, 94, 59, 158, 24)); // Shadow Ball Double Team Psychic Blizzard
+        rosters.put("Candice6", roster);
+        rosters.put("Candice7", null);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(461), 46, 400, 420, 280, 332, 0, 30)); // Night Slash Ice Shard Brick Break Aerial Ace
+        roster.add(new TrainerPokemon(pokemonList.get(473), 46, 276, 89, 444, 419, 0, 30)); // Superpower Earthquake Stone Edge Avalanche
+        roster.add(new TrainerPokemon(pokemonList.get(460), 48, 452, 411, 352, 419, 0, 30)); // Wood Hammer Focus Blast Water Pulse Avalanche
+        roster.add(new TrainerPokemon(pokemonList.get(478), 50, 247, 104, 94, 59, 158, 30)); // Shadow Ball Double Team Psychic Blizzard
+        rosters.put("Candice8", roster);
+
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(239), 12, 451, 67, 98, 0, 0, 6)); // Charge Beam Low Kick Quick Attack
+        roster.add(new TrainerPokemon(pokemonList.get(25), 12, 451, 113, 86, 0, 0, 6)); // Charge Beam Light Screen Thunder Wave
+        roster.add(new TrainerPokemon(pokemonList.get(404), 14, 209, 263, 423, 0, 0, 6)); // Spark Facade Ice Fang
+        rosters.put("Volkner1", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(404), 20, 422, 70, 423, 44, 0, 6)); // Thunder Fang Strength Ice Fang Bite
+        roster.add(new TrainerPokemon(pokemonList.get(135), 20, 451, 86, 231, 98, 0, 6)); // Charge Beam Thunder Wave Iron Tail Quick Attack
+        roster.add(new TrainerPokemon(pokemonList.get(26), 22, 451, 324, 113, 98, 158, 6)); // Charge Beam Signal Beam Light Screen Quick Attack
+        rosters.put("Volkner2", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(404), 24, 422, 70, 423, 44, 0, 12)); // Thunder Fang Strength Ice Fang Bite
+        roster.add(new TrainerPokemon(pokemonList.get(135), 24, 451, 86, 231, 98, 0, 12)); // Charge Beam Thunder Wave Iron Tail Quick Attack
+        roster.add(new TrainerPokemon(pokemonList.get(125), 26, 9, 280, 70, 98, 158, 12)); // ThunderPunch Brick Break Strength Quick Attack
+        rosters.put("Volkner3", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(404), 28, 422, 70, 423, 44, 0, 18)); // Thunder Fang Strength Ice Fang Bite
+        roster.add(new TrainerPokemon(pokemonList.get(135), 29, 451, 86, 231, 98, 0, 18)); // Charge Beam Thunder Wave Iron Tail Quick Attack
+        roster.add(new TrainerPokemon(pokemonList.get(466), 32, 9, 280, 70, 98, 158, 18)); // ThunderPunch Brick Break Strength Quick Attack
+        rosters.put("Volkner4", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(135), 33, 451, 86, 231, 98, 0, 24)); // Charge Beam Thunder Wave Iron Tail Quick Attack
+        roster.add(new TrainerPokemon(pokemonList.get(405), 34, 422, 424, 423, 44, 0, 24)); // Thunder Fang Fire Fang Ice Fang Bite
+        roster.add(new TrainerPokemon(pokemonList.get(466), 37, 9, 280, 70, 98, 158, 24)); // ThunderPunch Brick Break Strength Quick Attack
+        rosters.put("Volkner5", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(135), 37, 451, 86, 231, 98, 0, 24)); // Charge Beam Thunder Wave Iron Tail Quick Attack
+        roster.add(new TrainerPokemon(pokemonList.get(405), 38, 422, 424, 423, 242, 0, 24)); // Thunder Fang Fire Fang Ice Fang Crunch
+        roster.add(new TrainerPokemon(pokemonList.get(466), 41, 9, 280, 416, 98, 158, 24)); // ThunderPunch Brick Break Giga Impact Quick Attack
+        rosters.put("Volkner6", roster);
+        roster = new ArrayList<>();
+        roster.add(new TrainerPokemon(pokemonList.get(135), 40, 451, 86, 231, 98, 0, 30)); // Charge Beam Thunder Wave Iron Tail Quick Attack
+        roster.add(new TrainerPokemon(pokemonList.get(26), 40, 451, 324, 411, 9, 0, 30)); // Charge Beam Signal Beam Focus Blast Quick Attack
+        roster.add(new TrainerPokemon(pokemonList.get(405), 42, 422, 424, 423, 242, 0, 30)); // Thunder Fang Fire Fang Ice Fang Crunch
+        roster.add(new TrainerPokemon(pokemonList.get(466), 44, 9, 7, 416, 98, 158, 30)); // ThunderPunch Fire Punch Giga Impact Quick Attack
+        rosters.put("Volkner7", roster);
+        rosters.put("Volkner8", null);
+
+
+        return rosters;
+    }
 }
