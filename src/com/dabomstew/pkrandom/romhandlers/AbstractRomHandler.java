@@ -7,7 +7,8 @@ package com.dabomstew.pkrandom.romhandlers;
 /*--                            getters & setters provided by each concrete --*/
 /*--                            handler.                                    --*/
 /*--                                                                        --*/
-/*--  Part of "Universal Pokemon Randomizer ZX" by the UPR-ZX team          --*/
+/*--  Part of "Pokemon Entrance Randomizer" by SilverstarStream             --*/
+/*--  Modified from "Universal Pokemon Randomizer ZX" by the UPR-ZX team    --*/
 /*--  Originally part of "Universal Pokemon Randomizer" by Dabomstew        --*/
 /*--  Pokemon and any associated names and the like are                     --*/
 /*--  trademark and (C) Nintendo 1996-2020.                                 --*/
@@ -28,13 +29,13 @@ package com.dabomstew.pkrandom.romhandlers;
 /*--  along with this program. If not, see <http://www.gnu.org/licenses/>.  --*/
 /*----------------------------------------------------------------------------*/
 
-import java.io.PrintStream;
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import com.dabomstew.pkrandom.*;
 import com.dabomstew.pkrandom.constants.*;
-import com.dabomstew.pkrandom.exceptions.RandomizationException;
+import com.dabomstew.pkrandom.exceptions.*;
 import com.dabomstew.pkrandom.pokemon.*;
 
 public abstract class AbstractRomHandler implements RomHandler {
@@ -6353,6 +6354,880 @@ public abstract class AbstractRomHandler implements RomHandler {
         }
     }
 
+    // Shuffle Gyms
+
+    @Override
+    public void shuffleGyms() {
+        log("--Shuffle Gyms--");
+        final int gymCount = this.getGymCount();
+        List<Integer> gymOrder = new ArrayList<>();
+        for (int i = 0; i < gymCount; i++) {
+            gymOrder.add(i);
+        }
+        List<Location> gymLocations = this.getGymLocations();
+        List<Location> cityLocations = this.getGymCityLocations();
+        List<ScriptData> scripts = this.getGymScripts();
+        // jArray is for testing
+        //int[] jArray = {6, 6, 5, 5, 6, 7, 6}; // Should result in gym order: 7 1 6 3 2 8 5 4
+        for (int i = 0; i < gymCount - 1; i++) {
+            int j = random.nextInt(gymLocations.size() - i) + i;
+            //int j = jArray[i];
+            if (i != j) {
+                // Swap the numbers in the reference array
+                Collections.swap(gymOrder, i, j);
+
+                // Swap the gyms in the gym list; cities stay static
+                Collections.swap(gymLocations, i, j);
+            }
+
+            // and connect the selected gym to the city
+            Location cityi = cityLocations.get(i);
+            Location gymi = gymLocations.get(i);
+            if (i != j) {
+                Exit.connectExits(gymi.exits.get(0), cityi.exits.get(0), random);
+            }
+            log("Gym " + (i + 1) + " " + cityi.name + ": " + gymi.name);
+
+            // Swap specific instructions between scripts
+            scripts.get(i).swapScriptData(scripts.get(j));
+        }
+        log("Gym " + gymCount + " " + cityLocations.get(gymCount - 1).name + ": " + gymLocations.get(gymCount - 1).name);
+        this.changeGymTeams(gymLocations, gymOrder);
+        this.setWarps(gymLocations);
+        this.setWarps(cityLocations);
+        this.editGymScripts(scripts);
+        this.editGymText(gymOrder);
+        logBlankLine();
+    }
+
+    // Map the name of each Pokemon to its object
+    // all keys are uppercase like EEVEE
+    private Map<String, Pokemon> pokeNameLookup() {
+        Map<String, Pokemon> nameMap = new HashMap<>();
+        for (Pokemon p : this.mainPokemonList) {
+            nameMap.put(p.name.toUpperCase(), p);
+        }
+        return nameMap;
+    }
+
+    private void changeGymTeams(List<Location> gyms, List<Integer> gymOrder) {
+        // gymOrder represents the new order of gyms, so for exmaple: {7,0,...}
+        // gym index 7 in list index 0 means Sunyshore (gym 8) as gym 1, Oreburgh as gym 2, ...
+
+        List<Trainer> allTrainers = getTrainers();
+
+        // Scale the teams of gym trainers that aren't leaders
+        this.initTrainerAvgs(gyms);
+        int[] avgGymLevels = this.getTrainerAvgs(gyms);
+        for (Location l : gyms) {
+            for (PokemonGroup pg : l.trGroups) {
+                int oldGymNum = pg.badgeRegion;
+                int newGymNum = gymOrder.indexOf(oldGymNum);
+                if (oldGymNum == newGymNum) {
+                    continue;
+                }
+                int newAvg = avgGymLevels[newGymNum];
+                int oldAvg = avgGymLevels[oldGymNum];
+                for (int tid : pg.indices) {
+                    Trainer t = allTrainers.get(tid - 1);
+                    List<TrainerPokemon> tPokemon = t.pokemon;
+                    for (TrainerPokemon tp : tPokemon) {
+                        int newLevel = tp.level + newAvg - oldAvg;
+                        Pokemon oldSpecies = tp.pokemon;
+                        Pokemon newSpecies = this.scaleEvolution(oldSpecies, tp.level, newLevel, true);
+                        tp.pokemon = newSpecies;
+                        tp.level = newLevel;
+                        tp.resetMoves = true;
+                    }
+                }
+            }
+        }
+
+        // Set the gym leaders' teams
+        List<Trainer> gymLeaders = this.getGymLeaders(allTrainers);
+        List<List<TrainerPokemon>> rosters;
+        try {
+            // first, try to load and parse the gym leader team data from the external file
+            List<String> leaderNames = this.getLeaderNames();
+            LeaderTeams teamData = FileFunctions.getLeaderTeams(leaderNames, this.getGymCount(), this.getGameAbbr());
+            rosters = teamData.getLeaderTeams(gymLeaders, gymOrder, this.pokeNameLookup());
+        }
+        catch (FileNotFoundException e) {
+            // if the user doesn't have the leader_teams file, load the teams in the GenXConstant class instead
+            // will be depreciated once custom gym leader team jsons are ready
+            rosters = this.getGymLeaderTeams(gymOrder);
+        }
+        for (int i = 0; i < gymLeaders.size(); i++) {
+            List<TrainerPokemon> team = rosters.get(i);
+            if (team != null) {
+                // if the team is null then the team is vanilla
+                Trainer leader = gymLeaders.get(i);
+                leader.pokemon = team;
+            }
+        }
+
+        // Swap the items gym leaders use
+        for (int i = 0; i < gymLeaders.size(); i++) {
+            int j = gymOrder.get(i);
+            if (i == j) {
+                continue;
+            }
+            Trainer leaderi = gymLeaders.get(i);
+            Trainer leaderj = gymLeaders.get(j);
+            List<Integer> tempItems = leaderi.bagItems;
+            leaderi.bagItems = leaderj.bagItems;
+            leaderj.bagItems = tempItems;
+        }
+
+        this.setTrainers(allTrainers, false);
+    }
+
+    // Randomize Entrances
+
+    @Override
+    public void randomizeMap() {
+        log("--Randomize Map--");
+        int attempt = 1;
+        log("Randomize Map attempt 1:");
+        while (!randomizeMapAttempt()) {
+            attempt++;
+            log("\nRandomize Map attempt " + attempt + ":");
+        }
+        log("Map randomization succeeded in " + attempt + " attempt(s).");
+        logBlankLine();
+    }
+
+    private boolean randomizeMapAttempt() {
+        List<Location> allLocations = getMapLocations();
+        allLocations.sort((Location l1, Location l2) -> Integer.compare(l1.maxWeight, l2.maxWeight));
+        RandomizeEntrancesData red = new RandomizeEntrancesData(allLocations);
+
+        Location location0 = allLocations.get(0);
+        int badge = 0;
+        for (Exit exit : location0.exits) {
+            red.addExit(exit, badge);
+        }
+        red.routes.remove(location0);
+        red.routeGymDiff--;
+
+        // continue to place route and gym pairs until there are no more gym cities.
+        while (red.routes.size() > 0 && red.gymCities.size() > 0) {
+            // Place a route
+            Location placedLoc = placeLocation(badge, red.routes, red);
+            if (placedLoc == null) {
+                log("Failed to place placedLoc.");
+                return false;
+            }
+            // Then place a gym, and connect it to the route
+            List<Exit> justPlacedExits = new ArrayList<>();
+            for (Exit exitSet : placedLoc.exits) {
+                if (red.validExits.contains(exitSet)) {
+                    justPlacedExits.add(exitSet);
+                }
+            }
+            if (justPlacedExits.isEmpty()) {
+                log("No available warps for the just-placed route.");
+                return false;
+            }
+            int r = random.nextInt(justPlacedExits.size());
+            Exit placedExit = justPlacedExits.get(r);
+            Location check = placeLocation(badge, placedExit, red.gymCities, red);
+            if (check == null) {
+                log("Failed to place a location.");
+                return false;
+            }
+            badge++;
+            // add all warps that can now be reached with the new badge to validExits.
+            // Since badge increments by exactly one on each loop, the only warps that can be added are those which have a minWeight equal to the new badge
+            for (Exit exitSet : red.currentExits) {
+                if (exitSet.minWeight == badge) {
+                    red.validExits.add(exitSet);
+                    Location thisLoc = exitSet.thisLocation;
+                    if (red.locExitCount.containsKey(thisLoc)) {
+                        red.locExitCount.put(thisLoc, red.locExitCount.get(thisLoc) + 1);
+                    }
+                    else {
+                        red.locExitCount.put(thisLoc, 1);
+                    }
+                }
+            }
+            // At random, connect two open Exits with a new route. This happens randomly, but a specific number of times.
+            // A Location cannot connect two of its own warps. A Location should rarely, if ever, make a loop with a single route and itself
+            if (red.routeGymDiff > 0 && badge > 1 && red.routes.size() > 0) {
+                if (random.nextInt(getGymCount()) < red.routeGymDiff + badge) {
+                    if (red.currentExits.size() > 2 || (red.currentExits.size() == 2 && badge == 7)) {
+                        red.entrancesLog.append("Extra placement: ");
+                        check = placeBetweenLocations(badge, red);
+                        if (check == null) {
+                            log("Error in placing between locations. ");
+                            return false;
+                        }
+                    }
+                    /*else {
+                        log("Non-fatal error: Not enough warps (validExits.size() = " + red.validExits.size() + ") to place between 2 exits.");
+                    }*/
+                }
+            }
+        } // end main loop
+        // place any remaining routes.
+        while (red.routeGymDiff > 0) {
+            Location check = placeBetweenLocations(badge, red);
+            if (check == null) {
+                log("Error in placing between Locations after main placement loop.");
+                return false;
+            }
+        }
+        if (!red.currentExits.isEmpty()) {
+            log("Error in randomizing map\n" +
+                    "currentExits was not empty. currentExits.size() = " + red.currentExits.size() +
+                    ", validExits.size() = " + red.validExits.size());
+            return false;
+        }
+        if (!red.gymCities.isEmpty()) {
+            log("Error in randomizing map\n" +
+                    "gymCities was not empty. gymCities.size() = " + red.gymCities.size());
+            return false;
+        }
+        if (!red.routes.isEmpty()) {
+            log("Error in randomizing map\n" +
+                    "routes was not empty. routes.size() = " + red.routes.size());
+            return false;
+        }
+        this.setTrainers(red.allTrainers, false);
+        this.setEncounters(true, red.allEncounterSets);
+        this.setWarps(allLocations);
+        log(red.entrancesLog.toString());
+        return true;
+    }
+
+    private class RandomizeEntrancesData {
+        List<Location> gymCities = new ArrayList<>();
+        List<Location> routes = new ArrayList<>();
+        int routeGymDiff; // Keeps track of how many more routes than gym cities there are. Should only be decremented by placeBetweenRoutes
+        List<Exit> currentExits = new ArrayList<>(); // Every non-connected exit from all placed Locations
+        List<Exit> validExits = new ArrayList<>(); // Every exit from placed Locations that can be reached with the current badge. A subset of currentExits
+        Set<Location> pendingPrereqs = new HashSet<>(); // The set of all Locations that are prereqs for all Locations. When that prereq gets placed, it is removed from this set
+        Map<Location, Integer> locExitCount = new HashMap<>(); // Keeps track of how many currentExits each Location has. Used to prioritize Exits from Locations that have more Exits
+        List<EncounterSet> allEncounterSets; // Stored so that when Encounters are rewritten, all encounters are included in that write
+        List<EncounterSet> grassEncs; // All grass and cave tile encounters; subset of allEncounterSets
+        Map<Integer,EncounterSet> grassESMap = new HashMap<>(); // Map each EncounterSet offset to that EncounterSet
+        List<Trainer> allTrainers; // Stored so that when Trainers are rewritten, all Trainers are included
+        int[] avgWildLevels; // The average level for Wild encounters for each badge, badge serves as the index. Usually has a length of 9.
+        int[] avgTrainerLevels; // ^
+        StringBuilder entrancesLog = new StringBuilder();
+        // Current plan is to add a StringBuilder here
+        // It keeps all the Location placement output meant to be used for the log file
+        // if the placement fails from an error, just log the error, attempt number, and try again
+        // Otherwise, log the StringBuilder.
+
+        RandomizeEntrancesData(List<Location> allLocations) {
+            for (Location location : allLocations) {
+                if (location.exits.isEmpty()) {
+                    continue;
+                }
+                if (location.isGymCity) {
+                    gymCities.add(location);
+                }
+                else {
+                    routes.add(location);
+                }
+                if (!location.prereqs.isEmpty()) {
+                    pendingPrereqs.addAll(location.prereqs);
+                }
+            }
+            routeGymDiff = this.routes.size() - this.gymCities.size();
+            this.allEncounterSets = getEncounters(true);
+            this.grassEncs = getGrassEncounters(this.allEncounterSets);
+            for (EncounterSet es : grassEncs) {
+                if (grassESMap.containsKey(es.offset)) {
+                    throw new RandomizationException("Error: collision in initiating the grassMap for randomized entrances. Key = " + es.offset);
+                }
+                grassESMap.put(es.offset, es);
+            }
+            this.allTrainers = getTrainers();
+            initWildAvgs(allLocations, this.grassESMap);
+            initTrainerAvgs(allLocations);
+            this.avgWildLevels = getWildAvgs(allLocations);
+            this.avgTrainerLevels = getTrainerAvgs(allLocations);
+        }
+
+        private boolean hasOutstandingPrereqs(Location loc) {
+            List<Location> prereqs = loc.prereqs;
+            // prereqs is never allowed to be null, it seems
+            if (prereqs != null) {
+                for (Location prereq : prereqs) {
+                    if (this.pendingPrereqs.contains(prereq)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private void addExit(Exit exit, int badge) {
+            // Used when a Location is placed. Adds that Location's exits to red's Exit metadata lists
+            this.currentExits.add(exit);
+            if (badge >= exit.minWeight) {
+                this.validExits.add(exit);
+                Location thisLoc = exit.thisLocation;
+                if (this.locExitCount.containsKey(thisLoc)) {
+                    this.locExitCount.put(thisLoc, this.locExitCount.get(thisLoc) + 1);
+                }
+                else {
+                    this.locExitCount.put(thisLoc, 1);
+                }
+            }
+        }
+
+        private void removeExit(Exit exit) {
+            // Used when Exits get connected. Removes those Exits from red's Exit metadata lists
+            this.currentExits.remove(exit);
+            if (this.validExits.remove(exit)) {
+                Location thisLoc = exit.thisLocation;
+                int locCount = this.locExitCount.get(thisLoc);
+                if (locCount == 1) {
+                    this.locExitCount.remove(thisLoc);
+                }
+                else {
+                    this.locExitCount.put(thisLoc, locCount - 1);
+                }
+            }
+        }
+    }
+
+    private void initWildAvgs(List<Location> locations, Map<Integer,EncounterSet> grassESMap) {
+        for (Location loc : locations) {
+            for (PokemonGroup group : loc.encGroups) {
+                int[] indices = group.indices;
+                if (indices.length == 0) {
+                    continue;
+                }
+                int counter = 0;
+                for (int index : indices) {
+                    EncounterSet es = grassESMap.get(index);
+                    if (es == null) {
+                        throw new RandomizationException("Error with null EncounterSet in initWildAvgs()\n" +
+                                loc.name + ", index = " + index);
+                    }
+                    for (Encounter e : es.encounters) {
+                        group.groupAvgLevel += e.level;
+                        counter++;
+                    }
+                }
+                group.groupAvgLevel /= counter;
+            }
+        }
+    }
+
+    private void initTrainerAvgs(List<Location> locations) {
+        List<Trainer> trainers = this.getTrainers();
+        for (Location loc : locations) {
+            for (PokemonGroup group : loc.trGroups) {
+                int[] indices = group.indices;
+                if (indices.length == 0) {
+                    continue;
+                }
+                int counter = 0;
+                for (int index : indices) {
+                    index--;
+                    if (index < 0 || index >= trainers.size()) {
+                        throw new RandomizationException("Error with index in initTrainerAvgs()\n" +
+                                loc.name + ", index = " + index);
+                    }
+                    Trainer tr = trainers.get(index);
+                    for (TrainerPokemon p : tr.pokemon) {
+                        group.groupAvgLevel += p.level;
+                        counter++;
+                    }
+                }
+                group.groupAvgLevel /= counter;
+            }
+        }
+    }
+
+    private int[] getWildAvgs(List<Location> locations) {
+        int[] avgLevels = new int[getGymCount() + 1];
+        int[] counts = new int[avgLevels.length];
+        for (Location l : locations) {
+            for (PokemonGroup pg : l.encGroups) {
+                int badge = pg.badgeRegion;
+                avgLevels[badge] += pg.groupAvgLevel;
+                counts[badge]++;
+            }
+        }
+        for (int i = 0; i < avgLevels.length; i++) {
+            if (counts[i] != 0) {
+                avgLevels[i] /= counts[i];
+            }
+        }
+        return avgLevels;
+    }
+
+    private int[] getTrainerAvgs(List<Location> locations) {
+        int[] avgLevels = new int[getGymCount() + 1];
+        int[] counts = new int[avgLevels.length];
+        for (Location l : locations) {
+            for (PokemonGroup pg : l.trGroups) {
+                int badge = pg.badgeRegion;
+                avgLevels[badge] += pg.groupAvgLevel;
+                counts[badge]++;
+            }
+        }
+        for (int i = 0; i < avgLevels.length; i++) {
+            if (counts[i] != 0) {
+                avgLevels[i] /= counts[i];
+            }
+        }
+        return avgLevels;
+    }
+
+    private Location placeLocation(int badge, List<Location> locations, RandomizeEntrancesData red) {
+        // This method selects an available Exit for a Location to connect to, then chooses and places a Location there
+        // Generally used to place the route that a gym connects to.
+        if (red.validExits.size() == 0) {
+            log("Error: No valid warps.");
+            return null;
+        }
+        // Prioritize warps from locations that have multiple available warps to better accommodate placeBetweenLocations()'s restrictions
+        List<Exit> priorityExits = new ArrayList<>();
+        for (Exit exit : red.validExits) {
+            if (red.locExitCount.get(exit.thisLocation) > 1) {
+                priorityExits.add(exit);
+            }
+        }
+        Exit exit;
+        if (priorityExits.isEmpty()) {
+            int r = random.nextInt(red.validExits.size());
+            exit = red.validExits.get(r);
+        }
+        else {
+            int r = random.nextInt(priorityExits.size());
+            exit = priorityExits.get(r);
+        }
+        return placeLocation(badge, exit, locations, red);
+    }
+
+    private Location placeLocation(int badge, Exit specifiedExit, List<Location> locations, RandomizeEntrancesData red) {
+        // get the list of Locations that are eligible to be placed with the current badge, accounting for Location prereqs
+        List<Location> validLocs = new ArrayList<>();
+        for (Location loc : locations) {
+            if (red.hasOutstandingPrereqs(loc)) {
+                continue;
+            }
+            for (Exit exitSet : loc.exits) {
+                if (exitSet.minWeight <= badge) {
+                    validLocs.add(loc);
+                    break;
+                }
+            }
+        }
+        if (validLocs.isEmpty()) {
+            log("Error: No valid locations to place.");
+            return null;
+        }
+        // index prioritizes Locations that must be placed before a certain badge.
+        // This system could get replaced with a weighting system where those
+        // critical Locations become more and more likely to be picked whenever they're not picked
+        int index = locPriorityIndex(validLocs, badge);
+        if (index == -1) {
+            return null;
+        }
+        // choose a random, prioritized location
+        int r = random.nextInt(index);
+        Location location = validLocs.get(r); // Finally, a randomly chosen Location
+        locations.remove(location);
+        red.pendingPrereqs.remove(location);
+
+        List<Exit> possibleConnections = new ArrayList<>();
+        // get the list of Exits that the chosen Location can connect to the map with
+        // also add the selected location's warps to the appropriate exit lists
+        for (Exit exitSet : location.exits) {
+            if (badge >= exitSet.minWeight) {
+                possibleConnections.add(exitSet);
+            }
+            red.addExit(exitSet, badge);
+        }
+        if (possibleConnections.isEmpty()) {
+            log("Error: No possible connections from the placed Location: " + location.name);
+            return null;
+        }
+        r = random.nextInt(possibleConnections.size());
+        Exit joiningExit = possibleConnections.get(r);
+        red.removeExit(joiningExit);
+        red.removeExit(specifiedExit);
+        location.badgePlacement = badge;
+        // Write all the data from the Location being placed
+        Exit.connectExits(joiningExit, specifiedExit, random);
+        String output = "Connected " + location.name + "(badge " + badge + ", " + joiningExit.destName +
+                " entrance) to " + specifiedExit.thisLocation.name + "(" + specifiedExit.destName + " entrance)\n";
+        red.entrancesLog.append(output);
+        scaleLocationWild(location, badge, red);
+        scaleLocationTrainers(location, badge, red);
+
+        return location;
+    }
+
+    private Location placeBetweenLocations(int badge, RandomizeEntrancesData red) {
+        // A placement between Locations should be able to connect them regardless of min. weight.
+        if (red.routes.isEmpty()) {
+            log("Error: No valid routes to place.");
+            return null;
+        }
+        // if there is a gym city with an available Exit, use that Exit to connect the route...
+        List<Exit> gymExits = new ArrayList<>();
+        for (Exit exit : red.currentExits) {
+            if (exit.thisLocation.isGymCity) {
+                gymExits.add(exit);
+            }
+        }
+        // ... if not, oh well, just choose any Exit
+        if (gymExits.isEmpty()) {
+            gymExits = red.currentExits;
+        }
+        int r = random.nextInt(gymExits.size());
+        Exit exitA = gymExits.get(r);
+        red.removeExit(exitA);
+        // Find a second exit to connect the route to.
+        List<Exit> otherExits = new ArrayList<>();
+        // Prevent the route from creating a small loop off of a single Location
+        for (Exit exit : red.currentExits) {
+            if (exit.thisLocation != exitA.thisLocation) {
+                otherExits.add(exit);
+            }
+        }
+        if (otherExits.isEmpty()) {
+            log("Error: Failed to find an exitB with a different location than exitA.");
+            return null;
+        }
+        r = random.nextInt(otherExits.size());
+        Exit exitB = otherExits.get(r);
+        red.removeExit(exitB);
+        // choose a route to connect between Exits A & B.
+        List<Location> validLocs = new ArrayList<>();
+        for (Location loc : red.routes) {
+            if (red.pendingPrereqs.contains(loc) || red.hasOutstandingPrereqs(loc)) {
+                // since placeBetweenLocations specifically ignores whether the placed route can be reached,
+                // don't place a prereq or a location that requires a prereq
+                continue;
+            }
+            validLocs.add(loc);
+        }
+        int index = locPriorityIndex(validLocs, badge);
+        if (index == -1) {
+            return null;
+        }
+        r = random.nextInt(index);
+        Location location = validLocs.get(r);
+        red.routes.remove(location);
+        red.pendingPrereqs.remove(location);
+        List<Exit> placedExits = new ArrayList<>();
+        // get the list of all Exits in the new Location
+        // also update the relevant Exit lists in red
+        for (Exit exitSet : location.exits) {
+            placedExits.add(exitSet);
+            red.addExit(exitSet, badge);
+        }
+        if (placedExits.size() < 2) {
+            log("Not enough possible connections in " + location.name + " for placeBetweenLocations.");
+            return null;
+        }
+        // connect and update exits.
+        r = random.nextInt(placedExits.size());
+        Exit joiningExitA = placedExits.remove(r);
+        red.removeExit(joiningExitA);
+        Exit.connectExits(exitA, joiningExitA, random);
+
+        r = random.nextInt(placedExits.size());
+        Exit joiningExitB = placedExits.get(r);
+        red.removeExit(joiningExitB);
+        Exit.connectExits(exitB, joiningExitB, random);
+        // scale the placed route to the Locations it connected to
+        int badgeRegion;
+        int badgeExitA = joiningExitA.thisLocation.badgePlacement;
+        int badgeExitB = joiningExitB.thisLocation.badgePlacement;
+        if (badgeExitA > badgeExitB) {
+            badgeRegion = badgeExitB + 1;
+        }
+        else if (badgeExitA < badgeExitB) {
+            badgeRegion = badgeExitA + 1;
+        }
+        else {
+            badgeRegion = badgeExitA;
+        }
+        location.badgePlacement = badgeRegion;
+        String output = "Connected " + location.name + "(badge " + badgeRegion + ") " + " between " +
+                exitA.thisLocation.name + " (" + joiningExitA.destName + " entrance with " + exitA.destName + " entrance) and " +
+                exitB.thisLocation.name + " (" + joiningExitB.destName + " entrance with " + exitB.destName + " entrance)\n";
+        red.entrancesLog.append(output);
+        red.routeGymDiff--;
+        scaleLocationWild(location, badgeRegion, red);
+        scaleLocationTrainers(location, badgeRegion, red);
+        return location;
+    }
+
+    private int locPriorityIndex(List<Location> validLocs, int badge) {
+        // Assumes a list of Locations sorted by maxWeight
+        // Return the largest index of the Location with a maxWeight = badge
+        if (validLocs.isEmpty()) {
+            log("Error: Bad priority index for badge " + badge);
+            StringBuilder errorOutput = new StringBuilder();
+            errorOutput.append("validLocs.size() = ").append(validLocs.size());
+            if (validLocs.size() > 0) {
+                errorOutput.append("; validLocs weights: [");
+                errorOutput.append(validLocs.get(0).maxWeight);
+                for (Location l : validLocs) {
+                    errorOutput.append(", ").append(l.maxWeight);
+                }
+                errorOutput.append("]");
+            }
+            log(errorOutput.toString());
+            return -1;
+        }
+
+        if (validLocs.get(0).maxWeight > badge) {
+            return validLocs.size();
+        }
+        int p;
+        for (p = 0; p < validLocs.size(); p++) {
+            int weight = validLocs.get(p).maxWeight;
+            if (weight > badge) {
+                break;
+            }
+        }
+        return p;
+    }
+
+    private void scaleLocationWild(Location location, int badge, RandomizeEntrancesData red) {
+        List<PokemonGroup> encGroups = location.encGroups;
+        if (encGroups.size() == 0) {
+            return;
+        }
+        encGroups.sort((PokemonGroup pg1, PokemonGroup pg2) -> Integer.compare(pg1.badgeRegion, pg2.badgeRegion));
+        int lowestRegion = encGroups.get(0).badgeRegion;
+        int lowestDiff = lowestRegion - badge;
+        for (PokemonGroup pg : encGroups) {
+            int[] encNumbers = pg.indices;
+            if (encNumbers.length == 0) {
+                continue;
+            }
+            int oldRegion = pg.badgeRegion;
+            int oldAvgLvl = red.avgWildLevels[oldRegion];
+            int newAvgLvl;
+            if (badge > oldRegion) {
+                newAvgLvl = red.avgWildLevels[badge];
+            }
+            else if (badge < oldRegion && lowestDiff > 0) {
+                int newRegion = oldRegion - lowestDiff;
+                newAvgLvl = red.avgWildLevels[newRegion];
+            }
+            else {
+                // don't bother rescaling something if badge = oldRegion
+                continue;
+            }
+            for (int i : encNumbers) {
+                EncounterSet es = red.grassESMap.get(i);
+                for (Encounter e : es.encounters) {
+                    int newLevel = e.level - oldAvgLvl + newAvgLvl;
+                    if (newLevel < 1 || newLevel > 100) {
+                        throw new RandomizationException("Error saving Encounter " + e + " (" + i + ") in " + location.name + " " + es + "\n" +
+                                "newLevel = " + newLevel);
+                    }
+                    else {
+                        e.pokemon = scaleEvolution(e.pokemon, e.level, newLevel, false);
+                        e.level = newLevel;
+                    }
+                }
+            }
+        }
+    }
+
+    private void scaleLocationTrainers(Location location, int badge, RandomizeEntrancesData red) {
+        List<PokemonGroup> trGroups = location.trGroups;
+        if (trGroups.size() == 0) {
+            return;
+        }
+        trGroups.sort((PokemonGroup pg1, PokemonGroup pg2) -> Integer.compare(pg1.badgeRegion, pg2.badgeRegion));
+        int lowestRegion = trGroups.get(0).badgeRegion;
+        int lowestDiff = lowestRegion - badge;
+        for (PokemonGroup pg : trGroups) {
+            int[] trNumbers = pg.indices;
+            if (trNumbers.length == 0) {
+                continue;
+            }
+            int oldRegion = pg.badgeRegion;
+            int oldAvgLvl = red.avgTrainerLevels[oldRegion];
+            int newAvgLvl;
+            if (badge > oldRegion) {
+                newAvgLvl = red.avgTrainerLevels[badge];
+            }
+            else if (badge < oldRegion && lowestDiff > 0) {
+                int newRegion = oldRegion - lowestDiff;
+                newAvgLvl = red.avgTrainerLevels[newRegion];
+            }
+            else {
+                // don't bother rescaling something if badge = oldRegion
+                continue;
+            }
+            for (int i : trNumbers) {
+                Trainer tr = red.allTrainers.get(i - 1);
+                for (int p = 0; p < tr.pokemon.size(); p++) {
+                    TrainerPokemon tp = tr.pokemon.get(p);
+                    int newLevel = newAvgLvl + (tp.level - oldAvgLvl);
+                    if (newLevel < 1 || newLevel > 100) {
+                        throw new RandomizationException("Error saving " + tp + " in " + tr.fullDisplayName + " (" + i + ") in " + location.name + "\n" +
+                                "newLevel = " + newLevel);
+                    }
+                    else {
+                        tp.pokemon = scaleEvolution(tp.pokemon, tp.level, newLevel, true);
+                        tp.level = newLevel;
+                        tp.resetMoves = true;
+                    }
+                }
+            }
+        }
+    }
+
+    private Pokemon scaleEvolution(Pokemon poke, int oldLevel, int newLevel, boolean allowItemEvo) {
+        Pokemon currentPoke = poke;
+        if (oldLevel > newLevel) {
+            while (true) {
+                List<Evolution> prevosTo = currentPoke.evolutionsTo;
+                Evolution prevo;
+                if (prevosTo.isEmpty()) {
+                    return currentPoke;
+                }
+                else {
+                    prevo = prevosTo.get(0);
+                }
+
+                if (prevo.type.usesLevel() && newLevel < prevo.extraInfo) {
+                    currentPoke = prevo.from;
+                }
+                else if (!prevo.type.usesLevel() && newLevel < 32) {
+                    currentPoke = prevo.from;
+                }
+                else {
+                    // case where currentPoke has a preevolution but the level better matches currentPoke.
+                    return currentPoke;
+                }
+            }
+        }
+        else {
+            List<Pokemon> possibleEvos = new ArrayList<>();
+            while (true) {
+                List<Evolution> evosFrom = currentPoke.evolutionsFrom;
+                if (evosFrom.size() == 0) {
+                    return currentPoke;
+                }
+                else if (evosFrom.size() == 1) {
+                    Evolution evo = evosFrom.get(0);
+                    if (evo.type.usesLevel() && newLevel > evo.extraInfo) {
+                        currentPoke = evo.to;
+                    }
+                    else if (allowItemEvo == !evo.type.usesLevel() && newLevel > 32) {
+                        currentPoke = evo.to;
+                    }
+                    else {
+                        return currentPoke;
+                    }
+                }
+                else {
+                    for (Evolution evo : evosFrom) {
+                        if (evo.type.usesLevel() && newLevel > evo.extraInfo) {
+                            possibleEvos.add(evo.to);
+                        }
+                        else if (!evo.type.usesLevel() && allowItemEvo) {
+                            possibleEvos.add(evo.to);
+                        }
+                    }
+                    if (possibleEvos.isEmpty()) {
+                        return currentPoke;
+                    }
+                    int r = random.nextInt(possibleEvos.size());
+                    return possibleEvos.get(r);
+                }
+            }
+        }
+    }
+
+    // Shuffle E4
+
+    @Override
+    // This method needs to be rewritten for gen 5+ for the non-linear E4s
+    public void shuffleE4() {
+        log("--Shuffle Elite 4--");
+        List<Location> locations = getE4Locations();
+        if (locations.size() != 6) {
+            throw new RandomizationException("Error: bad number of Elite Four Locations found.");
+        }
+        List<Trainer> allTrainers = this.getTrainers();
+        boolean rematch;
+        if (locations.get(1).trGroups.get(0).indices.length > 1) {
+            rematch = true;
+        }
+        else {
+            rematch = false;
+        }
+
+        // assume that there are 6 Locations in the locations list in order:
+        // the League entrance, then the 4 E4 rooms, then champion
+        for (int i = 1; i <= 3; i++) {
+            int j = random.nextInt(5 - i) + i;
+            if (i == j) {
+                continue;
+            }
+
+            Location iLocation = locations.get(i);
+            Location jLocation = locations.get(j);
+            // swap place in list
+            locations.set(i, jLocation);
+            locations.set(j, iLocation);
+            // swap levels of the first battle
+            int[] iTids = iLocation.trGroups.get(0).indices;
+            int[] jTids = jLocation.trGroups.get(0).indices;
+            Trainer iTrainer = allTrainers.get(iTids[0] - 1);
+            Trainer jTrainer = allTrainers.get(jTids[0] - 1);
+            swapE4Levels(iTrainer, jTrainer);
+            // Assuming no more than 1 rematch battle for now
+            if (rematch) {
+                iTrainer = allTrainers.get(iTids[1] - 1);
+                jTrainer = allTrainers.get(jTids[1] - 1);
+                swapE4Levels(iTrainer, jTrainer);
+            }
+        }
+        StringBuilder logOrder = new StringBuilder();
+        // connect warps between rooms
+        for (int i = 0; i <= 4; i++) {
+            List<Exit> toExits = locations.get(i).exits;
+            List<Exit> fromExits = locations.get(i + 1).exits;
+            if (i < 4) {
+                logOrder.append(locations.get(i + 1).name);
+            }
+            if (i < 3) {
+                logOrder.append(" -> ");
+            }
+            Exit toWarp = toExits.get(toExits.size() - 1);
+            Exit fromWarp = fromExits.get(0);
+            Exit.connectExits(toWarp, fromWarp, random);
+        }
+        log(logOrder.toString());
+        this.setWarps(locations);
+        this.setTrainers(allTrainers, false);
+        logBlankLine();
+    }
+
+    private void swapE4Levels(Trainer memberA, Trainer memberB) {
+        if (memberA.pokemon.size() != memberB.pokemon.size()) {
+            throw new RandomizationException("Error: Unable to swap " + memberA.fullDisplayName + "'s levels with " +
+                    memberB.fullDisplayName + "'s since their team sizes aren't the same.");
+        }
+        for (int i = 0; i < memberA.pokemon.size(); i++) {
+            int temp = memberA.pokemon.get(i).level;
+            memberA.pokemon.get(i).level = memberB.pokemon.get(i).level;
+            memberB.pokemon.get(i).level = temp;
+        }
+    }
+
     @Override
     public void applyMiscTweak(MiscTweak tweak) {
         // default: do nothing
@@ -6386,5 +7261,81 @@ public abstract class AbstractRomHandler implements RomHandler {
     @Override
     public void setPickupItems(List<PickupItem> pickupItems) {
         // do nothing
+    }
+
+    // Entrance Randomizer added methods
+
+    @Override
+    public int getGymCount() {
+        return 0;
+    }
+
+    @Override
+    public List<Location> getGymLocations() {
+        return null;
+    }
+
+    @Override
+    public List<Location> getGymCityLocations() {
+        return null;
+    }
+
+    @Override
+    public List<List<TrainerPokemon>> getGymLeaderTeams(List<Integer> gymOrder) {
+        return null;
+    }
+
+    @Override
+    public List<ScriptData> getGymScripts() {
+        return null;
+    }
+
+    @Override
+    public void editGymScripts(List<ScriptData> scripts) {}
+
+    @Override
+    public List<Trainer> getGymLeaders(List<Trainer> allTrainers) {
+        return null;
+    }
+
+    @Override
+    public List<String> getLeaderNames() {
+        return null;
+    }
+
+    @Override
+    public String getGameAbbr() {
+        return "";
+    }
+
+    @Override
+    public void editGymText(List<Integer> gymOrder) {}
+
+    @Override
+    public boolean isEnglishROM() {
+        return false;
+    }
+
+    @Override
+    public void setWarps(List<Location> locations) {}
+
+    @Override
+    public List<Location> getE4Locations() {
+        return null;
+    }
+
+    @Override
+    public List<EncounterSet> getGrassEncounters(List<EncounterSet> allEncounterSets) {
+        return null;
+    }
+
+    @Override
+    public List<Location> getMapLocations() {
+        return null;
+    }
+
+    @Override
+    public boolean hasEntranceRandomization() {
+        return false;
     }
 }

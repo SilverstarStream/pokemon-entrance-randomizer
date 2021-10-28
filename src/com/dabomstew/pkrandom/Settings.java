@@ -5,7 +5,8 @@ package com.dabomstew.pkrandom;
 /*--                  randomizer to determine how to randomize the          --*/
 /*--                  target game.                                          --*/
 /*--                                                                        --*/
-/*--  Part of "Universal Pokemon Randomizer ZX" by the UPR-ZX team          --*/
+/*--  Part of "Pokemon Entrance Randomizer" by SilverstarStream             --*/
+/*--  Modified from "Universal Pokemon Randomizer ZX" by the UPR-ZX team    --*/
 /*--  Originally part of "Universal Pokemon Randomizer" by Dabomstew        --*/
 /*--  Pokemon and any associated names and the like are                     --*/
 /*--  trademark and (C) Nintendo 1996-2020.                                 --*/
@@ -49,7 +50,7 @@ public class Settings {
 
     public static final int VERSION = Version.VERSION;
 
-    public static final int LENGTH_OF_SETTINGS_DATA = 50;
+    public static final int LENGTH_OF_SETTINGS_DATA = 51;
 
     private CustomNamesSet customNames;
 
@@ -311,6 +312,11 @@ public class Settings {
     private PickupItemsMod pickupItemsMod = PickupItemsMod.UNCHANGED;
     private boolean banBadRandomPickupItems;
 
+    // Randomize Entrances
+    private boolean randomizeMap;
+    private boolean shuffleGyms;
+    private boolean shuffleE4;
+
     // to and from strings etc
     public void write(FileOutputStream out) throws IOException {
         byte[] settings = toString().getBytes("UTF-8");
@@ -568,6 +574,9 @@ public class Settings {
         // 49 pickup item randomization
         out.write(makeByteSelected(pickupItemsMod == PickupItemsMod.RANDOM,
                 pickupItemsMod == PickupItemsMod.UNCHANGED, banBadRandomPickupItems));
+
+        // 50 randomize entrances
+        out.write(makeByteSelected(randomizeMap, shuffleGyms, shuffleE4));
 
         try {
             byte[] romName = this.romName.getBytes("US-ASCII");
@@ -850,6 +859,11 @@ public class Settings {
                 1, // UNCHANGED
                 0));       // RANDOMIZE
         settings.setBanBadRandomPickupItems(restoreState(data[49], 2));
+
+        // Randomize Entrances
+        settings.setRandomizeMap(restoreState(data[50], 0));
+        settings.setShuffleGyms(restoreState(data[50], 1));
+        settings.setShuffleE4(restoreState(data[50], 2));
 
         int romNameLength = data[LENGTH_OF_SETTINGS_DATA] & 0xFF;
         String romName = new String(data, LENGTH_OF_SETTINGS_DATA + 1, romNameLength, "US-ASCII");
@@ -2229,6 +2243,30 @@ public class Settings {
 
     public void setBanBadRandomPickupItems(boolean banBadRandomPickupItems) {
         this.banBadRandomPickupItems = banBadRandomPickupItems;
+    }
+
+    public boolean isRandomizeMap() {
+        return randomizeMap;
+    }
+
+    public void setRandomizeMap(boolean randomizeMap) {
+        this.randomizeMap = randomizeMap;
+    }
+
+    public boolean isShuffleGyms() {
+        return shuffleGyms;
+    }
+
+    public void setShuffleGyms(boolean shuffleGyms) {
+        this.shuffleGyms = shuffleGyms;
+    }
+
+    public boolean isShuffleE4() {
+        return shuffleE4;
+    }
+
+    public void setShuffleE4(boolean shuffleE4) {
+        this.shuffleE4 = shuffleE4;
     }
 
     private static int makeByteSelected(boolean... bools) {

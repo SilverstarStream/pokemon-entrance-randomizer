@@ -4,7 +4,8 @@ package com.dabomstew.pkrandom;
 /*--  Randomizer.java - Can randomize a file based on settings.             --*/
 /*--                    Output varies by seed.                              --*/
 /*--                                                                        --*/
-/*--  Part of "Universal Pokemon Randomizer ZX" by the UPR-ZX team          --*/
+/*--  Part of "Pokemon Entrance Randomizer" by SilverstarStream             --*/
+/*--  Modified from "Universal Pokemon Randomizer ZX" by the UPR-ZX team    --*/
 /*--  Originally part of "Universal Pokemon Randomizer" by Dabomstew        --*/
 /*--  Pokemon and any associated names and the like are                     --*/
 /*--  trademark and (C) Nintendo 1996-2020.                                 --*/
@@ -69,7 +70,8 @@ public class Randomizer {
 
         int checkValue = 0;
 
-        log.println("Randomizer Version: " + Version.VERSION_STRING);
+        log.println("Entrance Randomizer Version: " + Version.ENTRANCE_VERSION_STRING);
+        log.println("ZX Randomizer Version: " + Version.ZX_VERSION_STRING);
         log.println("Random Seed: " + seed);
         log.println("Settings String: " + Version.VERSION + settings.toString());
         log.println();
@@ -304,6 +306,28 @@ public class Randomizer {
             log.println("Pokemon Movesets: Metronome Only." + NEWLINE);
         } else {
             log.println("Pokemon Movesets: Unchanged." + NEWLINE);
+        }
+
+        // Entrance Randomization
+        // Needs to be performed before trainers and wild encounters are randomized, due to level and evolution scaling
+        // 1. Randomize Map
+        // 2. Shuffle Gyms
+        // 3. Shuffle E4
+
+        if (settings.isRandomizeMap()) {
+            romHandler.randomizeMap();
+            trainersChanged = true;
+        }
+
+        if (settings.isShuffleGyms()) {
+            romHandler.shuffleGyms();
+            trainersChanged = true;
+        }
+
+        if (settings.isShuffleE4()) {
+            romHandler.shuffleE4();
+            // Even though this does change trainers, the changes are minor level swaps.
+            // So it doesn't make sense to log every trainer over just this, especially when not every game changes E4 levels.
         }
 
         // Trainer Pokemon

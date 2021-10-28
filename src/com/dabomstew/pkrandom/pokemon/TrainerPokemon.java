@@ -3,7 +3,8 @@ package com.dabomstew.pkrandom.pokemon;
 /*----------------------------------------------------------------------------*/
 /*--  TrainerPokemon.java - represents a Pokemon owned by a trainer.        --*/
 /*--                                                                        --*/
-/*--  Part of "Universal Pokemon Randomizer ZX" by the UPR-ZX team          --*/
+/*--  Part of "Pokemon Entrance Randomizer" by SilverstarStream             --*/
+/*--  Modified from "Universal Pokemon Randomizer ZX" by the UPR-ZX team    --*/
 /*--  Originally part of "Universal Pokemon Randomizer" by Dabomstew        --*/
 /*--  Pokemon and any associated names and the like are                     --*/
 /*--  trademark and (C) Nintendo 1996-2020.                                 --*/
@@ -60,6 +61,37 @@ public class TrainerPokemon {
     public int strength;
     
     public boolean resetMoves = false;
+
+    // Adding a new constructor for Entrance Rando. This might get overhauled later, if text file gym leader teams get fully realized
+    public TrainerPokemon(Pokemon pokemon, int level, int move1, int move2, int move3, int move4, int heldItem, int IVs) {
+        this.pokemon = pokemon;
+        this.level = level;
+        this.move1 = move1;
+        this.move2 = move2;
+        this.move3 = move3;
+        this.move4 = move4;
+        this.heldItem = heldItem;
+        this.IVs = IVs;
+
+        this.hasMegaStone = false;
+        this.hasZCrystal = false;
+        this.abilitySlot = 1;
+        this.forme = 0;
+        this.absolutePokeNumber = pokemon.number;
+        this.forcedGenderFlag = 0;
+        this.nature = 0;
+        this.hpEVs = 0;
+        this.atkEVs = 0;
+        this.defEVs = 0;
+        this.spatkEVs = 0;
+        this.spdefEVs = 0;
+        this.speedEVs = 0;
+        this.strength = 0;
+    }
+
+    public TrainerPokemon() {
+
+    }
 
     public String toString() {
         String s = pokemon.name + formeSuffix;
