@@ -4,7 +4,8 @@ package com.dabomstew.pkrandom.newgui;
 /*--  NewRandomizerGUI.java - the main GUI for the randomizer, containing   --*/
 /*--                          the various options available and such        --*/
 /*--                                                                        --*/
-/*--  Part of "Universal Pokemon Randomizer ZX" by the UPR-ZX team          --*/
+/*--  Part of "Pokemon Entrance Randomizer" by SilverstarStream             --*/
+/*--  Modified from "Universal Pokemon Randomizer ZX" by the UPR-ZX team    --*/
 /*--  Originally part of "Universal Pokemon Randomizer" by Dabomstew        --*/
 /*--  Pokemon and any associated names and the like are                     --*/
 /*--  trademark and (C) Nintendo 1996-2020.                                 --*/
@@ -28,9 +29,7 @@ package com.dabomstew.pkrandom.newgui;
 import com.dabomstew.pkrandom.*;
 import com.dabomstew.pkrandom.cli.CliRandomizer;
 import com.dabomstew.pkrandom.constants.GlobalConstants;
-import com.dabomstew.pkrandom.exceptions.EncryptedROMException;
-import com.dabomstew.pkrandom.exceptions.InvalidSupplementFilesException;
-import com.dabomstew.pkrandom.exceptions.RandomizationException;
+import com.dabomstew.pkrandom.exceptions.*;
 import com.dabomstew.pkrandom.pokemon.ExpCurve;
 import com.dabomstew.pkrandom.pokemon.GenRestrictions;
 import com.dabomstew.pkrandom.pokemon.Pokemon;
@@ -229,6 +228,7 @@ public class NewRandomizerGUI {
     private JButton limitPokemonButton;
     private JCheckBox tpAllowAlternateFormesCheckBox;
     private JLabel versionLabel;
+    private JLabel entranceVersionLabel;
     private JCheckBox pbsFollowMegaEvosCheckBox;
     private JCheckBox paFollowMegaEvosCheckBox;
     private JCheckBox ptFollowMegaEvosCheckBox;
@@ -267,7 +267,7 @@ public class NewRandomizerGUI {
     private JCheckBox pmsEvolutionMovesCheckBox;
     private JComboBox<String> pbsUpdateComboBox;
     private JComboBox<String> mdUpdateComboBox;
-    private JLabel wikiLinkLabel;
+    //private JLabel wikiLinkLabel;
     private JCheckBox paWeighDuplicatesTogetherCheckBox;
     private JCheckBox miscBalanceStaticLevelsCheckBox;
     private JCheckBox miscRetainAltFormesCheckBox;
@@ -291,6 +291,11 @@ public class NewRandomizerGUI {
     private JRadioButton puUnchangedRadioButton;
     private JRadioButton puRandomRadioButton;
     private JCheckBox puBanBadItemsCheckBox;
+    // Randomize Entrances
+    private JCheckBox reRandomizeMapCheckBox;
+    private JCheckBox reShuffleGymsCheckBox;
+    private JCheckBox reShuffleE4CheckBox;
+    private JLabel reUnsupportedWarningLabel;
     private JCheckBox miscForceChallengeModeCheckBox;
     private JCheckBox pbsAssignEvoStatsRandomlyCheckBox;
 
@@ -391,7 +396,7 @@ public class NewRandomizerGUI {
             });
         }).run();
 
-        frame.setTitle(String.format(bundle.getString("GUI.windowTitle"),Version.VERSION_STRING));
+        frame.setTitle(String.format(bundle.getString("GUI.windowTitle"),Version.ENTRANCE_VERSION_STRING));
 
         openROMButton.addActionListener(e -> loadROM());
         pbsUnchangedRadioButton.addActionListener(e -> enableOrDisableSubControls());
@@ -470,7 +475,7 @@ public class NewRandomizerGUI {
                 }
             }
         });
-        wikiLinkLabel.addMouseListener(new MouseAdapter() {
+        /*wikiLinkLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 Desktop desktop = java.awt.Desktop.getDesktop();
@@ -480,7 +485,7 @@ public class NewRandomizerGUI {
                     ex.printStackTrace();
                 }
             }
-        });
+        });*/
         randomizeSaveButton.addActionListener(e -> saveROM());
         premadeSeedButton.addActionListener(e -> presetLoader());
         loadSettingsButton.addActionListener(e -> loadQS());
@@ -533,7 +538,7 @@ public class NewRandomizerGUI {
 
             @Override
             public void componentShown(ComponentEvent e) {
-                showInitialPopup();
+                //showInitialPopup();
             }
 
             @Override
@@ -549,6 +554,7 @@ public class NewRandomizerGUI {
         mtLevelupMoveSanityCheckBox.addActionListener(e -> enableOrDisableSubControls());
     }
 
+    // Entrance Randomizer is removing the call to this at least for now
     private void showInitialPopup() {
         if (!usedLauncher) {
             String message = bundle.getString("GUI.pleaseUseTheLauncher");
@@ -556,7 +562,7 @@ public class NewRandomizerGUI {
             JOptionPane.showMessageDialog(frame, messages);
         }
         if (initialPopup) {
-            String message = String.format(bundle.getString("GUI.firstStart"),Version.VERSION_STRING);
+            String message = String.format(bundle.getString("GUI.firstStart"),Version.ZX_VERSION_STRING);
             JLabel label = new JLabel("<html><a href=\"https://github.com/Ajarmar/universal-pokemon-randomizer-zx/wiki/Important-Information\">Checking out the \"Important Information\" page on the Wiki is highly recommended.</a>");
             label.addMouseListener(new MouseAdapter() {
                 @Override
@@ -593,13 +599,13 @@ public class NewRandomizerGUI {
 
     private void initExplicit() {
 
-        versionLabel.setText(String.format(bundle.getString("GUI.versionLabel.text"), Version.VERSION_STRING));
+        versionLabel.setText(String.format(bundle.getString("GUI.versionLabel.text"), Version.ZX_VERSION_STRING));
         mtNoExistLabel.setVisible(false);
         mtNoneAvailableLabel.setVisible(false);
         baseTweaksPanel.add(liveTweaksPanel);
         liveTweaksPanel.setVisible(false);
         websiteLinkLabel.setCursor(new java.awt.Cursor(Cursor.HAND_CURSOR));
-        wikiLinkLabel.setCursor(new java.awt.Cursor(Cursor.HAND_CURSOR));
+        //wikiLinkLabel.setCursor(new java.awt.Cursor(Cursor.HAND_CURSOR));
 
         romOpenChooser.setFileFilter(new ROMFilter());
 
@@ -661,6 +667,10 @@ public class NewRandomizerGUI {
             keepOrUnloadGameAfterRandomizingMenuItem.setText(bundle.getString("GUI.unloadGameAfterRandomizingMenuItem.text"));
         }
         settingsMenu.add(keepOrUnloadGameAfterRandomizingMenuItem);
+
+        // Randomize Entrances
+        entranceVersionLabel.setText(String.format(bundle.getString("GUI.entranceVersionLabel.text"), Version.ENTRANCE_VERSION_STRING));
+        reUnsupportedWarningLabel.setVisible(false);
     }
 
     private void loadROM() {
@@ -722,6 +732,11 @@ public class NewRandomizerGUI {
                             attemptToLogException(ex, "GUI.loadFailed", "GUI.loadFailedNoLog", null, null);
                         }
                         final boolean loadSuccess = romLoaded;
+                        if (this.romHandler.hasEntranceRandomization() && !this.romHandler.isEnglishROM()) {
+                            String message = bundle.getString("GUI.nonEnglishWarning");
+                            Object[] messages = {message};
+                            JOptionPane.showMessageDialog(frame, messages);
+                        }
                         SwingUtilities.invokeLater(() -> {
                             this.opDialog.setVisible(false);
                             this.initialState();
@@ -894,6 +909,12 @@ public class NewRandomizerGUI {
                 } catch (RandomizationException ex) {
                     attemptToLogException(ex, "GUI.saveFailedMessage",
                             "GUI.saveFailedMessageNoLog", true, settings.toString(), Long.toString(seed));
+                    if (verboseLog != null) {
+                        verboseLog.close();
+                    }
+                } catch (LeaderTeamsException ex) {
+                    attemptToLogException(ex, "GUI.leaderTeamsError",
+                            "GUI.leaderTeamsErrorNoLog", true, settings.toString(), Long.toString(seed));
                     if (verboseLog != null) {
                         verboseLog.close();
                     }
@@ -1512,6 +1533,11 @@ public class NewRandomizerGUI {
         puRandomRadioButton.setSelected(settings.getPickupItemsMod() == Settings.PickupItemsMod.RANDOM);
         puBanBadItemsCheckBox.setSelected(settings.isBanBadRandomPickupItems());
 
+        // Randomize Entrances
+        reRandomizeMapCheckBox.setSelected(settings.isRandomizeMap());
+        reShuffleGymsCheckBox.setSelected(settings.isShuffleGyms());
+        reShuffleE4CheckBox.setSelected(settings.isShuffleE4());
+
         int mtsSelected = settings.getCurrentMiscTweaks();
         int mtCount = MiscTweak.allTweaks.size();
 
@@ -1701,6 +1727,11 @@ public class NewRandomizerGUI {
         settings.setPickupItemsMod(puUnchangedRadioButton.isSelected(), puRandomRadioButton.isSelected());
         settings.setBanBadRandomPickupItems(puBanBadItemsCheckBox.isSelected());
 
+        // Randomize Entrances
+        settings.setRandomizeMap(reRandomizeMapCheckBox.isSelected());
+        settings.setShuffleGyms(reShuffleGymsCheckBox.isSelected());
+        settings.setShuffleE4(reShuffleE4CheckBox.isSelected());
+
         int currentMiscTweaks = 0;
         int mtCount = MiscTweak.allTweaks.size();
 
@@ -1740,7 +1771,7 @@ public class NewRandomizerGUI {
         try {
             String errlog = "error_" + ft.format(now) + ".txt";
             PrintStream ps = new PrintStream(new FileOutputStream(errlog));
-            ps.println("Randomizer Version: " + Version.VERSION_STRING);
+            ps.println("Randomizer Version: " + Version.ZX_VERSION_STRING);
             if (seedString != null) {
                 ps.println("Seed: " + seedString);
             }
@@ -2411,6 +2442,17 @@ public class NewRandomizerGUI {
         puBanBadItemsCheckBox.setVisible(true);
         puBanBadItemsCheckBox.setEnabled(false);
         puBanBadItemsCheckBox.setSelected(false);
+        // Randomize Entrances
+        reRandomizeMapCheckBox.setVisible(true);
+        reRandomizeMapCheckBox.setEnabled(false);
+        reRandomizeMapCheckBox.setSelected(false);
+        reShuffleGymsCheckBox.setVisible(true);
+        reShuffleGymsCheckBox.setEnabled(false);
+        reShuffleGymsCheckBox.setSelected(false);
+        reShuffleE4CheckBox.setVisible(true);
+        reShuffleE4CheckBox.setEnabled(false);
+        reShuffleE4CheckBox.setSelected(false);
+        reUnsupportedWarningLabel.setVisible(false);
         miscBWExpPatchCheckBox.setVisible(true);
         miscBWExpPatchCheckBox.setEnabled(false);
         miscBWExpPatchCheckBox.setSelected(false);
@@ -2764,6 +2806,17 @@ public class NewRandomizerGUI {
             puUnchangedRadioButton.setEnabled(true);
             puUnchangedRadioButton.setSelected(true);
             puRandomRadioButton.setEnabled(true);
+
+            // Randomize Entrances
+            boolean entranceRando = romHandler.hasEntranceRandomization();
+            reRandomizeMapCheckBox.setEnabled(entranceRando);
+            reShuffleGymsCheckBox.setEnabled(entranceRando);
+            reShuffleE4CheckBox.setEnabled(entranceRando);
+            reRandomizeMapCheckBox.setVisible(entranceRando);
+            reShuffleGymsCheckBox.setVisible(entranceRando);
+            reShuffleE4CheckBox.setVisible(entranceRando);
+
+            reUnsupportedWarningLabel.setVisible(!entranceRando);
 
             int mtsAvailable = romHandler.miscTweaksAvailable();
             int mtCount = MiscTweak.allTweaks.size();
@@ -3563,7 +3616,7 @@ public class NewRandomizerGUI {
                         }
                         if (key.equals("firststart")) {
                             String val = tokens[1];
-                            if (val.equals(Version.VERSION_STRING)) {
+                            if (val.equals(Version.ZX_VERSION_STRING)) {
                                 initialPopup = false;
                             }
                         }
@@ -3593,7 +3646,7 @@ public class NewRandomizerGUI {
             ps.println("checkedcustomnames172=" + haveCheckedCustomNames);
             ps.println("unloadgameonsuccess=" + unloadGameOnSuccess);
             if (!initialPopup) {
-                ps.println("firststart=" + Version.VERSION_STRING);
+                ps.println("firststart=" + Version.ZX_VERSION_STRING);
             }
             if (gameUpdates.size() > 0) {
                 ps.println();

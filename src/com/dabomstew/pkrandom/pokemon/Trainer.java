@@ -3,7 +3,8 @@ package com.dabomstew.pkrandom.pokemon;
 /*----------------------------------------------------------------------------*/
 /*--  Trainer.java - represents a Trainer's pokemon set/other details.      --*/
 /*--                                                                        --*/
-/*--  Part of "Universal Pokemon Randomizer ZX" by the UPR-ZX team          --*/
+/*--  Part of "Pokemon Entrance Randomizer" by SilverstarStream             --*/
+/*--  Modified from "Universal Pokemon Randomizer ZX" by the UPR-ZX team    --*/
 /*--  Originally part of "Universal Pokemon Randomizer" by Dabomstew        --*/
 /*--  Pokemon and any associated names and the like are                     --*/
 /*--  trademark and (C) Nintendo 1996-2020.                                 --*/
@@ -39,6 +40,8 @@ public class Trainer implements Comparable<Trainer> {
     public String fullDisplayName;
     public MultiBattleStatus multiBattleStatus = MultiBattleStatus.NEVER;
     public int forceStarterPosition = -1;
+    public List<Integer> bagItems = new ArrayList<>(); // bagItems have to be get/set by each RomHandler, within get/setTrainers
+    // Currently only implemented in Gen 4 Platinum. It probs has to be changed for D/P & HG/SS
 
     public String toString() {
         StringBuilder sb = new StringBuilder("[");

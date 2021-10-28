@@ -4,7 +4,8 @@ package com.dabomstew.pkrandom.romhandlers;
 /*--  RomHandler.java - defines the functionality that each randomization   --*/
 /*--                    handler must implement.                             --*/
 /*--                                                                        --*/
-/*--  Part of "Universal Pokemon Randomizer ZX" by the UPR-ZX team          --*/
+/*--  Part of "Pokemon Entrance Randomizer" by SilverstarStream             --*/
+/*--  Modified from "Universal Pokemon Randomizer ZX" by the UPR-ZX team    --*/
 /*--  Originally part of "Universal Pokemon Randomizer" by Dabomstew        --*/
 /*--  Pokemon and any associated names and the like are                     --*/
 /*--  trademark and (C) Nintendo 1996-2020.                                 --*/
@@ -635,4 +636,52 @@ public interface RomHandler {
     List<Pokemon> getBannedFormesForPlayerPokemon();
 
     List<Pokemon> getBannedFormesForTrainerPokemon();
+
+    // ==========================
+    // Entrance Randomizer added methods
+    // ==========================
+
+    boolean hasEntranceRandomization();
+
+    // Shuffle Gyms
+
+    void shuffleGyms();
+
+    int getGymCount();
+
+    List<Location> getGymLocations();
+
+    List<Location> getGymCityLocations();
+
+    List<List<TrainerPokemon>> getGymLeaderTeams(List<Integer> gymOrder);
+
+    List<ScriptData> getGymScripts();
+
+    void editGymScripts(List<ScriptData> scripts);
+
+    List<Trainer> getGymLeaders(List<Trainer> allTrainers);
+
+    List<String> getLeaderNames();
+
+    String getGameAbbr();
+
+    void editGymText(List<Integer> gymOrder);
+
+    boolean isEnglishROM();
+
+    // Randomize Map
+
+    void randomizeMap();
+
+    List<Location> getMapLocations();
+
+    List<EncounterSet> getGrassEncounters(List<EncounterSet> allEncounterSets);
+
+    void setWarps(List<Location> locations);
+
+    // Shuffle E4
+
+    void shuffleE4();
+
+    List<Location> getE4Locations();
 }

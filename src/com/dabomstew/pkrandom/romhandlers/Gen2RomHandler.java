@@ -3,7 +3,8 @@ package com.dabomstew.pkrandom.romhandlers;
 /*----------------------------------------------------------------------------*/
 /*--  Gen2RomHandler.java - randomizer handler for G/S/C.                   --*/
 /*--                                                                        --*/
-/*--  Part of "Universal Pokemon Randomizer ZX" by the UPR-ZX team          --*/
+/*--  Part of "Pokemon Entrance Randomizer" by SilverstarStream             --*/
+/*--  Modified from "Universal Pokemon Randomizer ZX" by the UPR-ZX team    --*/
 /*--  Originally part of "Universal Pokemon Randomizer" by Dabomstew        --*/
 /*--  Pokemon and any associated names and the like are                     --*/
 /*--  trademark and (C) Nintendo 1996-2020.                                 --*/
@@ -2564,5 +2565,22 @@ public class Gen2RomHandler extends AbstractGBCRomHandler {
                 rom[cvOffset + i] = (byte) ((value >> (3 - i) * 8) & 0xFF);
             }
         }
+    }
+
+    // ==========================
+    // Entrance Randomizer added methods
+    // ==========================
+
+    @Override
+    public int getGymCount() {
+        return 16;
+    }
+
+    @Override
+    public String getGameAbbr() {
+        if (this.romEntry.isCrystal) {
+            return "c";
+        }
+        return "gs";
     }
 }

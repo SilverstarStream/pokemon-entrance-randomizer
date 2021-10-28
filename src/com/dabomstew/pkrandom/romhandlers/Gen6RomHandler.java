@@ -3,7 +3,8 @@ package com.dabomstew.pkrandom.romhandlers;
 /*----------------------------------------------------------------------------*/
 /*--  Gen6RomHandler.java - randomizer handler for X/Y/OR/AS.               --*/
 /*--                                                                        --*/
-/*--  Part of "Universal Pokemon Randomizer ZX" by the UPR-ZX team          --*/
+/*--  Part of "Pokemon Entrance Randomizer" by SilverstarStream             --*/
+/*--  Modified from "Universal Pokemon Randomizer ZX" by the UPR-ZX team    --*/
 /*--  Pokemon and any associated names and the like are                     --*/
 /*--  trademark and (C) Nintendo 1996-2020.                                 --*/
 /*--                                                                        --*/
@@ -3777,5 +3778,22 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
             }
         }
         return items;
+    }
+
+    // ==========================
+    // Entrance Randomizer added methods
+    // ==========================
+
+    @Override
+    public int getGymCount() {
+        return 8;
+    }
+
+    @Override
+    public String getGameAbbr() {
+        if (romEntry.romType == Gen6Constants.Type_XY) {
+            return "xy";
+        }
+        return "oras";
     }
 }

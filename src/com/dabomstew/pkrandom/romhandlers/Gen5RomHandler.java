@@ -3,7 +3,8 @@ package com.dabomstew.pkrandom.romhandlers;
 /*----------------------------------------------------------------------------*/
 /*--  Gen5RomHandler.java - randomizer handler for B/W/B2/W2.               --*/
 /*--                                                                        --*/
-/*--  Part of "Universal Pokemon Randomizer ZX" by the UPR-ZX team          --*/
+/*--  Part of "Pokemon Entrance Randomizer" by SilverstarStream             --*/
+/*--  Modified from "Universal Pokemon Randomizer ZX" by the UPR-ZX team    --*/
 /*--  Originally part of "Universal Pokemon Randomizer" by Dabomstew        --*/
 /*--  Pokemon and any associated names and the like are                     --*/
 /*--  trademark and (C) Nintendo 1996-2020.                                 --*/
@@ -4009,5 +4010,22 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
             }
         }
         return items;
+    }
+
+    // ==========================
+    // Entrance Randomizer added methods
+    // ==========================
+
+    @Override
+    public int getGymCount() {
+        return 8;
+    }
+
+    @Override
+    public String getGameAbbr() {
+        if (this.romEntry.romType == Gen5Constants.Type_BW) {
+            return "bw";
+        }
+        return "bw2";
     }
 }

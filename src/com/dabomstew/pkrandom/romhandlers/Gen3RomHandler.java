@@ -3,7 +3,8 @@ package com.dabomstew.pkrandom.romhandlers;
 /*----------------------------------------------------------------------------*/
 /*--  Gen3RomHandler.java - randomizer handler for R/S/E/FR/LG.             --*/
 /*--                                                                        --*/
-/*--  Part of "Universal Pokemon Randomizer ZX" by the UPR-ZX team          --*/
+/*--  Part of "Pokemon Entrance Randomizer" by SilverstarStream             --*/
+/*--  Modified from "Universal Pokemon Randomizer ZX" by the UPR-ZX team    --*/
 /*--  Originally part of "Universal Pokemon Randomizer" by Dabomstew        --*/
 /*--  Pokemon and any associated names and the like are                     --*/
 /*--  trademark and (C) Nintendo 1996-2020.                                 --*/
@@ -3916,5 +3917,26 @@ public class Gen3RomHandler extends AbstractGBRomHandler {
             }
         }
         return items;
+    }
+
+    // ==========================
+    // Entrance Randomizer added methods
+    // ==========================
+
+    @Override
+    public int getGymCount() {
+        return 8;
+    }
+
+    @Override
+    public String getGameAbbr() {
+        int romType = this.romEntry.romType;
+        if (romType == Gen3Constants.RomType_FRLG) {
+            return "frlg";
+        }
+        else if (romType == Gen3Constants.RomType_Em) {
+            return "em";
+        }
+        return "rs";
     }
 }

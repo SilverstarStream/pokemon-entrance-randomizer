@@ -3,7 +3,8 @@ package com.dabomstew.pkrandom;
 /*----------------------------------------------------------------------------*/
 /*--  Version.java - contains information about the randomizer's versions   --*/
 /*--                                                                        --*/
-/*--  Part of "Universal Pokemon Randomizer ZX" by the UPR-ZX team          --*/
+/*--  Part of "Pokemon Entrance Randomizer" by SilverstarStream             --*/
+/*--  Modified from "Universal Pokemon Randomizer ZX" by the UPR-ZX team    --*/
 /*--  Originally part of "Universal Pokemon Randomizer" by Dabomstew        --*/
 /*--  Pokemon and any associated names and the like are                     --*/
 /*--  trademark and (C) Nintendo 1996-2020.                                 --*/
@@ -28,8 +29,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Version {
-    public static final int VERSION = 317; // Increment by 1 for new version. Updated for 4.3.0
-    public static final String VERSION_STRING = "4.3.0-dev";
+    public static final int VERSION = 817; // Keeping ZX's Version number, but adding 500 to it to avoid any overlap.
+    public static final String ZX_VERSION_STRING = "4.2.1";
+
+    public static final String ENTRANCE_VERSION_STRING = "0.1.0";
 
     public static final Map<Integer,String> oldVersions = setupVersionsMap();
 
@@ -59,19 +62,19 @@ public class Version {
         map.put(316,"4.2.1");
 
         // Latest version - when version is updated, add the old version as an explicit put
-        map.put(VERSION, VERSION_STRING);
+        map.put(VERSION, ZX_VERSION_STRING);
 
         return map;
     }
 
     public static boolean isReleaseVersionNewer(String releaseVersion) {
-        if (VERSION_STRING.contains("dev")) {
+        if (ZX_VERSION_STRING.contains("dev")) {
             return false;
         }
         // Chop off leading "v" from release version
         try {
             String releaseVersionTrimmed = releaseVersion.substring(1);
-            String[] thisVersionPieces = VERSION_STRING.split("\\.");
+            String[] thisVersionPieces = ZX_VERSION_STRING.split("\\.");
             String[] releaseVersionPieces = releaseVersionTrimmed.split("\\.");
             int smallestLength = Math.min(thisVersionPieces.length, releaseVersionPieces.length);
             for (int i = 0; i < smallestLength; i++) {

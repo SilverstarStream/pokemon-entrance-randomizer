@@ -3,7 +3,8 @@ package com.dabomstew.pkrandom.romhandlers;
 /*----------------------------------------------------------------------------*/
 /*--  Gen4RomHandler.java - randomizer handler for D/P/Pt/HG/SS.            --*/
 /*--                                                                        --*/
-/*--  Part of "Universal Pokemon Randomizer ZX" by the UPR-ZX team          --*/
+/*--  Part of "Pokemon Entrance Randomizer" by SilverstarStream             --*/
+/*--  Modified from "Universal Pokemon Randomizer ZX" by the UPR-ZX team    --*/
 /*--  Originally part of "Universal Pokemon Randomizer" by Dabomstew        --*/
 /*--  Pokemon and any associated names and the like are                     --*/
 /*--  trademark and (C) Nintendo 1996-2020.                                 --*/
@@ -39,6 +40,7 @@ import com.dabomstew.pkrandom.exceptions.RandomizationException;
 import com.dabomstew.pkrandom.pokemon.*;
 import thenewpoketext.PokeTextData;
 import thenewpoketext.TextToPoke;
+import com.dabomstew.pkrandom.pokemon.Exit.WarpData;
 
 import com.dabomstew.pkrandom.exceptions.RandomizerIOException;
 import com.dabomstew.pkrandom.newnds.NARCArchive;
@@ -419,6 +421,7 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
     private NARCArchive msgNarc;
     private NARCArchive scriptNarc;
     private NARCArchive eventNarc;
+    private NARCArchive mapNarc;
     private byte[] arm9;
     private List<String> abilityNames;
     private List<String> itemNames;
@@ -469,6 +472,11 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
         }
         try {
             eventNarc = readNARC(romEntry.getString("Events"));
+        } catch (IOException e) {
+            throw new RandomizerIOException(e);
+        }
+        try {
+            mapNarc = readNARC(romEntry.getString("Maps"));
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
@@ -648,6 +656,11 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
         }
         try {
             writeNARC(romEntry.getString("Events"), eventNarc);
+        } catch (IOException e) {
+            throw new RandomizerIOException(e);
+        }
+        try {
+            writeNARC(romEntry.getString("Maps"), mapNarc);
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
@@ -2351,6 +2364,9 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
                 int numPokes = trainer[3] & 0xFF;
                 int pokeOffs = 0;
                 tr.fullDisplayName = tclasses.get(tr.trainerclass) + " " + tnames.get(i - 1);
+                for (int j = 0; j < 4; j++) {
+                    tr.bagItems.add(readWord(trainer, j * 2 + 4));
+                }
                 for (int poke = 0; poke < numPokes; poke++) {
                     // Structure is
                     // IV SB LV LV SP SP FRM FRM
@@ -2460,6 +2476,9 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
                 trainer[0] = (byte) tr.poketype;
                 int numPokes = tr.pokemon.size();
                 trainer[3] = (byte) numPokes;
+                for (int j = 0; j < 4; j++) {
+                    writeWord(trainer, j * 2 + 4, tr.bagItems.get(j));
+                }
 
                 if (doubleBattleMode) {
                     if (!tr.skipImportant()) {
@@ -5154,5 +5173,628 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
             }
         }
         return items;
+    }
+
+    // ==========================
+    // Entrance Randomizer added methods
+    // ==========================
+
+    @Override
+    public boolean hasEntranceRandomization() {
+        if (romEntry.romType == Gen4Constants.Type_DP) {
+            return false;
+        }
+        else if (romEntry.romType == Gen4Constants.Type_Plat) {
+            return true;
+        }
+        return false;
+    }
+
+    // Shuffle Gyms
+
+    @Override
+    public int getGymCount() {
+        if (romEntry.romType == Gen4Constants.Type_HGSS) {
+            return 16;
+        }
+        return 8;
+    }
+
+    @Override
+    public List<Location> getGymLocations() {
+        Map<Integer, Integer> eventToMap = getEventsToMaps();
+        if (romEntry.romType == Gen4Constants.Type_DP) {
+            throw new RandomizationException("Unsupported ROM.");
+        }
+        else if (romEntry.romType == Gen4Constants.Type_Plat) {
+            return Gen4Constants.gymLocationDataPt(eventToMap);
+        }
+        throw new RandomizationException("Unsupported ROM.");
+    }
+
+    @Override
+    public List<Location> getGymCityLocations() {
+        Map<Integer, Integer> eventToMap = getEventsToMaps();
+        if (romEntry.romType == Gen4Constants.Type_DP) {
+            throw new RandomizationException("Unsupported ROM.");
+        }
+        else if (romEntry.romType == Gen4Constants.Type_Plat) {
+            return Gen4Constants.gymCityLocationDataPt(eventToMap);
+        }
+        throw new RandomizationException("Unsupported ROM.");
+    }
+
+    @Override
+    public List<List<TrainerPokemon>> getGymLeaderTeams(List<Integer> gymOrder) {
+        // gymOrder represents the new order of gyms, so for exmaple: {7,0,...}
+        // gym index 7 in list index 0 means Sunyshore (gym 8) as gym 1, Oreburgh as gym 2, ...
+        if (romEntry.romType != Gen4Constants.Type_Plat) {
+            throw new RandomizationException("Unsupported ROM.");
+        }
+        List<List<TrainerPokemon>> teams = new ArrayList<>();
+        Map<String, List<TrainerPokemon>> teamMap = Gen4Constants.gymLeaderTeamsPt(this.pokemonList);
+        List<String> leaderNames = this.getLeaderNames();
+
+        for (int i = 0; i < gymOrder.size(); i++) {
+            String leader = leaderNames.get(i);
+            int newGymNum = gymOrder.indexOf(i) + 1;
+            String key = leader + newGymNum;
+            teams.add(teamMap.get(key));
+        }
+        return teams;
+    }
+
+    // Script functions
+
+    @Override
+    public List<ScriptData> getGymScripts() {
+        List<ScriptData> scripts = new ArrayList<>();
+        Map<Integer, Integer> instructionMap = getInstructionMap();
+        if (!romEntry.arrayEntries.containsKey("GymScriptOffsets")) {
+            throw new RandomizationException("No GymScriptOffsets in the gen4_offsets ini.");
+        }
+        int[] offsets = romEntry.arrayEntries.get("GymScriptOffsets");
+        for (int offset : offsets) {
+            byte[] script = scriptNarc.files.get(offset);
+            ScriptData scriptData = new ScriptData(offset, script);
+            parseScript(scriptData, instructionMap);
+            // the instructions need to be removed before the offsets get swapped, so remove upon instantiation
+            removeFlagInsts(scriptData);
+            scripts.add(scriptData);
+        }
+        return scripts;
+    }
+
+    private Map<Integer, Integer> getInstructionMap() {
+        // Maps each 2-byte instruction code to the number of argument bytes that instruction uses
+        // Currently only maps instructions relevant for swapping instructions between gym leader scripts
+        return Gen4Constants.scriptValues();
+        // Currently it's a pointless nested function call but will likely need to be updated for non-Platinum games
+    }
+
+    private void parseScript(ScriptData scriptData, Map<Integer, Integer> instructionMap) {
+        int offset = 0;
+        // find the end of the header
+        while (true) {
+            int word = readWord(scriptData.script, offset);
+            if (word == Gen4Constants.scriptListTerminator) {
+                scriptData.headerEndOff = offset;
+                offset += 2;
+                break;
+            }
+            offset += 4;
+        }
+        // find the enableBadge offset
+        while (true) {
+            int instruction = readWord(scriptData.script, offset);
+            if (!instructionMap.containsKey(instruction)) {
+                throw new RandomizationException("Error: unrecognized instruction " + String.format("0x%04X", instruction) +
+                        " at " + String.format("0x%X", offset) + " in script " + scriptData.scriptNum);
+            }
+            else if (instruction == 0x015C) {
+                scriptData.enableOff = offset;
+                offset += 4;
+                break;
+            }
+            else {
+                offset += 2 + instructionMap.get(instruction);
+            }
+        }
+        // find the next jump offset after enableBadge
+        while (true) {
+            int instruction = readWord(scriptData.script, offset);
+            if (!instructionMap.containsKey(instruction)) {
+                throw new RandomizationException("Error: unrecognized instruction " + String.format("0x%04X", instruction) +
+                        " at " + String.format("0x%X", offset) + " in script " + scriptData.scriptNum);
+            }
+            else if (instruction == 0x0016) { // jump
+                scriptData.nextJumpOff = offset;
+                break;
+            }
+            else if (instruction == 0x0028) { // setVar
+                scriptData.setVarOffs.add(offset);
+                scriptData.setVarMap.put(offset, readLong(scriptData.script, offset + 2));
+                scriptData.instByteCount += 6;
+            }
+            else if (instruction == 0x001E || instruction == 0x001F) { // clearFlag || setFlag
+                scriptData.flagOffs.add(offset);
+                // value stores the 2 instruction bytes in the 2 upper bytes and the 2 argument bytes in the 2 lower bytes.
+                int value = (readWord(scriptData.script, offset) << 16) | readWord(scriptData.script, offset + 2);
+                scriptData.flagMap.put(offset, value);
+                scriptData.instByteCount += 4;
+            }
+            offset += 2 + instructionMap.get(instruction);
+        }
+        scriptData.allOffs.addAll(scriptData.setVarOffs);
+        scriptData.allOffs.addAll(scriptData.flagOffs);
+    }
+
+    private void removeFlagInsts(ScriptData scriptData) {
+        Collections.sort(scriptData.allOffs);
+        for (int i = scriptData.allOffs.size() - 1; i >= 0; i--) {
+            int offset = scriptData.allOffs.get(i);
+            int removeCount = 4;
+            if (scriptData.setVarMap.containsKey(offset)) {
+                removeCount = 6;
+            }
+            while (removeCount > 0) {
+                scriptData.scriptList.remove(offset);
+                removeCount--;
+            }
+        }
+        scriptData.nextJumpOff -= (scriptData.setVarOffs.size() * 6 + scriptData.flagOffs.size() * 4);
+    }
+
+    @Override
+    public void editGymScripts(List<ScriptData> scripts) {
+        if (!romEntry.arrayEntries.containsKey("GymBadgeNumbers")) {
+            throw new RandomizationException("No GymBadgeNumbers in the gen4_offsets ini.");
+        }
+        int[] badges = romEntry.arrayEntries.get("GymBadgeNumbers");
+
+        for (int i = 0; i < badges.length; i++) {
+            ScriptData script = scripts.get(i);
+            changeBadge(script, badges[i]);
+            addInstructions(script);
+            adjustRelativeOffs(script);
+            longAlign(script);
+            byte[] scriptBytes = script.updateScriptArray();
+            scriptNarc.files.set(script.scriptNum, scriptBytes);
+        }
+    }
+
+    private void changeBadge(ScriptData scriptData, int badgeNum) {
+        byte[] search = {0x5B, 0x01};
+        // get the offsets for the instruction that checks for the badge that's given and the instruction that give the badge
+        List<Integer> offsets = RomFunctions.search(scriptData.script, scriptData.headerEndOff, search);
+        offsets.add(scriptData.enableOff);
+        for(int offset : offsets) {
+            scriptData.scriptList.set(offset + 2, (byte) (badgeNum & 0xFF));
+            scriptData.scriptList.set(offset + 3, (byte) (badgeNum >> 8 & 0xFF));
+        }
+    }
+
+    private void addInstructions(ScriptData scriptData) {
+        // preserve the original order of the instructions, in case it matters.
+        Collections.sort(scriptData.allOffs);
+        int targetOff = scriptData.enableOff + 8;
+        for (int offset : scriptData.allOffs) {
+            if (scriptData.setVarMap.containsKey(offset)) {
+                int value = scriptData.setVarMap.get(offset);
+                scriptData.scriptList.add(targetOff, (byte) 0x28);
+                scriptData.scriptList.add(targetOff + 1, (byte) 0x00);
+                scriptData.scriptList.add(targetOff + 2, (byte) (value & 0xFF));
+                scriptData.scriptList.add(targetOff + 3, (byte) (value >> 8 & 0xFF));
+                scriptData.scriptList.add(targetOff + 4, (byte) (value >> 16 & 0xFF));
+                scriptData.scriptList.add(targetOff + 5, (byte) (value >> 24 & 0xFF));
+                targetOff += 6;
+            }
+            else if (scriptData.flagMap.containsKey(offset)) {
+                int value = scriptData.flagMap.get(offset);
+                // otherMap includes the instruction in the 2 upper bytes of value
+                scriptData.scriptList.add(targetOff, (byte) (value >> 16 & 0xFF));
+                scriptData.scriptList.add(targetOff + 1, (byte) (value >> 24 & 0xFF));
+                scriptData.scriptList.add(targetOff + 2, (byte) (value & 0xFF));
+                scriptData.scriptList.add(targetOff + 3, (byte) (value >> 8 & 0xFF));
+                targetOff += 4;
+            }
+            else {
+                throw new RandomizationException("Invalid offset used in addInstructions(): " + String.format("%x", offset));
+            }
+        }
+        scriptData.nextJumpOff += scriptData.setVarOffs.size() * 6 + scriptData.flagOffs.size() * 4;
+    }
+
+    private void adjustRelativeOffs(ScriptData scriptData) {
+        int difference = scriptData.setVarOffs.size() * 6 + scriptData.flagOffs.size() * 4 - scriptData.instByteCount;
+
+        // Adjust header info
+        for (int offset = 0; offset < scriptData.headerEndOff; offset += 4) {
+            int target = readLong(scriptData.script, offset);
+            if ((offset + 1) * 4 + target > scriptData.enableOff) {
+                int newTarget = target + difference;
+                scriptData.scriptList.set(offset, (byte) (newTarget & 0xFF));
+                scriptData.scriptList.set(offset + 1, (byte) (newTarget >> 8 & 0xFF));
+                scriptData.scriptList.set(offset + 2, (byte) (newTarget >> 16 & 0xFF));
+                scriptData.scriptList.set(offset + 3, (byte) (newTarget >> 24 & 0xFF));
+            }
+        }
+
+        // Adjust jump targets
+        byte[] jump = {0x16, 0x00}; // 1 word for instruction, 1 long for argument
+        byte[] jumpReturn = {0x1A, 0x00}; // 1 inst word, 1 target long
+        byte[] compareJump = {0x1C, 0x00}; // 1 inst word, 1 compare byte, 1 target long
+        byte[] compareJumpReturn = {0x1D, 0x00}; // 1 inst word, 1 compare byte, 1 target long
+        byte[] applyMovement = {0x5E, 0x00}; // 1 inst word, 1 arg word, 1 target long
+        byte[] script = scriptData.script;
+        int searchStart = scriptData.headerEndOff + 2;
+        List<Integer> jumpOffs = RomFunctions.search(script, searchStart, jump);
+        jumpOffs.addAll(RomFunctions.search(script, searchStart, jumpReturn));
+        List<Integer> compareOffs = RomFunctions.search(script, searchStart, compareJump);
+        compareOffs.addAll(RomFunctions.search(script, searchStart, compareJumpReturn));
+        List<Integer> movementOffs = RomFunctions.search(script, searchStart, applyMovement);
+        List<Integer> allOffs = new ArrayList<>();
+        allOffs.addAll(jumpOffs);
+        allOffs.addAll(compareOffs);
+        allOffs.addAll(movementOffs);
+
+        for (int offset : allOffs) {
+            if (compareOffs.contains(offset)) {
+                offset++;
+            }
+            else if (movementOffs.contains(offset)) {
+                offset += 2;
+            }
+            int jumpTarget = readLong(script, offset + 2);
+            int test = jumpTarget & 0xFFFF0000;
+            if (test != 0xFFFF0000 && test != 0) {
+                // ignore if the search found argument bytes that coincidentally matched a jump
+                // Jump targets shouldn't use more than the smallest 2 bytes, so the largest 2 should only be 00 or FF
+                continue;
+            }
+            if ((offset < scriptData.enableOff && (offset + jumpTarget) > scriptData.enableOff) ||
+                    (offset > scriptData.enableOff && (offset + jumpTarget) < scriptData.enableOff)) {
+                int newTarget;
+                if (jumpTarget > 0) {
+                    newTarget = jumpTarget + difference;
+                }
+                else {
+                    newTarget = jumpTarget - difference;
+                }
+                scriptData.scriptList.set(offset + 2, (byte) (newTarget & 0xFF));
+                scriptData.scriptList.set(offset + 3, (byte) (newTarget >> 8 & 0xFF));
+                scriptData.scriptList.set(offset + 4, (byte) (newTarget >> 16 & 0xFF));
+                scriptData.scriptList.set(offset + 5, (byte) (newTarget >> 24 & 0xFF));
+            }
+        }
+    }
+
+    private void longAlign(ScriptData scriptData) {
+        // I actually never found out if the number of bytes strictly needs to be divisible by 4.
+        int i;
+        List<Byte> scriptList = scriptData.scriptList;
+        for (i = scriptList.size() - 1; i >= 0; i--) {
+            if (scriptList.get(i) != 0) {
+                break;
+            }
+        }
+        int fillerCount = scriptList.size() - i - 2;
+        int neededFiller = 3 - (i + 1) % 4;
+        while (neededFiller > fillerCount) {
+            scriptList.add((byte) 0);
+            fillerCount++;
+        }
+        while (neededFiller < fillerCount) {
+            scriptList.remove(scriptList.size() - 1);
+            fillerCount--;
+        }
+    }
+
+    @Override
+    public List<Trainer> getGymLeaders(List<Trainer> allTrainers) {
+        List<Trainer> leaders = new ArrayList<>();
+        for (int i : getLeaderOffs()) {
+            Trainer leader = allTrainers.get(i - 1);
+            leaders.add(leader);
+        }
+        return leaders;
+    }
+
+    private int[] getLeaderOffs() {
+        if (!romEntry.arrayEntries.containsKey("LeaderTrainerOffsets")) {
+            throw new RandomizationException("Missing offset(s) for getLeaderOffs() in the gen4_offsets ini.");
+        }
+        return romEntry.arrayEntries.get("LeaderTrainerOffsets");
+    }
+
+    @Override
+    public List<String> getLeaderNames() {
+        if (romEntry.romType == Gen4Constants.Type_DP) {
+            return Arrays.asList("Roark", "Gardenia", "Maylene", "Wake", "Fantina", "Byron", "Candice", "Volkner");
+        }
+        else if (romEntry.romType == Gen4Constants.Type_Plat) {
+            return Arrays.asList("Roark", "Gardenia", "Fantina", "Maylene", "Wake", "Byron", "Candice", "Volkner");
+        }
+        throw new RandomizationException("Unsupported ROM.");
+    }
+
+    @Override
+    public String getGameAbbr() {
+        int romType = this.romEntry.romType;
+        if (romType == Gen4Constants.Type_DP) {
+            return "dp";
+        }
+        else if (romType == Gen4Constants.Type_HGSS) {
+            return "hgss";
+        }
+        return "pt";
+    }
+
+    @Override
+    public void editGymText(List<Integer> gymOrder) {
+        changeSignBlurbs(gymOrder);
+        changeLeaderSpeeches(gymOrder);
+        changeCityNames(gymOrder);
+    }
+
+    @Override
+    public boolean isEnglishROM() {
+        String code = getROMCodeFromFile(loadedFilename());
+        if ('E' == code.charAt(3)) {
+            return true;
+        }
+        return false;
+    }
+
+    private void changeSignBlurbs(List<Integer> gymOrder) {
+        if (!isEnglishROM()) {
+            return;
+        }
+        List<String> blurbs = getSignBlurbs();
+        if (!romEntry.arrayEntries.containsKey("CityTextsOffsets") || !romEntry.arrayEntries.containsKey("GymSignMsgOffsets")) {
+            throw new RandomizationException("Missing offset(s) for changeSignBlurbs() in the gen4_offsets ini.");
+        }
+        int[] textOffsets = romEntry.arrayEntries.get("CityTextsOffsets");
+        int[] msgOffsets = romEntry.arrayEntries.get("GymSignMsgOffsets");
+        for (int i = 0; i < blurbs.size(); i++) {
+            int textOff = textOffsets[i];
+            int msgOff = msgOffsets[i];
+            int gymNum = gymOrder.get(i);
+            String newBlurb = blurbs.get(gymNum);
+            List<String> cityMsgs = getStrings(textOff);
+            String newMsg = cityMsgs.get(msgOff);
+            int splitIndex = newMsg.indexOf('\\') + 2;
+            newMsg = newMsg.substring(0, splitIndex) + newBlurb;
+            cityMsgs.set(msgOff, newMsg);
+            setStrings(textOff, cityMsgs, lastStringsCompressed);
+        }
+    }
+
+    private List<String> getSignBlurbs() {
+        // Get the message from the signs in the cities, specifically the part: "Leader: Gardenia\fMaster of Vivid Plant Pokémon!"
+        if (!romEntry.arrayEntries.containsKey("CityTextsOffsets") || !romEntry.arrayEntries.containsKey("GymSignMsgOffsets")) {
+            throw new RandomizationException("Missing offset(s) for getSignBlurbs() in the gen4_offsets ini.");
+        }
+        int[] textOffsets = romEntry.arrayEntries.get("CityTextsOffsets");
+        int[] msgOffsets = romEntry.arrayEntries.get("GymSignMsgOffsets");
+        List<String> blurbs = new ArrayList<>();
+        for (int i = 0; i < textOffsets.length; i++) {
+            List<String> cityMsgs = getStrings(textOffsets[i]);
+            String gymSignMsg = cityMsgs.get(msgOffsets[i]);
+            int splitIndex = gymSignMsg.indexOf('\\') + 2;
+            String blurb = gymSignMsg.substring(splitIndex);
+            blurbs.add(blurb);
+        }
+        return blurbs;
+    }
+
+    private void changeLeaderSpeeches(List<Integer> gymOrder) {
+        // gymOrder represents the new order of gyms, so {7,0,...} means Volkner as gym 1 (Oreburgh), Roark as gym 2, ...
+        // This would mean that Volkner's text needs to be updated with Coal Badge and Rock Smash
+        if (!isEnglishROM()) {
+            return;
+        }
+        if (!romEntry.arrayEntries.containsKey("LeaderTextsOffsets")) {
+            throw new RandomizationException("No LeaderTextsOffsets found in the gen4_offsets ini.");
+        }
+        int[] leaderTextOffs = romEntry.arrayEntries.get("LeaderTextsOffsets");
+        // bad hard-coded portion. Takes out the text references to how many badges the player has and the obedience level
+        int[] startIndices = new int[] {84, 131, 94, 161};
+        int[] endIndices = new int[] {184, 233, 198, 270};
+        for (int i = 1; i < 8; i += 2) {
+            int textOff = leaderTextOffs[i];
+            List<String> msgs = getStrings(textOff);
+            String msg = msgs.get(3);
+            msg = msg.substring(0, startIndices[i / 2]) + msg.substring(endIndices[i / 2]);
+            msgs.set(3, msg);
+            setStrings(textOff, msgs, lastStringsCompressed);
+        }
+        List<String> badgeNames = getBadgeNames();
+        List<String> HMNames = getHMNames();
+        for (int i = 0; i < getGymCount(); i++) {
+            int gymNum = gymOrder.get(i);
+            if (i == gymNum) {
+                continue;
+            }
+            String oldBadge = badgeNames.get(gymNum);
+            String newBadge = badgeNames.get(i);
+            String oldHM = HMNames.get(gymNum);
+            String newHM = HMNames.get(i);
+            int textOff = leaderTextOffs[gymNum];
+            List<String> msgs = getStrings(textOff);
+            // iterate the msgs in the file and find all instances of the original badge/HM and replace them
+            for (int j = 0; j < msgs.size(); j++) {
+                String msg = msgs.get(j);
+                msg = msg.replaceAll(oldBadge, newBadge);
+                String regex = oldHM + "\\b"; // used to not replace the "Fly" in "Flying-type".
+                msg = msg.replaceAll(regex, newHM);
+                msgs.set(j, msg);
+            }
+            setStrings(textOff, msgs, lastStringsCompressed);
+        }
+    }
+
+    private List<String> getBadgeNames() {
+        int romType = this.romEntry.romType;
+        if (romType == Gen4Constants.Type_DP) {
+            throw new RandomizationException("Unsupported ROM.");
+        }
+        else if (romType == Gen4Constants.Type_Plat) {
+            return Arrays.asList("Coal", "Forest", "Relic",
+                    "Cobble", "Fen", "Mine", "Icicle", "Beacon");
+        }
+        throw new RandomizationException("Unsupported ROM.");
+    }
+
+    private List<String> getHMNames() {
+        int romType = this.romEntry.romType;
+        if (romType == Gen4Constants.Type_DP) {
+            throw new RandomizationException("Unsupported ROM.");
+        }
+        else if (romType == Gen4Constants.Type_Plat) {
+            return Arrays.asList("Rock Smash", "Cut", "Defog", "Fly", "Surf",
+                    "Strength", "Rock Climb", "Waterfall");
+        }
+        throw new RandomizationException("Unsupported ROM.");
+    }
+
+    private void changeCityNames(List<Integer> gymOrder) {
+        // Shuffle the names of the cities printed on the statues inside of gyms
+        if (!isEnglishROM()) {
+            return;
+        }
+        if (!romEntry.arrayEntries.containsKey("GymStatueTextsOffsets")) {
+            throw new RandomizationException("No GymStatueTextsOffsets found in the gen4_offsets ini.");
+        }
+        int[] statueTextsOffs = romEntry.arrayEntries.get("GymStatueTextsOffsets");
+        List<String> cityNames = getCityNames();
+        for (int i = 0; i < gymOrder.size(); i++) {
+            int gymNum = gymOrder.get(i);
+            if (i == gymNum) {
+                continue;
+            }
+            String oldCity = cityNames.get(gymNum);
+            String newCity = cityNames.get(i);
+            int textOff = statueTextsOffs[gymNum];
+            List<String> msgs = getStrings(textOff);
+            for (int m = 0; m < msgs.size(); m++) {
+                String msg = msgs.get(m);
+                msg = msg.replaceAll(oldCity, newCity);
+                msgs.set(m, msg);
+            }
+            setStrings(textOff, msgs, lastStringsCompressed);
+        }
+    }
+
+    private List<String> getCityNames() {
+        int romType = this.romEntry.romType;
+        if (romType == Gen4Constants.Type_DP) {
+            throw new RandomizationException("Unsupported ROM.");
+        }
+        else if (romType == Gen4Constants.Type_Plat) {
+            return Arrays.asList("Oreburgh", "Eterna", "Hearthome", "Veilstone",
+                    "Pastoria", "Canalave", "Snowpoint", "Sunyshore");
+        }
+        throw new RandomizationException("Unsupported ROM.");
+    }
+
+    // Randomize Entrances
+
+    @Override
+    public List<Location> getMapLocations() {
+        Map<Integer, Integer> eventToMap = getEventsToMaps();
+        if (romEntry.romType == Gen4Constants.Type_DP) {
+            throw new RandomizationException("Unsupported ROM.");
+        }
+        else if (romEntry.romType == Gen4Constants.Type_Plat) {
+            return Gen4Constants.locationDataPt(eventToMap);
+        }
+        throw new RandomizationException("Unsupported ROM.");
+    }
+
+    @Override
+    public List<EncounterSet> getGrassEncounters(List<EncounterSet> allEncounters) {
+        List<EncounterSet> grassEncounters = new ArrayList<>();
+        allEncounters.stream()
+                .filter(es -> es.displayName.endsWith("Grass/Cave"))
+                .forEach(grassEncounters::add);
+        return grassEncounters;
+    }
+
+    // Shuffle E4
+
+    @Override
+    public List<Location> getE4Locations() {
+        Map<Integer, Integer> eventToMap = getEventsToMaps();
+        if (romEntry.romType == Gen4Constants.Type_DP) {
+            throw new RandomizationException("Unsupported ROM.");
+        }
+        else if (romEntry.romType == Gen4Constants.Type_Plat) {
+            return Gen4Constants.e4LocationDataPt(eventToMap);
+        }
+        throw new RandomizationException("Unsupported ROM.");
+    }
+
+    // Common Location functions
+
+    private Map<Integer, Integer> getEventsToMaps() {
+        Map<Integer, Integer> eventToMap = new HashMap<>();
+        try {
+            byte[] internalNames = this.readFile(romEntry.getString("MapTableFile"));
+            int numMapHeaders = internalNames.length / 16;
+            int baseMHOffset = romEntry.getInt("MapTableARM9Offset");
+            for (int map = 0; map < numMapHeaders; map++) {
+                int baseOffset = baseMHOffset + map * 24;
+                int event = readWord(arm9, baseOffset + 16);
+                eventToMap.put(event, map);
+            }
+        } catch (IOException e) {
+            throw new RandomizerIOException(e);
+        }
+        return eventToMap;
+    }
+
+    @Override
+    public void setWarps(List<Location> locations) {
+        for (Location l : locations) {
+            for (Exit e : l.exits) {
+                writeExit(e);
+            }
+        }
+    }
+
+    private void writeExit(Exit exit) {
+        if (exit.getTargetMap() == -1) {
+            // Since targetMap never got overwritten, its targetMap should be vanilla and shouldn't be overwritten
+            return;
+        }
+        byte[] event = eventNarc.files.get(exit.event);
+        int furnitureCount = readLong(event, 0);
+        int overworldOff = 4 + (0x14 * furnitureCount);
+        int overworldCount = readLong(event, overworldOff);
+        int matrixMap = exit.matrixMap;
+        WarpData[] warps = exit.warps;
+        for(WarpData warp : warps) {
+            int warpOffset = 0xC + (0x14 * furnitureCount) + (0x20 * overworldCount) + (0xC * warp.warp);
+            // Set the warp's target map and target warp
+            writeWord(event, warpOffset + 4, exit.getTargetMap());
+            writeWord(event, warpOffset + 6, warp.targetWarp);
+            if (matrixMap != -1) {
+                // adjust stairs forcing the player to take one step if the exit has stairs
+                // This changes the tile type from left/right stairs to a typical left/right warp
+                // maps that have stairs have a matrixMap that isn't -1.
+                int xPos = readWord(event, warpOffset);
+                int yPos = readWord(event, warpOffset + 2);
+                int pos = 0x10 + yPos * 0x40 + xPos * 2;
+                byte[] mapFile = mapNarc.files.get(matrixMap);
+                int movePerm = readWord(mapFile, pos);
+                if (movePerm == 0x005E) { // right stairs
+                    writeWord(mapFile, pos, 0x006C);
+                }
+                else if (movePerm == 0x005F) { // left stairs
+                    writeWord(mapFile, pos, 0x006D);
+                }
+            }
+        }
     }
 }
