@@ -5780,11 +5780,11 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
             writeWord(event, warpOffset + 4, exit.getTargetMap());
             writeWord(event, warpOffset + 6, warp.targetWarp);
             if (matrixMap != -1) {
-                // adjust stairs forcing the player to take one step if the exit has stairs
-                // This changes the tile type from left/right stairs to a typical left/right warp
-                // maps that have stairs have a matrixMap that isn't -1.
-                int xPos = readWord(event, warpOffset);
-                int yPos = readWord(event, warpOffset + 2);
+                // Adjust stairs forcing the player to take one step if the exit has stairs.
+                // This changes the tile type from left/right stairs to a typical left/right warp.
+                // Maps that have stairs have a matrixMap that isn't -1.
+                int xPos = readWord(event, warpOffset) % 0x20;
+                int yPos = readWord(event, warpOffset + 2) % 0x20;
                 int pos = 0x10 + yPos * 0x40 + xPos * 2;
                 byte[] mapFile = mapNarc.files.get(matrixMap);
                 int movePerm = readWord(mapFile, pos);

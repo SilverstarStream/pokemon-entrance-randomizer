@@ -538,6 +538,7 @@ public class NewRandomizerGUI {
 
             @Override
             public void componentShown(ComponentEvent e) {
+                // Entrance Randomizer is removing the call to showInitialPopup() at least for now
                 //showInitialPopup();
             }
 
@@ -554,7 +555,7 @@ public class NewRandomizerGUI {
         mtLevelupMoveSanityCheckBox.addActionListener(e -> enableOrDisableSubControls());
     }
 
-    // Entrance Randomizer is removing the call to this at least for now
+    // Entrance Randomizer is removing the call to showInitialPopup() at least for now
     private void showInitialPopup() {
         if (!usedLauncher) {
             String message = bundle.getString("GUI.pleaseUseTheLauncher");
@@ -562,7 +563,7 @@ public class NewRandomizerGUI {
             JOptionPane.showMessageDialog(frame, messages);
         }
         if (initialPopup) {
-            String message = String.format(bundle.getString("GUI.firstStart"),Version.ZX_VERSION_STRING);
+            String message = String.format(bundle.getString("GUI.firstStart"),Version.ENTRANCE_VERSION_STRING);
             JLabel label = new JLabel("<html><a href=\"https://github.com/Ajarmar/universal-pokemon-randomizer-zx/wiki/Important-Information\">Checking out the \"Important Information\" page on the Wiki is highly recommended.</a>");
             label.addMouseListener(new MouseAdapter() {
                 @Override
