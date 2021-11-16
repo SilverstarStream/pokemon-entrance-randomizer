@@ -2109,6 +2109,10 @@ public class Gen4Constants {
     }
 
     public static List<Location> locationDataPt(Map<Integer, Integer> em) {
+        // I think I remember having an off-by-one error at some point with trainers
+        // I believe it's because I used PPRE to find the trainer offsets visually.
+        // I believe PPRE uses the incorrect 1-based offset, or ignores the 0 null or something
+        // SO! These trainers could be off-by-one from what they should be, but the code that uses them accounts for this
         List<Location> locations = new ArrayList<>();
         Location l;
         l = new Location(0, "Jubilife City", false);
@@ -2145,7 +2149,7 @@ public class Gen4Constants {
         l.addExit(0,"Eterna City",201,new int[] {2,3},em);
         l.addWildGroup(1, new int[] {8});
         l.addWildGroup(2, new int[] {125,126,127,128,129,130,131,132,133});
-        l.addTrainerGroup(1, new int[] {201,204,206,205,202,203,395,398}); // Forest trainers
+        l.addTrainerGroup(1, new int[] {201,204,206,205,202,203,395,398,608}); // Forest trainers Cheryl 608
         locations.add(l);
 
         l = new Location(1, "Eterna City & Floaroma Town", true);
