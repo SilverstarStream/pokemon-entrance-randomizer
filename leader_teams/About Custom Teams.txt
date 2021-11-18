@@ -1,0 +1,42 @@
+Gym Leader Team Format Specification
+
+Before you begin designing and writing your own custom gym teams for the randomizer, you need to know a few things, mainly what the randomizer expects from the input files.
+First of all, the gym leader teams are in the `leader teams` folder as .json files. json files are essentially text files that adhere to a formatting specification that can be easily parsed. So any text editor can edit and create json files, but I strongly recommend that if you plan on making any edit beyond changing a few lines in an existing teams file that you use some kind of json formatter or editor. This way you can ensure that all the formatting is correct.
+
+The following lists what the randomizer expects for how the json is structured. It likely isn't the easiest way to understand the requirements from just reading, so please reference the included teams files for an example.
+
+Structure:
+ * Opening and closing curly braces
+ * The above nests named gym leader objects, one for each gym leader in the game. They are named for the leader's name
+ * The above nests named gym team arrays, one for each gym in the game. They are named for the gym number they would replace
+ * The above nests 1 to 6 trainer pokemon objects describing each pokemon on the team
+
+Additional notes:
+ * Each trainer pokemon object can define any of the fields in TrainerPokemon.java, with the following exceptions:
+    - Pokemon species, moves, and held items are referred to by their name, not numerical ID. Please note that some moves have changed in how they have been formatted and spelled over time. For example, before generation 6 (XY), "Thunder Punch" was formatted as "ThunderPunch" and "Feint Attack" was spelled as "Faint Attack".
+    - Fields like "hasZCrystal" that don't make sense for the target generation will be ignored if supplied.
+    - The "absolutePokeNumber" field cannot be set/supplied.
+ * All fields are optional and have a sensible default value if the field is not supplied, with the following exceptions:
+    - "pokemon" must be supplied
+    - "level" must be supplied
+    - either "move1" must be non-empty or "resetMoves" must be set to true
+ * If you want a gym leader to use their original team for any gym, leave their gym team array empty. This way the leader's original team does not have to be copied down.
+
+Fields and their default values:
+ "pokemon": no default (the species' name)
+ "level": no default
+ "move1" - "move4": "" (Empty move slot)
+ "heldItem": "" (no held item)
+ "abilitySlot": 0 (first ability slot; see https://bulbapedia.bulbagarden.net/wiki/Ability#Mechanics for an explanation)
+ "formeSuffix": ""
+ "forme": 0 (default forme)
+ "forcedGenderFlag": 0
+ "nature": 0 (the neutral Hardy nature)
+ "hpEVs": 0
+ "atkEVs": 0
+ "defEVs": 0
+ "spatkEVs": 0
+ "spdefEVs": 0
+ "speedEVs": 0
+ "IVs": 0 (The IVs applied to each stat)
+ "resetMoves": false (if true, the Pokemon will use its four most recent moves by level up instead of move1 - move4)

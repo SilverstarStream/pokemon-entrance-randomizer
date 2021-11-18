@@ -29,10 +29,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Version {
-    public static final int VERSION = 817; // Keeping ZX's Version number, but adding 500 to it to avoid any overlap.
+    public static final int VERSION = 818; // Keeping ZX's Version number, but adding 500 to it to avoid any overlap.
     public static final String ZX_VERSION_STRING = "4.2.1";
 
-    public static final String ENTRANCE_VERSION_STRING = "0.1.0";
+    public static final String ENTRANCE_VERSION_STRING = "0.1.1";
 
     public static final Map<Integer,String> oldVersions = setupVersionsMap();
 

@@ -5225,23 +5225,9 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
     }
 
     @Override
-    public List<List<TrainerPokemon>> getGymLeaderTeams(List<Integer> gymOrder) {
-        // gymOrder represents the new order of gyms, so for exmaple: {7,0,...}
-        // gym index 7 in list index 0 means Sunyshore (gym 8) as gym 1, Oreburgh as gym 2, ...
-        if (romEntry.romType != Gen4Constants.Type_Plat) {
-            throw new RandomizationException("Unsupported ROM.");
-        }
-        List<List<TrainerPokemon>> teams = new ArrayList<>();
-        Map<String, List<TrainerPokemon>> teamMap = Gen4Constants.gymLeaderTeamsPt(this.pokemonList);
-        List<String> leaderNames = this.getLeaderNames();
-
-        for (int i = 0; i < gymOrder.size(); i++) {
-            String leader = leaderNames.get(i);
-            int newGymNum = gymOrder.indexOf(i) + 1;
-            String key = leader + newGymNum;
-            teams.add(teamMap.get(key));
-        }
-        return teams;
+    public Map<String, List<TrainerPokemon>> getGymLeaderTeams(List<Integer> gymOrder) {
+        LeaderTeams leaderTeams = FileFunctions.getLeaderTeams(getLeaderNames(), getGymCount(), getGameAbbr());
+        return leaderTeams.getTeams(gymOrder, pokeNameLookup(), moveNameLookup(), itemNameLookup());
     }
 
     // Script functions

@@ -24,212 +24,117 @@ package com.dabomstew.pkrandom.pokemon;
 /*----------------------------------------------------------------------------*/
 
 import com.dabomstew.pkrandom.exceptions.*;
+import com.fasterxml.jackson.core.exc.*;
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.exc.*;
+// Please see https://github.com/SilverstarStream/pokemon-entrance-randomizer#external-libraries for instructions on adding jackson
 
 import java.io.*;
-import java.util.Scanner;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 public class LeaderTeams {
-    // maps a string like "Candice2" to a list of strings like "Snorunt 20".
-    // Depends on getLeaderTeams to interpret those types of strings, but this guarantees that the strings will be in this format.
-    private Map<String, List<String>> leaderTeams;
     private List<String> leaderNames;
     private int gymCount;
-    private String filename;
+    private File file;
 
-    public LeaderTeams(List<String> leaderNames, int gymCount, File file) throws FileNotFoundException {
+    public LeaderTeams(List<String> leaderNames, int gymCount, File file) {
         this.leaderNames = leaderNames;
         this.gymCount = gymCount;
-        this.filename = file.getName();
-        Scanner sc = new Scanner(new FileInputStream(file), "UTF-8");
-        this.leaderTeams = parseTeamsFile(sc);
-        sc.close();
-        /*} catch (FileNotFoundException e) {
-            System.out.println("Error: Could not find " + this.filename + "\n" +
-                    "Is there a leader_teams folder in the same folder as the randomizer .jar?" + "\n" +
-                    "Is there a \"" + this.filename + "\" file in that folder?");
-        }*/
+        this.file = file;
     }
 
-    private void error(int lineNumber, String message) {
-        throw new LeaderTeamsException("Problem with line " + lineNumber + " in " + this.filename + ":\n" + message);
+    private void parsingError(String name, int teamNumber, String message) {
+        throw new LeaderTeamsException("Problem with " + name + "'s team " + teamNumber + " in " + this.file.getName() + ":\n" + message);
     }
 
-    private Map<String, List<String>> parseTeamsFile(Scanner sc) {
-        int lineCounter = 0;
-        // Eat lines until "# Teams" is found
-        while (sc.hasNextLine()) {
-            lineCounter++;
-            String line = sc.nextLine().trim();
-            if (line.compareTo("# Teams") == 0 || line.compareTo("# teams") == 0) {
-                break;
-            }
-        }
-        if (!sc.hasNextLine()) {
-            throw new LeaderTeamsException(this.filename + " must contain a \"# Teams\" line before the team lists.");
-        }
+    public Map<String, List<TrainerPokemon>> getTeams(List<Integer> gymOrder, Map<String, Pokemon> pokeMap, Map<String, Integer> moveMap, Map<String, Integer> itemMap) {
+        ObjectMapper mapper = new ObjectMapper();
+        validateInputFile(mapper, file, pokeMap, moveMap, itemMap);
 
-        Map<String, List<String>> teamStrings = new HashMap<>();
-
-        // Find the first Gym Leader name
-        String eatenName = null;
-        while (sc.hasNextLine()) {
-            lineCounter++;
-            String line = sc.nextLine().trim();
-            if (line.length() != 0) {
-                if (Character.isLetter(line.charAt(0))) {
-                    if (this.leaderNames.contains(line)) {
-                        eatenName = line;
-                        break;
-                    }
-                    else {
-                        throw new LeaderTeamsException(line + "\n" +
-                                line + " is not recognized as a gym leader for this game. Is it misspelled?");
-                    }
+        String name = "";
+        int newGym = 0;
+        Map<String, List<TrainerPokemon>> leaderTeams = new HashMap<>();
+        try {
+            JsonNode jsonRoot = mapper.readTree(file);
+            for (int i = 0; i < this.leaderNames.size(); i++) {
+                name = leaderNames.get(i);
+                newGym = gymOrder.indexOf(i) + 1;
+                JsonNode team = jsonRoot.at("/" + name + "/" + newGym);
+                if (team.isEmpty()) {
+                    // vanilla team
+                    leaderTeams.put(name, null);
+                }
+                else if (team.size() > 6) {
+                    parsingError(name, newGym, "A team cannot have more than 6 Pokemon. Found " + team.size() + " Pokemon.");
                 }
                 else {
-                    error(lineCounter, line + "\n" +
-                            "Expected a gym leader's name after # Teams.");
-                }
-            }
-        }
-
-        // Deal with the rest of the lines.
-        int teamCounter = 0;
-        while (sc.hasNextLine()) {
-            lineCounter++;
-            String line = sc.nextLine().trim();
-            if (line.length() == 0) {
-                continue;
-            }
-            if (Character.isLetter(line.charAt(0))) { // the line is a leader's name
-                if (teamCounter != gymCount) {
-                    throw new LeaderTeamsException("Problem with gym leader " + eatenName + " (line " + lineCounter + ") in " + this.filename + ":\n" +
-                            eatenName + " has " + teamCounter + " teams listed. Every leader needs " + gymCount + " teams.");
-                }
-                else if (this.leaderNames.contains(line)) {
-                    eatenName = line;
-                    teamCounter = 0;
-                }
-                else {
-                    error(lineCounter, line + "\n" +
-                            "\"" + line + "\" is not recognized as a gym leader for this game. Is it misspelled?");
-                }
-            }
-            else if (!Character.isDigit(line.charAt(0))) { // the line is not a leader's name or a team
-                error(lineCounter, line + "\n" +
-                        "Cannot parse \"" + line + "\" as a leader name or a team.");
-            }
-            else { // the line is a team
-                if (!line.contains(":")) {
-                    error(lineCounter, line + "\n" +
-                            "This line should have a \":\" after the gym number.");
-                }
-                String indexStr = line.substring(0, line.indexOf(":")).trim();
-                int index = 0;
-                try {
-                    index = Integer.parseInt(indexStr);
-                }
-                catch (NumberFormatException e) {
-                    error(lineCounter, line + "\n" +
-                            "Unable to parse \"" + indexStr + "\" as a number.");
-                }
-                if (index < 1 || index > this.gymCount) {
-                    error(lineCounter, line + "\n" +
-                            "Cannot handle gym number " + index + ". Must be in the range 1-" + gymCount);
-                }
-                List<String> team = new ArrayList<>();
-                String teamStr = line.substring(line.indexOf(":") + 1).trim();
-                if (teamStr.compareTo("vanilla") == 0 || teamStr.compareTo("Vanilla") == 0) {
-                    team = null;
-                }
-                else {
-                    String[] teamArr = teamStr.split("/");
-                    for (String str : teamArr) {
-                        String mon = str.trim();
-                        if (mon.length() == 0) {
-                            error(lineCounter, line + "\n" +
-                                    "There's an extra / on this line.");
-                        }
-                        else if (Character.isLetter(mon.charAt(0)) && Character.isDigit(mon.charAt(mon.length() - 1))) {
-                            for (int i = mon.lastIndexOf(" ") - 1; i > 0; i--) {
-                                char current = mon.charAt(i);
-                                if (current != ' ') {
-                                    break;
-                                }
-                                mon = mon.substring(0, i) + mon.substring(i + 1);
-                            }
-                            // guarantees that there is exactly 1 space between the mon and level.
-                            team.add(mon);
-                        }
-                        else {
-                            error(lineCounter, line + "\n" +
-                                    "Unable to parse \"" + mon + "\" as a Pokemon and a level. It should be like \"Furret 20\".");
-                        }
+                    List<TrainerPokemon> tPokemon = new ArrayList<>();
+                    for (JsonNode node : team) {
+                        TrainerPokemon tp = mapper.treeToValue(node, TrainerPokemon.class);
+                        tp.convertJsonValues(pokeMap, moveMap, itemMap);
+                        tPokemon.add(tp);
                     }
+                    leaderTeams.put(name, tPokemon);
                 }
-                if (team != null && (team.size() == 0 || team.size() > 6)) {
-                    error(lineCounter, line + "\n" +
-                            "A team must have 1-6 Pokemon. Found " + team.size() + " Pokemon.");
-                }
-                teamStrings.put(eatenName + index, team);
-                teamCounter++;
             }
-        } // end while (sc.hasNextLine())
-        return teamStrings;
+        } catch (UnrecognizedPropertyException e) {
+            // when a property is supplied that doesn't exist
+            parsingError(name, newGym, "This team contained a property that could not be recognized.\n" + e.getMessage());
+        } catch (InvalidFormatException e) {
+            // deserialization error, e.g. a String is passed to an int field and can't be parsed as an int
+            parsingError(name, newGym, "Type mismatch in one of the fields.\n" + e.getMessage());
+        } catch (LeaderTeamsException | IOException e) {
+            parsingError(name, newGym, e.getMessage());
+        }
+        return leaderTeams;
     }
 
-    public List<List<TrainerPokemon>> getLeaderTeams(List<Trainer> gymLeaders, List<Integer> gymOrder, Map<String, Pokemon> pokeNameLookup) {
-        List<List<TrainerPokemon>> teams = new ArrayList<>();
-        // this.leaderTeams has keys like "Roark2" and maps to a list with strings like "Onix 30"
-        for (int i = 0; i < gymLeaders.size(); i++) {
-            Trainer t = gymLeaders.get(i);
-            String tname = t.fullDisplayName.substring(t.fullDisplayName.lastIndexOf(' ') + 1);
-            int newGymNum = gymOrder.indexOf(i) + 1;
-            if (!this.leaderNames.contains(tname)) {// the trainer name is bad
-                throw new LeaderTeamsException("Error in custom gym leader teams " + this.filename + "\n" +
-                                "Did not parse a Gym Leader's name correctly: " + tname);
-            }
-            List<String> pokeList = this.leaderTeams.get(tname + newGymNum);
-            if (pokeList == null) {
-                teams.add(null);
-                continue; // vanilla team, don't change it
-            }
-            List<TrainerPokemon> newPokemon = new ArrayList<>();
-            for (String str : pokeList) {
-                String pokeName = str.substring(0, str.lastIndexOf(' ')).toUpperCase();
-                String levelStr = str.substring(str.lastIndexOf(' ') + 1);
-                Pokemon poke = pokeNameLookup.get(pokeName);
-                if (poke == null) {
-                    throw new LeaderTeamsException("Error in custom gym leader teams " + this.filename + "\n" +
-                                    "Problem with " + tname + "'s team #" + newGymNum + ": \"" + str + "\"\n" +
-                                    "Could not find a Pokemon with the name \"" + pokeName + "\". Is it misspelled?");
+    private void validateInputFile(ObjectMapper mapper, File file, Map<String, Pokemon> pokeMap, Map<String, Integer> moveMap, Map<String, Integer> itemMap) {
+        String name = "";
+        int gymNum = 0;
+        try {
+            JsonNode jsonRoot = mapper.readTree(file);
+            for (int i = 0; i < this.leaderNames.size(); i++) {
+                name = this.leaderNames.get(i);
+                for (gymNum = 1; gymNum <= this.gymCount; gymNum++) {
+                    JsonNode team = jsonRoot.at("/" + name + "/" + gymNum);
+                    if (team.isMissingNode()) {
+                        // The json does not have a reference to name/i
+                        throw new LeaderTeamsException("There is no team defined for \"" + name + "\" for gym #" + i +
+                                " in " + this.file.getName());
+                    }
+                    // Validate every field in every team member in every team
+                    for (JsonNode node : team) {
+                        TrainerPokemon tp = mapper.treeToValue(node, TrainerPokemon.class);
+                        tp.convertJsonValues(pokeMap, moveMap, itemMap);
+                    }
                 }
-                int level;
-                try {
-                    level = Integer.parseInt(levelStr);
-                } catch (NumberFormatException e) {
-                    throw new LeaderTeamsException("Error in custom gym leader teams " + this.filename + "\n" +
-                                    "Problem with " + tname + "'s team #" + newGymNum + ": \"" + str + "\"\n" +
-                                    "Could not parse \"" + levelStr + "\" as a number.");
-                }
-                if (level < 1 || level > 100) {
-                    throw new LeaderTeamsException("Error in custom gym leader teams " + this.filename + "\n" +
-                                    "Problem with " + tname + "'s team #" + newGymNum + ": \"" + str + "\"\n" +
-                                    level + " is an invalid level.");
-                }
-                TrainerPokemon tp = t.pokemon.get(0).copy(); // just use the first Pokemon in the original team as reference
-                tp.pokemon = poke;
-                tp.level = level;
-                tp.resetMoves = true;
-                newPokemon.add(tp);
             }
-            //t.pokemon = newPokemon;
-            teams.add(newPokemon);
+        } catch (StreamReadException e) {
+            throw new LeaderTeamsException("json parsing error in " + this.file.getName() + "\n" + e.getMessage());
+        } catch (InvalidFormatException e) {
+            // Deserialization error. e.g. a String is passed to an int field and can't be parsed as an int
+            parsingError(name, gymNum,"Type mismatch in one of the fields.\n" + e.getMessage());
+        } catch (UnrecognizedPropertyException e) {
+            // when a property is supplied that doesn't exist in TrainerPokemon
+            String message = e.getMessage();
+            int firstQuoteIndex = message.indexOf('"');
+            String a = message.substring(firstQuoteIndex + 1);
+            int secondQuoteIndex = a.indexOf('"');
+            String lighterMessage = message.substring(0, firstQuoteIndex + secondQuoteIndex + 2);
+            parsingError(name, gymNum, "This team contained a field that could not be recognized.\n" + lighterMessage);
+        } catch (MismatchedInputException e) {
+            throw new LeaderTeamsException(this.file.getName() + " is valid json, but does not match the expected input structure.\n" +
+                    "Please reference the included Specification text file or a valid teams file for the proper json structure.");
+        } catch (LeaderTeamsException e) {
+            parsingError(name, gymNum, e.getMessage());
+        } catch (IOException e) {
+            String absPath = this.file.getAbsolutePath();
+            String parentPath = absPath.substring(0, absPath.lastIndexOf(File.separatorChar));
+            String randomizerPath = parentPath.substring(0, parentPath.lastIndexOf(File.separatorChar));
+            throw new LeaderTeamsException("The randomizer could not find " + this.file.getName() + ".\n" +
+                    "Please make sure that there is a `leader_teams` folder in " + randomizerPath + ",\n" +
+                    "and that the `" + this.file.getName() + "` file is in that folder.");
         }
-        return teams;
     }
 }

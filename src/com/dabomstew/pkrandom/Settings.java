@@ -317,6 +317,7 @@ public class Settings {
     private boolean randomizeMap;
     private boolean shuffleGyms;
     private boolean shuffleE4;
+    private boolean randomizeLeaderTeams;
 
     // to and from strings etc
     public void write(FileOutputStream out) throws IOException {
@@ -577,7 +578,7 @@ public class Settings {
                 pickupItemsMod == PickupItemsMod.UNCHANGED, banBadRandomPickupItems));
 
         // 50 randomize entrances
-        out.write(makeByteSelected(randomizeMap, shuffleGyms, shuffleE4));
+        out.write(makeByteSelected(randomizeMap, shuffleGyms, shuffleE4, randomizeLeaderTeams));
 
         try {
             byte[] romName = this.romName.getBytes("US-ASCII");
@@ -866,6 +867,7 @@ public class Settings {
         settings.setRandomizeMap(restoreState(data[50], 0));
         settings.setShuffleGyms(restoreState(data[50], 1));
         settings.setShuffleE4(restoreState(data[50], 2));
+        settings.setRandomizeLeaderTeams(restoreState(data[50], 3));
 
         int romNameLength = data[LENGTH_OF_SETTINGS_DATA] & 0xFF;
         String romName = new String(data, LENGTH_OF_SETTINGS_DATA + 1, romNameLength, "US-ASCII");
@@ -2278,6 +2280,14 @@ public class Settings {
 
     public void setShuffleE4(boolean shuffleE4) {
         this.shuffleE4 = shuffleE4;
+    }
+
+    public boolean isRandomizeLeaderTeams() {
+        return randomizeLeaderTeams;
+    }
+
+    public void setRandomizeLeaderTeams(boolean randomizeLeaderTeams) {
+        this.randomizeLeaderTeams = randomizeLeaderTeams;
     }
 
     private static int makeByteSelected(boolean... bools) {

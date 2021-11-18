@@ -296,6 +296,7 @@ public class NewRandomizerGUI {
     private JCheckBox reShuffleGymsCheckBox;
     private JCheckBox reShuffleE4CheckBox;
     private JLabel reUnsupportedWarningLabel;
+    private JCheckBox tpRandomizeLeaderTeamsCheckBox;
     private JCheckBox miscForceChallengeModeCheckBox;
     private JCheckBox pbsAssignEvoStatsRandomlyCheckBox;
 
@@ -464,6 +465,7 @@ public class NewRandomizerGUI {
         shRandomRadioButton.addActionListener(e -> enableOrDisableSubControls());
         puUnchangedRadioButton.addActionListener(e -> enableOrDisableSubControls());
         puRandomRadioButton.addActionListener(e -> enableOrDisableSubControls());
+        reShuffleGymsCheckBox.addActionListener(e -> enableOrDisableSubControls());
         websiteLinkLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -1538,6 +1540,7 @@ public class NewRandomizerGUI {
         reRandomizeMapCheckBox.setSelected(settings.isRandomizeMap());
         reShuffleGymsCheckBox.setSelected(settings.isShuffleGyms());
         reShuffleE4CheckBox.setSelected(settings.isShuffleE4());
+        tpRandomizeLeaderTeamsCheckBox.setSelected(settings.isRandomizeLeaderTeams());
 
         int mtsSelected = settings.getCurrentMiscTweaks();
         int mtCount = MiscTweak.allTweaks.size();
@@ -1732,6 +1735,7 @@ public class NewRandomizerGUI {
         settings.setRandomizeMap(reRandomizeMapCheckBox.isSelected());
         settings.setShuffleGyms(reShuffleGymsCheckBox.isSelected());
         settings.setShuffleE4(reShuffleE4CheckBox.isSelected());
+        settings.setRandomizeLeaderTeams(tpRandomizeLeaderTeamsCheckBox.isSelected());
 
         int currentMiscTweaks = 0;
         int mtCount = MiscTweak.allTweaks.size();
@@ -2453,6 +2457,9 @@ public class NewRandomizerGUI {
         reShuffleE4CheckBox.setVisible(true);
         reShuffleE4CheckBox.setEnabled(false);
         reShuffleE4CheckBox.setSelected(false);
+        tpRandomizeLeaderTeamsCheckBox.setVisible(true);
+        tpRandomizeLeaderTeamsCheckBox.setEnabled(false);
+        tpRandomizeLeaderTeamsCheckBox.setSelected(false);
         reUnsupportedWarningLabel.setVisible(false);
         miscBWExpPatchCheckBox.setVisible(true);
         miscBWExpPatchCheckBox.setEnabled(false);
@@ -2811,11 +2818,13 @@ public class NewRandomizerGUI {
             // Randomize Entrances
             boolean entranceRando = romHandler.hasEntranceRandomization();
             reRandomizeMapCheckBox.setEnabled(entranceRando);
-            reShuffleGymsCheckBox.setEnabled(entranceRando);
-            reShuffleE4CheckBox.setEnabled(entranceRando);
             reRandomizeMapCheckBox.setVisible(entranceRando);
+            reShuffleGymsCheckBox.setEnabled(entranceRando);
             reShuffleGymsCheckBox.setVisible(entranceRando);
+            reShuffleE4CheckBox.setEnabled(entranceRando);
             reShuffleE4CheckBox.setVisible(entranceRando);
+            tpRandomizeLeaderTeamsCheckBox.setVisible(entranceRando);
+            tpRandomizeLeaderTeamsCheckBox.setEnabled(false);
 
             reUnsupportedWarningLabel.setVisible(!entranceRando);
 
@@ -3438,6 +3447,14 @@ public class NewRandomizerGUI {
         } else {
             puBanBadItemsCheckBox.setEnabled(false);
             puBanBadItemsCheckBox.setSelected(false);
+        }
+
+        // Randomize Entrances
+        if (reShuffleGymsCheckBox.isSelected() && !tpUnchangedRadioButton.isSelected()) {
+            tpRandomizeLeaderTeamsCheckBox.setEnabled(true);
+        } else {
+            tpRandomizeLeaderTeamsCheckBox.setEnabled(false);
+            tpRandomizeLeaderTeamsCheckBox.setSelected(false);
         }
     }
 

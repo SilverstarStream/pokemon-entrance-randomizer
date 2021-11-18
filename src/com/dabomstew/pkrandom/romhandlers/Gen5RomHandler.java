@@ -4028,4 +4028,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
         }
         return "bw2";
     }
+
+    // Note to self: when implementing getGymLeaders() and getLeaderNames(), make sure that each function only returns the 8 values for that game
+    // (Drayden and Iris shouldn't be in the same list)
 }

@@ -1,0 +1,1797 @@
+{
+  "Roark":{
+    "1":[],
+    "2":[
+      {
+        "pokemon":"Geodude",
+        "level":20,
+        "move1":"Stealth Rock",
+        "move2":"Rock Slide",
+        "move3":"Magnitude",
+        "move4":"Selfdestruct",
+        "IVs":6
+      },
+      {
+        "pokemon":"Nosepass",
+        "level":20,
+        "move1":"Stealth Rock",
+        "move2":"Rock Slide",
+        "move3":"Screech",
+        "move4":"Roar",
+        "IVs":6
+      },
+      {
+        "pokemon":"Cranidos",
+        "level":22,
+        "move1":"Headbutt",
+        "move2":"Crunch",
+        "move3":"Leer",
+        "move4":"Scary Face",
+        "IVs":6,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "3":[
+      {
+        "pokemon":"Graveler",
+        "level":24,
+        "move1":"Stealth Rock",
+        "move2":"Rock Slide",
+        "move3":"Magnitude",
+        "move4":"Selfdestruct",
+        "IVs":12
+      },
+      {
+        "pokemon":"Cranidos",
+        "level":24,
+        "move1":"Double-Edge",
+        "move2":"Crunch",
+        "move3":"Rock Slide",
+        "move4":"Scary Face",
+        "IVs":12
+      },
+      {
+        "pokemon":"Probopass",
+        "level":26,
+        "move1":"AncientPower",
+        "move2":"Thunderbolt",
+        "move3":"Thunder Wave",
+        "move4":"Sandstorm",
+        "IVs":12,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "4":[
+      {
+        "pokemon":"Graveler",
+        "level":28,
+        "move1":"Stealth Rock",
+        "move2":"Rock Slide",
+        "move3":"Magnitude",
+        "move4":"Selfdestruct",
+        "IVs":18
+      },
+      {
+        "pokemon":"Probopass",
+        "level":29,
+        "move1":"AncientPower",
+        "move2":"Thunderbolt",
+        "move3":"Thunder Wave",
+        "move4":"Sandstorm",
+        "IVs":18
+      },
+      {
+        "pokemon":"Rampardos",
+        "level":32,
+        "move1":"Double-Edge",
+        "move2":"Crunch",
+        "move3":"Zen Headbutt",
+        "move4":"Hammer Arm",
+        "IVs":18,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "5":[
+      {
+        "pokemon":"Graveler",
+        "level":33,
+        "move1":"Stealth Rock",
+        "move2":"Stone Edge",
+        "move3":"Earthquake",
+        "move4":"Explosion",
+        "IVs":24
+      },
+      {
+        "pokemon":"Probopass",
+        "level":34,
+        "move1":"AncientPower",
+        "move2":"Thunderbolt",
+        "move3":"Thunder Wave",
+        "move4":"Flash Cannon",
+        "IVs":24
+      },
+      {
+        "pokemon":"Rampardos",
+        "level":37,
+        "move1":"Double-Edge",
+        "move2":"Crunch",
+        "move3":"Zen Headbutt",
+        "move4":"Superpower",
+        "IVs":24,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "6":[
+      {
+        "pokemon":"Probopass",
+        "level":37,
+        "move1":"AncientPower",
+        "move2":"Thunderbolt",
+        "move3":"Thunder Wave",
+        "move4":"Stealth Rock",
+        "IVs":24
+      },
+      {
+        "pokemon":"Rhyperior",
+        "level":38,
+        "move1":"Earthquake",
+        "move2":"Stone Edge",
+        "move3":"Aqua Tail",
+        "move4":"ThunderPunch",
+        "IVs":24
+      },
+      {
+        "pokemon":"Rampardos",
+        "level":41,
+        "move1":"Double-Edge",
+        "move2":"Crunch",
+        "move3":"Zen Headbutt",
+        "move4":"Superpower",
+        "IVs":24,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "7":[
+      {
+        "pokemon":"Probopass",
+        "level":40,
+        "move1":"AncientPower",
+        "move2":"Thunderbolt",
+        "move3":"Thunder Wave",
+        "move4":"Stealth Rock",
+        "IVs":30
+      },
+      {
+        "pokemon":"Rampardos",
+        "level":40,
+        "move1":"Double-Edge",
+        "move2":"Crunch",
+        "move3":"Zen Headbutt",
+        "move4":"Superpower",
+        "IVs":30
+      },
+      {
+        "pokemon":"Rhyperior",
+        "level":42,
+        "move1":"Earthquake",
+        "move2":"Stone Edge",
+        "move3":"Aqua Tail",
+        "move4":"ThunderPunch",
+        "IVs":30
+      },
+      {
+        "pokemon":"Aerodactyl",
+        "level":42,
+        "move1":"Stone Edge",
+        "move2":"Fire Fang",
+        "move3":"Thunder Fang",
+        "move4":"Aerial Ace",
+        "IVs":30,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "8":[
+      {
+        "pokemon":"Probopass",
+        "level":46,
+        "move1":"AncientPower",
+        "move2":"Thunderbolt",
+        "move3":"Thunder Wave",
+        "move4":"Stealth Rock",
+        "IVs":30
+      },
+      {
+        "pokemon":"Rampardos",
+        "level":46,
+        "move1":"Head Smash",
+        "move2":"Crunch",
+        "move3":"Zen Headbutt",
+        "move4":"Superpower",
+        "IVs":30
+      },
+      {
+        "pokemon":"Rhyperior",
+        "level":48,
+        "move1":"Earthquake",
+        "move2":"Stone Edge",
+        "move3":"Aqua Tail",
+        "move4":"ThunderPunch",
+        "IVs":30
+      },
+      {
+        "pokemon":"Aerodactyl",
+        "level":50,
+        "move1":"Stone Edge",
+        "move2":"Fire Fang",
+        "move3":"Thunder Fang",
+        "move4":"Aerial Ace",
+        "IVs":30,
+        "heldItem":"Sitrus Berry"
+      }
+    ]
+  },
+  "Gardenia":{
+    "1":[
+      {
+        "pokemon":"Turtwig",
+        "level":12,
+        "move1":"Grass Knot",
+        "move2":"Sunny Day",
+        "move3":"Reflect",
+        "IVs":6
+      },
+      {
+        "pokemon":"Cherubi",
+        "level":12,
+        "move1":"Grass Knot",
+        "move2":"Sunny Day",
+        "move3":"Safeguard",
+        "IVs":6
+      },
+      {
+        "pokemon":"Roselia",
+        "level":14,
+        "move1":"Grass Knot",
+        "move2":"Poison Sting",
+        "move3":"Stun Spore",
+        "IVs":6
+      }
+    ],
+    "2":[],
+    "3":[
+      {
+        "pokemon":"Grotle",
+        "level":24,
+        "move1":"Razor Leaf",
+        "move2":"Bite",
+        "move3":"Reflect",
+        "move4":"Curse",
+        "IVs":12
+      },
+      {
+        "pokemon":"Cherrim",
+        "level":24,
+        "move1":"Grass Knot",
+        "move2":"Sunny Day",
+        "move3":"Magical Leaf",
+        "move4":"Toxic",
+        "IVs":12
+      },
+      {
+        "pokemon":"Roserade",
+        "level":26,
+        "move1":"Giga Drain",
+        "move2":"Poison Jab",
+        "move3":"Extrasensory",
+        "move4":"Sleep Powder",
+        "IVs":12,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "4":[
+      {
+        "pokemon":"Cherrim",
+        "level":28,
+        "move1":"Grass Knot",
+        "move2":"Sunny Day",
+        "move3":"Magical Leaf",
+        "move4":"Toxic",
+        "IVs":18
+      },
+      {
+        "pokemon":"Roserade",
+        "level":29,
+        "move1":"Giga Drain",
+        "move2":"Sludge Bomb",
+        "move3":"Extrasensory",
+        "move4":"Sleep Powder",
+        "IVs":18
+      },
+      {
+        "pokemon":"Torterra",
+        "level":32,
+        "move1":"Earthquake",
+        "move2":"Seed Bomb",
+        "move3":"Curse",
+        "move4":"Synthesis",
+        "IVs":18,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "5":[
+      {
+        "pokemon":"Leafeon",
+        "level":33,
+        "move1":"Seed Bomb",
+        "move2":"X-Scissor",
+        "move3":"Aerial Ace",
+        "move4":"Synthesis",
+        "IVs":24
+      },
+      {
+        "pokemon":"Roserade",
+        "level":34,
+        "move1":"Grass Knot",
+        "move2":"Sludge Bomb",
+        "move3":"Extrasensory",
+        "move4":"Sleep Powder",
+        "IVs":24
+      },
+      {
+        "pokemon":"Torterra",
+        "level":37,
+        "move1":"Earthquake",
+        "move2":"Seed Bomb",
+        "move3":"Crunch",
+        "move4":"Stone Edge",
+        "IVs":24,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "6":[
+      {
+        "pokemon":"Leafeon",
+        "level":37,
+        "move1":"Seed Bomb",
+        "move2":"X-Scissor",
+        "move3":"Aerial Ace",
+        "move4":"Synthesis",
+        "IVs":24
+      },
+      {
+        "pokemon":"Roserade",
+        "level":38,
+        "move1":"Grass Knot",
+        "move2":"Sludge Bomb",
+        "move3":"Extrasensory",
+        "move4":"Sleep Powder",
+        "IVs":24
+      },
+      {
+        "pokemon":"Torterra",
+        "level":41,
+        "move1":"Earthquake",
+        "move2":"Wood Hammer",
+        "move3":"Crunch",
+        "move4":"Stone Edge",
+        "IVs":24,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "7":[
+      {
+        "pokemon":"Leafeon",
+        "level":40,
+        "move1":"Leaf Blade",
+        "move2":"X-Scissor",
+        "move3":"Aerial Ace",
+        "move4":"Synthesis",
+        "IVs":30
+      },
+      {
+        "pokemon":"Abomasnow",
+        "level":40,
+        "move1":"Grass Knot",
+        "move2":"Focus Blast",
+        "move3":"Water Pulse",
+        "move4":"Blizzard",
+        "IVs":30
+      },
+      {
+        "pokemon":"Roserade",
+        "level":42,
+        "move1":"Grass Knot",
+        "move2":"Sludge Bomb",
+        "move3":"Extrasensory",
+        "move4":"Sleep Powder",
+        "IVs":30
+      },
+      {
+        "pokemon":"Torterra",
+        "level":44,
+        "move1":"Earthquake",
+        "move2":"Wood Hammer",
+        "move3":"Superpower",
+        "move4":"Stone Edge",
+        "IVs":30,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "8":[
+      {
+        "pokemon":"Leafeon",
+        "level":46,
+        "move1":"Leaf Blade",
+        "move2":"X-Scissor",
+        "move3":"Aerial Ace",
+        "move4":"Synthesis",
+        "IVs":30
+      },
+      {
+        "pokemon":"Abomasnow",
+        "level":46,
+        "move1":"Grass Knot",
+        "move2":"Focus Blast",
+        "move3":"Water Pulse",
+        "move4":"Blizzard",
+        "IVs":30
+      },
+      {
+        "pokemon":"Roserade",
+        "level":48,
+        "move1":"Grass Knot",
+        "move2":"Sludge Bomb",
+        "move3":"Extrasensory",
+        "move4":"Sleep Powder",
+        "IVs":30
+      },
+      {
+        "pokemon":"Torterra",
+        "level":50,
+        "move1":"Earthquake",
+        "move2":"Wood Hammer",
+        "move3":"Superpower",
+        "move4":"Stone Edge",
+        "IVs":30,
+        "heldItem":"Sitrus Berry"
+      }
+    ]
+  },
+  "Fantina":{
+    "1":[
+      {
+        "pokemon":"Duskull",
+        "level":12,
+        "move1":"Will-O-Wisp",
+        "move2":"Future Sight",
+        "move3":"Shadow Sneak",
+        "IVs":6
+      },
+      {
+        "pokemon":"Misdreavus",
+        "level":12,
+        "move1":"Shadow Ball",
+        "move2":"Magical Leaf",
+        "move3":"Confuse Ray",
+        "IVs":6
+      },
+      {
+        "pokemon":"Haunter",
+        "level":14,
+        "move1":"Shadow Claw",
+        "move2":"Sucker Punch",
+        "move3":"Hypnosis",
+        "IVs":6
+      }
+    ],
+    "2":[
+      {
+        "pokemon":"Duskull",
+        "level":20,
+        "move1":"Will-O-Wisp",
+        "move2":"Future Sight",
+        "move3":"Shadow Sneak",
+        "move4":"Pursuit",
+        "IVs":6
+      },
+      {
+        "pokemon":"Misdreavus",
+        "level":20,
+        "move1":"Shadow Claw",
+        "move2":"Sucker Punch",
+        "move3":"Hypnosis",
+        "move4":"Confuse Ray",
+        "IVs":6
+      },
+      {
+        "pokemon":"Mismagius",
+        "level":22,
+        "move1":"Shadow Ball",
+        "move2":"Magical Leaf",
+        "move3":"Confuse Ray",
+        "move4":"Psybeam",
+        "IVs":6,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "3":[],
+    "4":[
+      {
+        "pokemon":"Drifblim",
+        "level":28,
+        "move1":"Will-O-Wisp",
+        "move2":"Fly",
+        "move3":"Shadow Claw",
+        "move4":"Stockpile",
+        "IVs":18
+      },
+      {
+        "pokemon":"Gengar",
+        "level":29,
+        "move1":"Shadow Claw",
+        "move2":"Sludge Bomb",
+        "move3":"Energy Ball",
+        "move4":"Confuse Ray",
+        "IVs":18
+      },
+      {
+        "pokemon":"Mismagius",
+        "level":32,
+        "move1":"Shadow Ball",
+        "move2":"Thunderbolt",
+        "move3":"Psychic",
+        "move4":"Confuse Ray",
+        "IVs":18,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "5":[
+      {
+        "pokemon":"Drifblim",
+        "level":33,
+        "move1":"Will-O-Wisp",
+        "move2":"Fly",
+        "move3":"Shadow Claw",
+        "move4":"Stockpile",
+        "IVs":24
+      },
+      {
+        "pokemon":"Gengar",
+        "level":34,
+        "move1":"Shadow Claw",
+        "move2":"Sludge Bomb",
+        "move3":"Energy Ball",
+        "move4":"Confuse Ray",
+        "IVs":24
+      },
+      {
+        "pokemon":"Mismagius",
+        "level":37,
+        "move1":"Shadow Ball",
+        "move2":"Thunderbolt",
+        "move3":"Psychic",
+        "move4":"Confuse Ray",
+        "IVs":24,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "6":[
+      {
+        "pokemon":"Dusclops",
+        "level":37,
+        "move1":"Will-O-Wisp",
+        "move2":"Pain Split",
+        "move3":"Shadow Sneak",
+        "move4":"Curse",
+        "IVs":24
+      },
+      {
+        "pokemon":"Gengar",
+        "level":38,
+        "move1":"Shadow Claw",
+        "move2":"Sludge Bomb",
+        "move3":"Energy Ball",
+        "move4":"Confuse Ray",
+        "IVs":24
+      },
+      {
+        "pokemon":"Mismagius",
+        "level":41,
+        "move1":"Shadow Ball",
+        "move2":"Thunderbolt",
+        "move3":"Psychic",
+        "move4":"Icy Wind",
+        "IVs":24,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "7":[
+      {
+        "pokemon":"Dusknoir",
+        "level":40,
+        "move1":"Will-O-Wisp",
+        "move2":"Pain Split",
+        "move3":"Shadow Punch",
+        "move4":"Double Team",
+        "IVs":30
+      },
+      {
+        "pokemon":"Drifblim",
+        "level":40,
+        "move1":"Will-O-Wisp",
+        "move2":"Fly",
+        "move3":"Shadow Claw",
+        "move4":"Stockpile",
+        "IVs":30
+      },
+      {
+        "pokemon":"Mismagius",
+        "level":42,
+        "move1":"Shadow Ball",
+        "move2":"Thunderbolt",
+        "move3":"Psychic",
+        "move4":"Icy Wind",
+        "IVs":30
+      },
+      {
+        "pokemon":"Gengar",
+        "level":44,
+        "move1":"Shadow Ball",
+        "move2":"Sludge Bomb",
+        "move3":"Thunderbolt",
+        "move4":"Focus Blast",
+        "IVs":30,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "8":[
+      {
+        "pokemon":"Dusknoir",
+        "level":46,
+        "move1":"Will-O-Wisp",
+        "move2":"Pain Split",
+        "move3":"Shadow Punch",
+        "move4":"Double Team",
+        "IVs":30
+      },
+      {
+        "pokemon":"Drifblim",
+        "level":46,
+        "move1":"Will-O-Wisp",
+        "move2":"Fly",
+        "move3":"Shadow Claw",
+        "move4":"Stockpile",
+        "IVs":30
+      },
+      {
+        "pokemon":"Mismagius",
+        "level":48,
+        "move1":"Shadow Ball",
+        "move2":"Thunderbolt",
+        "move3":"Psychic",
+        "move4":"Icy Wind",
+        "IVs":30
+      },
+      {
+        "pokemon":"Gengar",
+        "level":50,
+        "move1":"Shadow Ball",
+        "move2":"Sludge Bomb",
+        "move3":"Thunderbolt",
+        "move4":"Focus Blast",
+        "IVs":30,
+        "heldItem":"Sitrus Berry"
+      }
+    ]
+  },
+  "Maylene":{
+    "1":[
+      {
+        "pokemon":"Meditite",
+        "level":12,
+        "move1":"Drain Punch",
+        "move2":"Confusion",
+        "move3":"Fake Out",
+        "IVs":6
+      },
+      {
+        "pokemon":"Machop",
+        "level":12,
+        "move1":"Karate Chop",
+        "move2":"Focus Energy",
+        "move3":"Rock Tomb",
+        "IVs":6
+      },
+      {
+        "pokemon":"Lucario",
+        "level":14,
+        "move1":"Force Palm",
+        "move2":"Metal Claw",
+        "move3":"Quick Attack",
+        "IVs":6
+      }
+    ],
+    "2":[
+      {
+        "pokemon":"Meditite",
+        "level":20,
+        "move1":"Drain Punch",
+        "move2":"Confusion",
+        "move3":"Fake Out",
+        "move4":"Rock Tomb",
+        "IVs":6
+      },
+      {
+        "pokemon":"Machop",
+        "level":20,
+        "move1":"Karate Chop",
+        "move2":"Focus Energy",
+        "move3":"Rock Tomb",
+        "move4":"Strength",
+        "IVs":6
+      },
+      {
+        "pokemon":"Lucario",
+        "level":22,
+        "move1":"Force Palm",
+        "move2":"Metal Claw",
+        "move3":"Drain Punch",
+        "move4":"Bone Rush",
+        "IVs":6
+      }
+    ],
+    "3":[
+      {
+        "pokemon":"Meditite",
+        "level":24,
+        "move1":"Drain Punch",
+        "move2":"Confusion",
+        "move3":"Fake Out",
+        "move4":"Rock Tomb",
+        "IVs":12
+      },
+      {
+        "pokemon":"Machoke",
+        "level":24,
+        "move1":"Karate Chop",
+        "move2":"Focus Energy",
+        "move3":"Rock Tomb",
+        "move4":"Strength",
+        "IVs":12
+      },
+      {
+        "pokemon":"Lucario",
+        "level":26,
+        "move1":"Force Palm",
+        "move2":"Metal Claw",
+        "move3":"Drain Punch",
+        "move4":"Bone Rush",
+        "IVs":12
+      }
+    ],
+    "4":[],
+    "5":[
+      {
+        "pokemon":"Medicham",
+        "level":33,
+        "move1":"Hi Jump Kick",
+        "move2":"Zen Headbutt",
+        "move3":"Fire Punch",
+        "move4":"Ice Punch",
+        "IVs":24
+      },
+      {
+        "pokemon":"Machoke",
+        "level":34,
+        "move1":"Brick Break",
+        "move2":"Drain Punch",
+        "move3":"ThunderPunch",
+        "move4":"Payback",
+        "IVs":24
+      },
+      {
+        "pokemon":"Lucario",
+        "level":37,
+        "move1":"Aura Sphere",
+        "move2":"Iron Tail",
+        "move3":"Dark Pulse",
+        "move4":"Bone Rush",
+        "IVs":24
+      }
+    ],
+    "6":[
+      {
+        "pokemon":"Medicham",
+        "level":37,
+        "move1":"Hi Jump Kick",
+        "move2":"Zen Headbutt",
+        "move3":"Fire Punch",
+        "move4":"Ice Punch",
+        "IVs":24
+      },
+      {
+        "pokemon":"Machamp",
+        "level":38,
+        "move1":"Brick Break",
+        "move2":"Drain Punch",
+        "move3":"ThunderPunch",
+        "move4":"Payback",
+        "IVs":24
+      },
+      {
+        "pokemon":"Lucario",
+        "level":41,
+        "move1":"Aura Sphere",
+        "move2":"Iron Tail",
+        "move3":"Dark Pulse",
+        "move4":"Bone Rush",
+        "IVs":24
+      }
+    ],
+    "7":[
+      {
+        "pokemon":"Medicham",
+        "level":40,
+        "move1":"Hi Jump Kick",
+        "move2":"Zen Headbutt",
+        "move3":"Fire Punch",
+        "move4":"Ice Punch",
+        "IVs":30
+      },
+      {
+        "pokemon":"Breloom",
+        "level":40,
+        "move1":"Spore",
+        "move2":"Drain Punch",
+        "move3":"Seed Bomb",
+        "move4":"Mach Punch",
+        "IVs":30
+      },
+      {
+        "pokemon":"Machamp",
+        "level":42,
+        "move1":"Stone Edge",
+        "move2":"Drain Punch",
+        "move3":"ThunderPunch",
+        "move4":"Payback",
+        "IVs":30
+      },
+      {
+        "pokemon":"Lucario",
+        "level":44,
+        "move1":"Close Combat",
+        "move2":"Flash Cannon",
+        "move3":"Shadow Ball",
+        "move4":"Bone Rush",
+        "IVs":30
+      }
+    ],
+    "8":[
+      {
+        "pokemon":"Medicham",
+        "level":46,
+        "move1":"Hi Jump Kick",
+        "move2":"Zen Headbutt",
+        "move3":"Fire Punch",
+        "move4":"Ice Punch",
+        "IVs":30
+      },
+      {
+        "pokemon":"Breloom",
+        "level":46,
+        "move1":"Spore",
+        "move2":"Drain Punch",
+        "move3":"Seed Bomb",
+        "move4":"Mach Punch",
+        "IVs":30
+      },
+      {
+        "pokemon":"Machamp",
+        "level":48,
+        "move1":"Stone Edge",
+        "move2":"Drain Punch",
+        "move3":"ThunderPunch",
+        "move4":"Payback",
+        "IVs":30
+      },
+      {
+        "pokemon":"Lucario",
+        "level":51,
+        "move1":"Close Combat",
+        "move2":"Flash Cannon",
+        "move3":"ExtremeSpeed",
+        "move4":"Bone Rush",
+        "IVs":30
+      }
+    ]
+  },
+  "Wake":{
+    "1":[
+      {
+        "pokemon":"Wooper",
+        "level":12,
+        "move1":"Water Pulse",
+        "move2":"Mud Shot",
+        "IVs":6
+      },
+      {
+        "pokemon":"Buizel",
+        "level":12,
+        "move1":"Brine",
+        "move2":"Pursuit",
+        "move3":"Quick Attack",
+        "IVs":6
+      },
+      {
+        "pokemon":"Prinplup",
+        "level":14,
+        "move1":"Brine",
+        "move2":"Pluck",
+        "move3":"Agility",
+        "IVs":6
+      }
+    ],
+    "2":[
+      {
+        "pokemon":"Prinplup",
+        "level":20,
+        "move1":"BubbleBeam",
+        "move2":"Pluck",
+        "move3":"Agility",
+        "move4":"Icy Wind",
+        "IVs":6
+      },
+      {
+        "pokemon":"Buizel",
+        "level":21,
+        "move1":"Brine",
+        "move2":"Pursuit",
+        "move3":"Aqua Jet",
+        "move4":"Headbutt",
+        "IVs":6
+      },
+      {
+        "pokemon":"Gyarados",
+        "level":22,
+        "move1":"Brine",
+        "move2":"Bite",
+        "move3":"Twister",
+        "move4":"Roar",
+        "IVs":6,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "3":[
+      {
+        "pokemon":"Gyarados",
+        "level":24,
+        "move1":"Brine",
+        "move2":"Waterfall",
+        "move3":"Bite",
+        "move4":"Twister",
+        "IVs":12
+      },
+      {
+        "pokemon":"Quagsire",
+        "level":24,
+        "move1":"Water Pulse",
+        "move2":"Mud Shot",
+        "move3":"Rock Tomb",
+        "move4":"Amnesia",
+        "IVs":12
+      },
+      {
+        "pokemon":"Floatzel",
+        "level":26,
+        "move1":"Brine",
+        "move2":"Crunch",
+        "move3":"Ice Fang",
+        "move4":"Aqua Jet",
+        "IVs":12,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "4":[
+      {
+        "pokemon":"Gyarados",
+        "level":28,
+        "move1":"Brine",
+        "move2":"Waterfall",
+        "move3":"Bite",
+        "move4":"Twister",
+        "IVs":18
+      },
+      {
+        "pokemon":"Quagsire",
+        "level":29,
+        "move1":"Water Pulse",
+        "move2":"Mud Shot",
+        "move3":"Rock Tomb",
+        "move4":"Amnesia",
+        "IVs":18
+      },
+      {
+        "pokemon":"Floatzel",
+        "level":32,
+        "move1":"Brine",
+        "move2":"Crunch",
+        "move3":"Ice Fang",
+        "move4":"Aqua Jet",
+        "IVs":18,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "5":[],
+    "6":[
+      {
+        "pokemon":"Gyarados",
+        "level":37,
+        "move1":"Ice Fang",
+        "move2":"Waterfall",
+        "move3":"Bite",
+        "move4":"Dragon Pulse",
+        "IVs":24
+      },
+      {
+        "pokemon":"Quagsire",
+        "level":38,
+        "move1":"Brine",
+        "move2":"Earthquake",
+        "move3":"Rock Slide",
+        "move4":"Yawn",
+        "IVs":24
+      },
+      {
+        "pokemon":"Floatzel",
+        "level":41,
+        "move1":"Waterfall",
+        "move2":"Crunch",
+        "move3":"Ice Fang",
+        "move4":"Aqua Jet",
+        "IVs":24,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "7":[
+      {
+        "pokemon":"Sharpedo",
+        "level":40,
+        "move1":"Crunch",
+        "move2":"Hydro Pump",
+        "move3":"Ice Fang",
+        "move4":"Aqua Jet",
+        "IVs":30
+      },
+      {
+        "pokemon":"Quagsire",
+        "level":40,
+        "move1":"Brine",
+        "move2":"Earthquake",
+        "move3":"Stone Edge",
+        "move4":"Yawn",
+        "IVs":30
+      },
+      {
+        "pokemon":"Gyarados",
+        "level":42,
+        "move1":"Ice Fang",
+        "move2":"Waterfall",
+        "move3":"Bite",
+        "move4":"Flamethrower",
+        "IVs":30
+      },
+      {
+        "pokemon":"Floatzel",
+        "level":44,
+        "move1":"Waterfall",
+        "move2":"Crunch",
+        "move3":"Ice Fang",
+        "move4":"Aqua Jet",
+        "IVs":30,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "8":[
+      {
+        "pokemon":"Sharpedo",
+        "level":46,
+        "move1":"Crunch",
+        "move2":"Hydro Pump",
+        "move3":"Ice Fang",
+        "move4":"Aqua Jet",
+        "IVs":30
+      },
+      {
+        "pokemon":"Quagsire",
+        "level":46,
+        "move1":"Brine",
+        "move2":"Earthquake",
+        "move3":"Stone Edge",
+        "move4":"Yawn",
+        "IVs":30
+      },
+      {
+        "pokemon":"Gyarados",
+        "level":48,
+        "move1":"Ice Fang",
+        "move2":"Waterfall",
+        "move3":"Bite",
+        "move4":"Flamethrower",
+        "IVs":30
+      },
+      {
+        "pokemon":"Floatzel",
+        "level":50,
+        "move1":"Waterfall",
+        "move2":"Crunch",
+        "move3":"Ice Fang",
+        "move4":"Aqua Jet",
+        "IVs":30,
+        "heldItem":"Sitrus Berry"
+      }
+    ]
+  },
+  "Byron":{
+    "1":[
+      {
+        "pokemon":"Magnemite",
+        "level":12,
+        "move1":"Flash Cannon",
+        "move2":"Shock Wave",
+        "move3":"Thunder Wave",
+        "IVs":6
+      },
+      {
+        "pokemon":"Bronzor",
+        "level":12,
+        "move1":"Flash Cannon",
+        "move2":"Confusion",
+        "move3":"Hypnosis",
+        "IVs":6
+      },
+      {
+        "pokemon":"Shieldon",
+        "level":14,
+        "move1":"Flash Cannon",
+        "move2":"Rock Slide",
+        "move3":"Metal Sound",
+        "IVs":6
+      }
+    ],
+    "2":[
+      {
+        "pokemon":"Magnemite",
+        "level":20,
+        "move1":"Flash Cannon",
+        "move2":"Shock Wave",
+        "move3":"Thunder Wave",
+        "move4":"Metal Sound",
+        "IVs":6
+      },
+      {
+        "pokemon":"Bronzor",
+        "level":20,
+        "move1":"Flash Cannon",
+        "move2":"Extrasensory",
+        "move3":"Hypnosis",
+        "move4":"Confuse Ray",
+        "IVs":6
+      },
+      {
+        "pokemon":"Shieldon",
+        "level":22,
+        "move1":"Flash Cannon",
+        "move2":"Rock Slide",
+        "move3":"Iron Defense",
+        "move4":"Metal Sound",
+        "IVs":6,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "3":[
+      {
+        "pokemon":"Magnemite",
+        "level":24,
+        "move1":"Flash Cannon",
+        "move2":"Shock Wave",
+        "move3":"Thunder Wave",
+        "move4":"Metal Sound",
+        "IVs":12
+      },
+      {
+        "pokemon":"Bronzor",
+        "level":24,
+        "move1":"Flash Cannon",
+        "move2":"Extrasensory",
+        "move3":"Hypnosis",
+        "move4":"Confuse Ray",
+        "IVs":12
+      },
+      {
+        "pokemon":"Shieldon",
+        "level":26,
+        "move1":"Flash Cannon",
+        "move2":"Rock Slide",
+        "move3":"Iron Defense",
+        "move4":"Metal Sound",
+        "IVs":12,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "4":[
+      {
+        "pokemon":"Magnemite",
+        "level":28,
+        "move1":"Flash Cannon",
+        "move2":"Thunderbolt",
+        "move3":"Thunder Wave",
+        "move4":"Metal Sound",
+        "IVs":18
+      },
+      {
+        "pokemon":"Steelix",
+        "level":29,
+        "move1":"Flash Cannon",
+        "move2":"Earthquake",
+        "move3":"Ice Fang",
+        "move4":"Sandstorm",
+        "IVs":18
+      },
+      {
+        "pokemon":"Bastiodon",
+        "level":32,
+        "move1":"Metal Burst",
+        "move2":"Stone Edge",
+        "move3":"Iron Defense",
+        "move4":"Taunt",
+        "IVs":18,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "5":[
+      {
+        "pokemon":"Magneton",
+        "level":33,
+        "move1":"Flash Cannon",
+        "move2":"Thunderbolt",
+        "move3":"Tri Attack",
+        "move4":"Metal Sound",
+        "IVs":24
+      },
+      {
+        "pokemon":"Steelix",
+        "level":34,
+        "move1":"Flash Cannon",
+        "move2":"Earthquake",
+        "move3":"Ice Fang",
+        "move4":"Sandstorm",
+        "IVs":24
+      },
+      {
+        "pokemon":"Bastiodon",
+        "level":37,
+        "move1":"Metal Burst",
+        "move2":"Stone Edge",
+        "move3":"Iron Defense",
+        "move4":"Taunt",
+        "IVs":24,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "6":[],
+    "7":[
+      {
+        "pokemon":"Bronzong",
+        "level":40,
+        "move1":"Gyro Ball",
+        "move2":"Psychic",
+        "move3":"Hypnosis",
+        "move4":"Stealth Rock",
+        "IVs":30
+      },
+      {
+        "pokemon":"Magnezone",
+        "level":40,
+        "move1":"Flash Cannon",
+        "move2":"Thunderbolt",
+        "move3":"Thunder Wave",
+        "move4":"Reflect",
+        "IVs":30
+      },
+      {
+        "pokemon":"Bastiodon",
+        "level":42,
+        "move1":"Metal Burst",
+        "move2":"AncientPower",
+        "move3":"Fire Blast",
+        "move4":"Thunder",
+        "IVs":30
+      },
+      {
+        "pokemon":"Aggron",
+        "level":44,
+        "move1":"Iron Head",
+        "move2":"Stone Edge",
+        "move3":"Earthquake",
+        "move4":"Avalanche",
+        "IVs":30,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "8":[
+      {
+        "pokemon":"Bronzong",
+        "level":46,
+        "move1":"Gyro Ball",
+        "move2":"Psychic",
+        "move3":"Hypnosis",
+        "move4":"Stealth Rock",
+        "IVs":30
+      },
+      {
+        "pokemon":"Magnezone",
+        "level":46,
+        "move1":"Flash Cannon",
+        "move2":"Thunderbolt",
+        "move3":"Thunder Wave",
+        "move4":"Reflect",
+        "IVs":30
+      },
+      {
+        "pokemon":"Bastiodon",
+        "level":48,
+        "move1":"Metal Burst",
+        "move2":"AncientPower",
+        "move3":"Fire Blast",
+        "move4":"Thunder",
+        "IVs":30
+      },
+      {
+        "pokemon":"Aggron",
+        "level":50,
+        "move1":"Iron Head",
+        "move2":"Stone Edge",
+        "move3":"Earthquake",
+        "move4":"Avalanche",
+        "IVs":30,
+        "heldItem":"Sitrus Berry"
+      }
+    ]
+  },
+  "Candice":{
+    "1":[
+      {
+        "pokemon":"Snorunt",
+        "level":12,
+        "move1":"Avalanche",
+        "move2":"Bite",
+        "move3":"Double Team",
+        "IVs":6
+      },
+      {
+        "pokemon":"Snover",
+        "level":12,
+        "move1":"Avalanche",
+        "move2":"Razor Leaf",
+        "move3":"Mist",
+        "IVs":6
+      },
+      {
+        "pokemon":"Sneasel",
+        "level":14,
+        "move1":"Avalanche",
+        "move2":"Faint Attack",
+        "move3":"Quick Attack",
+        "IVs":6
+      }
+    ],
+    "2":[
+      {
+        "pokemon":"Snorunt",
+        "level":20,
+        "move1":"Avalanche",
+        "move2":"Bite",
+        "move3":"Double Team",
+        "move4":"Fake Tears",
+        "IVs":6
+      },
+      {
+        "pokemon":"Snover",
+        "level":20,
+        "move1":"Avalanche",
+        "move2":"Razor Leaf",
+        "move3":"Mist",
+        "move4":"Water Pulse",
+        "IVs":6
+      },
+      {
+        "pokemon":"Sneasel",
+        "level":22,
+        "move1":"Ice Shard",
+        "move2":"Faint Attack",
+        "move3":"Brick Break",
+        "move4":"Dig",
+        "IVs":6,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "3":[
+      {
+        "pokemon":"Snover",
+        "level":24,
+        "move1":"Avalanche",
+        "move2":"Razor Leaf",
+        "move3":"Hail",
+        "move4":"Water Pulse",
+        "IVs":12
+      },
+      {
+        "pokemon":"Sneasel",
+        "level":24,
+        "move1":"Ice Shard",
+        "move2":"Faint Attack",
+        "move3":"Brick Break",
+        "move4":"Aerial Ace",
+        "IVs":12
+      },
+      {
+        "pokemon":"Froslass",
+        "level":26,
+        "move1":"Ominous Wind",
+        "move2":"Double Team",
+        "move3":"Shock Wave",
+        "move4":"Avalanche",
+        "IVs":12,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "4":[
+      {
+        "pokemon":"Snover",
+        "level":28,
+        "move1":"Avalanche",
+        "move2":"Razor Leaf",
+        "move3":"Hail",
+        "move4":"Water Pulse",
+        "IVs":18
+      },
+      {
+        "pokemon":"Sneasel",
+        "level":29,
+        "move1":"Ice Shard",
+        "move2":"Faint Attack",
+        "move3":"Brick Break",
+        "move4":"Aerial Ace",
+        "IVs":18
+      },
+      {
+        "pokemon":"Froslass",
+        "level":32,
+        "move1":"Shadow Ball",
+        "move2":"Double Team",
+        "move3":"Shock Wave",
+        "move4":"Blizzard",
+        "IVs":18,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "5":[
+      {
+        "pokemon":"Sneasel",
+        "level":33,
+        "move1":"Ice Shard",
+        "move2":"Faint Attack",
+        "move3":"Brick Break",
+        "move4":"Aerial Ace",
+        "IVs":24
+      },
+      {
+        "pokemon":"Piloswine",
+        "level":34,
+        "move1":"Hail",
+        "move2":"Earthquake",
+        "move3":"Stone Edge",
+        "move4":"Avalanche",
+        "IVs":24
+      },
+      {
+        "pokemon":"Froslass",
+        "level":37,
+        "move1":"Shadow Ball",
+        "move2":"Double Team",
+        "move3":"Psychic",
+        "move4":"Blizzard",
+        "IVs":24,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "6":[
+      {
+        "pokemon":"Piloswine",
+        "level":37,
+        "move1":"Hail",
+        "move2":"Earthquake",
+        "move3":"Stone Edge",
+        "move4":"Avalanche",
+        "IVs":24
+      },
+      {
+        "pokemon":"Abomasnow",
+        "level":38,
+        "move1":"Giga Drain",
+        "move2":"Focus Blast",
+        "move3":"Water Pulse",
+        "move4":"Avalanche",
+        "IVs":24
+      },
+      {
+        "pokemon":"Froslass",
+        "level":41,
+        "move1":"Shadow Ball",
+        "move2":"Double Team",
+        "move3":"Psychic",
+        "move4":"Blizzard",
+        "IVs":24,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "7":[],
+    "8":[
+      {
+        "pokemon":"Weavile",
+        "level":46,
+        "move1":"Night Slash",
+        "move2":"Ice Shard",
+        "move3":"Brick Break",
+        "move4":"Aerial Ace",
+        "IVs":30
+      },
+      {
+        "pokemon":"Mamoswine",
+        "level":46,
+        "move1":"Superpower",
+        "move2":"Earthquake",
+        "move3":"Stone Edge",
+        "move4":"Avalanche",
+        "IVs":30
+      },
+      {
+        "pokemon":"Abomasnow",
+        "level":48,
+        "move1":"Wood Hammer",
+        "move2":"Focus Blast",
+        "move3":"Water Pulse",
+        "move4":"Avalanche",
+        "IVs":30
+      },
+      {
+        "pokemon":"Froslass",
+        "level":50,
+        "move1":"Shadow Ball",
+        "move2":"Double Team",
+        "move3":"Psychic",
+        "move4":"Blizzard",
+        "IVs":30,
+        "heldItem":"Sitrus Berry"
+      }
+    ]
+  },
+  "Volkner":{
+    "1":[
+      {
+        "pokemon":"Elekid",
+        "level":12,
+        "move1":"Charge Beam",
+        "move2":"Low Kick",
+        "move3":"Quick Attack",
+        "IVs":6
+      },
+      {
+        "pokemon":"Pikachu",
+        "level":12,
+        "move1":"Charge Beam",
+        "move2":"Light Screen",
+        "move3":"Thunder Wave",
+        "IVs":6
+      },
+      {
+        "pokemon":"Luxio",
+        "level":14,
+        "move1":"Spark",
+        "move2":"Facade",
+        "move3":"Ice Fang",
+        "IVs":6
+      }
+    ],
+    "2":[
+      {
+        "pokemon":"Luxio",
+        "level":20,
+        "move1":"Thunder Fang",
+        "move2":"Strength",
+        "move3":"Ice Fang",
+        "move4":"Bite",
+        "IVs":6
+      },
+      {
+        "pokemon":"Jolteon",
+        "level":20,
+        "move1":"Charge Beam",
+        "move2":"Thunder Wave",
+        "move3":"Iron Tail",
+        "move4":"Quick Attack",
+        "IVs":6
+      },
+      {
+        "pokemon":"Raichu",
+        "level":22,
+        "move1":"Charge Beam",
+        "move2":"Signal Beam",
+        "move3":"Light Screen",
+        "move4":"Quick Attack",
+        "IVs":6,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "3":[
+      {
+        "pokemon":"Luxio",
+        "level":24,
+        "move1":"Thunder Fang",
+        "move2":"Strength",
+        "move3":"Ice Fang",
+        "move4":"Bite",
+        "IVs":12
+      },
+      {
+        "pokemon":"Jolteon",
+        "level":24,
+        "move1":"Charge Beam",
+        "move2":"Thunder Wave",
+        "move3":"Iron Tail",
+        "move4":"Quick Attack",
+        "IVs":12
+      },
+      {
+        "pokemon":"Electabuzz",
+        "level":26,
+        "move1":"ThunderPunch",
+        "move2":"Brick Break",
+        "move3":"Strength",
+        "move4":"Quick Attack",
+        "IVs":12,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "4":[
+      {
+        "pokemon":"Luxio",
+        "level":28,
+        "move1":"Thunder Fang",
+        "move2":"Strength",
+        "move3":"Ice Fang",
+        "move4":"Bite",
+        "IVs":18
+      },
+      {
+        "pokemon":"Jolteon",
+        "level":29,
+        "move1":"Charge Beam",
+        "move2":"Thunder Wave",
+        "move3":"Iron Tail",
+        "move4":"Quick Attack",
+        "IVs":18
+      },
+      {
+        "pokemon":"Electivire",
+        "level":32,
+        "move1":"ThunderPunch",
+        "move2":"Brick Break",
+        "move3":"Strength",
+        "move4":"Quick Attack",
+        "IVs":18,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "5":[
+      {
+        "pokemon":"Jolteon",
+        "level":33,
+        "move1":"Charge Beam",
+        "move2":"Thunder Wave",
+        "move3":"Iron Tail",
+        "move4":"Quick Attack",
+        "IVs":24
+      },
+      {
+        "pokemon":"Luxray",
+        "level":34,
+        "move1":"Thunder Fang",
+        "move2":"Fire Fang",
+        "move3":"Ice Fang",
+        "move4":"Bite",
+        "IVs":24
+      },
+      {
+        "pokemon":"Electivire",
+        "level":37,
+        "move1":"ThunderPunch",
+        "move2":"Brick Break",
+        "move3":"Strength",
+        "move4":"Quick Attack",
+        "IVs":24,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "6":[
+      {
+        "pokemon":"Jolteon",
+        "level":37,
+        "move1":"Charge Beam",
+        "move2":"Thunder Wave",
+        "move3":"Iron Tail",
+        "move4":"Quick Attack",
+        "IVs":24
+      },
+      {
+        "pokemon":"Luxray",
+        "level":38,
+        "move1":"Thunder Fang",
+        "move2":"Fire Fang",
+        "move3":"Ice Fang",
+        "move4":"Crunch",
+        "IVs":24
+      },
+      {
+        "pokemon":"Electivire",
+        "level":41,
+        "move1":"ThunderPunch",
+        "move2":"Brick Break",
+        "move3":"Giga Impact",
+        "move4":"Quick Attack",
+        "IVs":24,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "7":[
+      {
+        "pokemon":"Jolteon",
+        "level":40,
+        "move1":"Charge Beam",
+        "move2":"Thunder Wave",
+        "move3":"Iron Tail",
+        "move4":"Quick Attack",
+        "IVs":30
+      },
+      {
+        "pokemon":"Raichu",
+        "level":40,
+        "move1":"Charge Beam",
+        "move2":"Signal Beam",
+        "move3":"Focus Blast",
+        "move4":"ThunderPunch",
+        "IVs":30
+      },
+      {
+        "pokemon":"Luxray",
+        "level":42,
+        "move1":"Thunder Fang",
+        "move2":"Fire Fang",
+        "move3":"Ice Fang",
+        "move4":"Crunch",
+        "IVs":30
+      },
+      {
+        "pokemon":"Electivire",
+        "level":44,
+        "move1":"ThunderPunch",
+        "move2":"Fire Punch",
+        "move3":"Giga Impact",
+        "move4":"Quick Attack",
+        "IVs":30,
+        "heldItem":"Sitrus Berry"
+      }
+    ],
+    "8":[]
+  }
+}

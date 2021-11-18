@@ -1541,6 +1541,8 @@ public abstract class AbstractRomHandler implements RomHandler {
         boolean shinyChance = settings.isShinyChance();
         boolean abilitiesAreRandomized = settings.getAbilitiesMod() == Settings.AbilitiesMod.RANDOMIZE;
 
+        boolean ignoreGymLeaders = !settings.isRandomizeLeaderTeams();
+
         checkPokemonRestrictions();
         List<Trainer> currentTrainers = this.getTrainers();
         // New: randomize the order trainers are randomized in.
@@ -1577,6 +1579,9 @@ public abstract class AbstractRomHandler implements RomHandler {
             if (t.tag != null && t.tag.equals("IRIVAL")) {
                 // This is the first rival in Yellow. His Pokemon is used to determine the non-player
                 // starter, so we can't change it here. Just skip it
+                continue;
+            }
+            if (ignoreGymLeaders && t.tag != null && t.tag.endsWith("-LEADER")) {
                 continue;
             }
             for (TrainerPokemon tp : t.pokemon) {
@@ -6433,10 +6438,37 @@ public abstract class AbstractRomHandler implements RomHandler {
 
     // Map the name of each Pokemon to its object
     // all keys are uppercase like EEVEE
-    private Map<String, Pokemon> pokeNameLookup() {
+    public Map<String, Pokemon> pokeNameLookup() {
         Map<String, Pokemon> nameMap = new HashMap<>();
         for (Pokemon p : this.mainPokemonList) {
             nameMap.put(p.name.toUpperCase(), p);
+        }
+        return nameMap;
+    }
+
+    // Map the name of each move to its ID
+    // all keys are uppercase like POUND
+    @Override
+    public Map<String, Integer> moveNameLookup() {
+        Map<String, Integer> nameMap = new HashMap<>();
+        nameMap.put("", 0);
+        List<Move> moves = this.getMoves();
+        for (int i = 1; i < moves.size(); i++) {
+            Move move = moves.get(i);
+            nameMap.put(move.name.toUpperCase(), move.number);
+        }
+        return nameMap;
+    }
+
+    // Map the name of each held item to its ID
+    // all keys are uppercase like SITRUS BERRY
+    @Override
+    public Map<String, Integer> itemNameLookup() {
+        Map<String, Integer> nameMap = new HashMap<>();
+        nameMap.put("", 0);
+        String[] itemNames = getItemNames();
+        for (int i = 1; i < itemNames.length; i++) {
+            nameMap.put(itemNames[i].toUpperCase(), i);
         }
         return nameMap;
     }
@@ -6476,20 +6508,11 @@ public abstract class AbstractRomHandler implements RomHandler {
 
         // Set the gym leaders' teams
         List<Trainer> gymLeaders = this.getGymLeaders(allTrainers);
-        List<List<TrainerPokemon>> rosters;
-        try {
-            // first, try to load and parse the gym leader team data from the external file
-            List<String> leaderNames = this.getLeaderNames();
-            LeaderTeams teamData = FileFunctions.getLeaderTeams(leaderNames, this.getGymCount(), this.getGameAbbr());
-            rosters = teamData.getLeaderTeams(gymLeaders, gymOrder, this.pokeNameLookup());
-        }
-        catch (FileNotFoundException e) {
-            // if the user doesn't have the leader_teams file, load the teams in the GenXConstant class instead
-            // will be depreciated once custom gym leader team jsons are ready
-            rosters = this.getGymLeaderTeams(gymOrder);
-        }
+        List<String> leaderNames = this.getLeaderNames();
+        Map<String, List<TrainerPokemon>> rosters = this.getGymLeaderTeams(gymOrder);
         for (int i = 0; i < gymLeaders.size(); i++) {
-            List<TrainerPokemon> team = rosters.get(i);
+            String name = leaderNames.get(i);
+            List<TrainerPokemon> team = rosters.get(name);
             if (team != null) {
                 // if the team is null then the team is vanilla
                 Trainer leader = gymLeaders.get(i);
@@ -6497,7 +6520,7 @@ public abstract class AbstractRomHandler implements RomHandler {
             }
         }
 
-        // Swap the items gym leaders use
+        // Swap the items (namely potions) gym leaders use
         for (int i = 0; i < gymLeaders.size(); i++) {
             int j = gymOrder.get(i);
             if (i == j) {
@@ -7317,7 +7340,7 @@ public abstract class AbstractRomHandler implements RomHandler {
     }
 
     @Override
-    public List<List<TrainerPokemon>> getGymLeaderTeams(List<Integer> gymOrder) {
+    public Map<String, List<TrainerPokemon>> getGymLeaderTeams(List<Integer> gymOrder) {
         return null;
     }
 

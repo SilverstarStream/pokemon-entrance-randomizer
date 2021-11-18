@@ -337,10 +337,9 @@ public class FileFunctions {
         return out;
     }
 
-    public static LeaderTeams getLeaderTeams(List<String> leaderNames, int gymCount, String gameAbbr) throws FileNotFoundException {
-        String filename = gameAbbr + "_leader_teams.txt";
+    public static LeaderTeams getLeaderTeams(List<String> leaderNames, int gymCount, String gameAbbr) {
+        String filename = gameAbbr + "_leader_teams.json";
         File file = new File(SysConstants.leaderTeamsFolder + "/" + filename);
-        LeaderTeams teams = new LeaderTeams(leaderNames, gymCount, file);
-        return teams;
+        return new LeaderTeams(leaderNames, gymCount, file);
     }
 }

@@ -653,7 +653,13 @@ public interface RomHandler {
 
     List<Location> getGymCityLocations();
 
-    List<List<TrainerPokemon>> getGymLeaderTeams(List<Integer> gymOrder);
+    Map<String, Pokemon> pokeNameLookup();
+
+    Map<String, Integer> moveNameLookup();
+
+    Map<String, Integer> itemNameLookup();
+
+    Map<String, List<TrainerPokemon>> getGymLeaderTeams(List<Integer> gymOrder);
 
     List<ScriptData> getGymScripts();
 

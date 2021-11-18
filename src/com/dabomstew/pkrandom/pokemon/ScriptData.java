@@ -35,13 +35,13 @@ public class ScriptData {
     public int nextJumpOff;
     public int instByteCount = 0;
     public byte[] script;
-    public List<Byte> scriptList = new ArrayList<Byte>();
+    public List<Byte> scriptList = new ArrayList<>();
 
-    public List<Integer> setVarOffs = new ArrayList<Integer>();
-    public List<Integer> flagOffs = new ArrayList<Integer>();
-    public List<Integer> allOffs = new ArrayList<Integer>();
-    public Map<Integer, Integer> setVarMap = new HashMap<Integer, Integer>();
-    public Map<Integer, Integer> flagMap = new HashMap<Integer, Integer>();
+    public List<Integer> setVarOffs = new ArrayList<>();
+    public List<Integer> flagOffs = new ArrayList<>();
+    public List<Integer> allOffs = new ArrayList<>();
+    public Map<Integer, Integer> setVarMap = new HashMap<>();
+    public Map<Integer, Integer> flagMap = new HashMap<>();
 
     public ScriptData(int scriptNum, byte[] script) {
         this.scriptNum = scriptNum;
