@@ -149,6 +149,12 @@ public abstract class Abstract3DSRomHandler extends AbstractRomHandler {
         baseRom.printRomDiagnostics(logStream, gameUpdate);
     }
 
+    @Override
+    public boolean isRomValid() {
+        // not implemented yet
+        return true;
+    }
+
     public void closeInnerRom() throws IOException {
         baseRom.closeROM();
     }

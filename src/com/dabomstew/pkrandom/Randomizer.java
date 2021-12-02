@@ -703,6 +703,9 @@ public class Randomizer {
 
         // Diagnostics
         log.println("--ROM Diagnostics--");
+        if (!romHandler.isRomValid()) {
+            printInvalidRomMessage(log);
+        }
         romHandler.printRomDiagnostics(log);
 
         return checkValue;
@@ -1306,5 +1309,11 @@ public class Randomizer {
             checkValue ^= value;
         }
         return checkValue;
+    }
+
+    private static void printInvalidRomMessage(final PrintStream log) {
+        log.println("The ROM you loaded is not a clean, official ROM.");
+        log.println("YOU WILL NOT RECEIVE OFFICIAL SUPPORT FOR RANDOMIZING THIS ROM.");
+        log.println();
     }
 }

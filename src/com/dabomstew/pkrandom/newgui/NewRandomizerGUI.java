@@ -314,6 +314,7 @@ public class NewRandomizerGUI {
 
     private boolean presetMode = false;
     private boolean initialPopup = true;
+    private boolean showInvalidRomPopup = true;
 
     private List<JCheckBox> tweakCheckBoxes;
     private JPanel liveTweaksPanel = new JPanel();
@@ -582,6 +583,26 @@ public class NewRandomizerGUI {
             Object[] messages = {message,label};
             JOptionPane.showMessageDialog(frame, messages);
             initialPopup = false;
+            attemptWriteConfig();
+        }
+    }
+
+    private void showInvalidRomPopup() {
+        if (showInvalidRomPopup) {
+            String message = String.format(bundle.getString("GUI.invalidRomMessage"));
+            JLabel label = new JLabel("<html><b>You will NOT receive official support for randomizing this ROM.</b>");
+            JCheckBox checkbox = new JCheckBox("Don't show this again");
+            Object[] messages = {message, label, checkbox};
+            Object[] options = {"OK"};
+            JOptionPane.showOptionDialog(frame,
+                    messages,
+                    "Invalid ROM detected",
+                    JOptionPane.OK_OPTION,
+                    JOptionPane.WARNING_MESSAGE,
+                    null,
+                    options,
+                    null);
+            showInvalidRomPopup = !checkbox.isSelected();
             attemptWriteConfig();
         }
     }
@@ -2520,6 +2541,13 @@ public class NewRandomizerGUI {
             } else {
                 romNameLabel.setText(romHandler.getROMName());
             }
+            if (!romHandler.isRomValid()) {
+                romNameLabel.setForeground(Color.RED);
+                romNameLabel.setText(romNameLabel.getText() + " [Bad CRC32]");
+                showInvalidRomPopup();
+            } else {
+                romNameLabel.setForeground(Color.BLACK);
+            }
             romCodeLabel.setText(romHandler.getROMCode());
             romSupportLabel.setText(bundle.getString("GUI.romSupportPrefix") + " "
                     + this.romHandler.getSupportLevel());
@@ -3641,6 +3669,9 @@ public class NewRandomizerGUI {
                         if (key.equals("unloadgameonsuccess")) {
                             unloadGameOnSuccess = Boolean.parseBoolean(tokens[1].trim());
                         }
+                        if (key.equals("showinvalidrompopup")) {
+                            showInvalidRomPopup = Boolean.parseBoolean(tokens[1].trim());
+                        }
                     }
                 } else if (isReadingUpdates) {
                     isReadingUpdates = false;
@@ -3663,6 +3694,7 @@ public class NewRandomizerGUI {
             ps.println("checkedcustomnames=true");
             ps.println("checkedcustomnames172=" + haveCheckedCustomNames);
             ps.println("unloadgameonsuccess=" + unloadGameOnSuccess);
+            ps.println("showinvalidrompopup=" + showInvalidRomPopup);
             if (!initialPopup) {
                 ps.println("firststart=" + Version.ZX_VERSION_STRING);
             }

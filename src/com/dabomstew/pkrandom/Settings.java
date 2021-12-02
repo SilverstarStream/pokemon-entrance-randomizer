@@ -926,7 +926,7 @@ public class Settings {
         }
 
         // gen restrictions
-        if (rh instanceof Gen1RomHandler || rh.isROMHack()) {
+        if (rh instanceof Gen1RomHandler || (rh instanceof Gen3RomHandler && !rh.isRomValid())) {
             this.currentRestrictions = null;
             this.setLimitPokemon(false);
         } else if (this.currentRestrictions != null) {

@@ -31,7 +31,6 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.util.*;
-import java.util.zip.CRC32;
 
 public class NCCH {
 
@@ -159,9 +158,7 @@ public class NCCH {
         byte[] romfsHeaderData = new byte[romfs_header_size];
         baseRom.seek(romfsOffset);
         baseRom.readFully(romfsHeaderData);
-        CRC32 checksum = new CRC32();
-        checksum.update(romfsHeaderData);
-        originalRomfsHeaderCRC = checksum.getValue();
+        originalRomfsHeaderCRC = FileFunctions.getCRC32(romfsHeaderData);
         int magic1 = FileFunctions.readFullInt(romfsHeaderData, 0x00);
         int magic2 = FileFunctions.readFullInt(romfsHeaderData, 0x04);
         if (magic1 != romfs_magic_1 || magic2 != romfs_magic_2) {
@@ -646,9 +643,7 @@ public class NCCH {
             // size of the exefs header, so we need to add it back ourselves.
             baseRom.seek(exefsOffset + exefs_header_size + codeFileHeader.offset);
             baseRom.readFully(code);
-            CRC32 checksum = new CRC32();
-            checksum.update(code);
-            originalCodeCRC = checksum.getValue();
+            originalCodeCRC = FileFunctions.getCRC32(code);
 
             if (codeCompressed) {
                 code = new BLZCoder(null).BLZ_DecodePub(code, ".code");
