@@ -81,6 +81,8 @@ public interface RomHandler {
 
     void printRomDiagnostics(PrintStream logStream);
 
+    boolean isRomValid();
+
     // ======================================================
     // Methods for retrieving a list of Pokemon objects.
     // Note that for many of these lists, index 0 is null.
@@ -606,8 +608,6 @@ public interface RomHandler {
     void randomizeIntroPokemon();
 
     BufferedImage getMascotImage();
-
-    boolean isROMHack();
 
     int generationOfPokemon();
 

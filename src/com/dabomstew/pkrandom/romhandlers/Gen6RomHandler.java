@@ -2114,6 +2114,7 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
                 int[] boxLegendaryOffsets = romEntry.arrayEntries.get("BoxLegendaryOffsets");
                 StaticEncounter boxLegendaryEncounter = staticPokemon.get(boxLegendaryOffsets[0]);
                 fixBoxLegendariesXY(boxLegendaryEncounter.pkmn.number);
+                setRoamersXY(staticPokemon);
             } else {
                 StaticEncounter rayquazaEncounter = staticPokemon.get(romEntry.getInt("RayquazaEncounterNumber"));
                 fixRayquazaORAS(rayquazaEncounter.pkmn.number);
@@ -2186,6 +2187,69 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
             }
         }
         writeFile(romEntry.getString("StaticPokemon"), staticCRO);
+    }
+
+    private void setRoamersXY(List<StaticEncounter> staticPokemon) throws IOException {
+        int[] roamingLegendaryOffsets = romEntry.arrayEntries.get("RoamingLegendaryOffsets");
+        StaticEncounter[] roamers = new StaticEncounter[roamingLegendaryOffsets.length];
+        for (int i = 0; i < roamers.length; i++) {
+            roamers[i] = staticPokemon.get(roamingLegendaryOffsets[i]);
+        }
+        int roamerSpeciesOffset = find(code, Gen6Constants.xyRoamerSpeciesLocator);
+        int freeSpaceOffset = find(code, Gen6Constants.xyRoamerFreeSpacePostfix);
+        if (roamerSpeciesOffset > 0 && freeSpaceOffset > 0) {
+            // In order to make this code work with all versions of XY, we had to find the *end* of our free space.
+            // The beginning is five instructions back.
+            freeSpaceOffset -= 20;
+
+            // The unmodified code looks like this:
+            // nop
+            // bl FUN_0041b710
+            // nop
+            // nop
+            // b LAB_003b7d1c
+            // We want to move both branches to the top so that we have 12 bytes of space to work with.
+            // Start by moving "bl FUN_0041b710" up one instruction, making sure to adjust the branch accordingly.
+            code[freeSpaceOffset] = (byte)(code[freeSpaceOffset + 4] + 1);
+            code[freeSpaceOffset + 1] = code[freeSpaceOffset + 5];
+            code[freeSpaceOffset + 2] = code[freeSpaceOffset + 6];
+            code[freeSpaceOffset + 3] = code[freeSpaceOffset + 7];
+
+            // Now move "b LAB_003b7d1c" up three instructions, again adjusting the branch accordingly.
+            code[freeSpaceOffset + 4] = (byte)(code[freeSpaceOffset + 16] + 3);
+            code[freeSpaceOffset + 5] = code[freeSpaceOffset + 17];
+            code[freeSpaceOffset + 6] = code[freeSpaceOffset + 18];
+            code[freeSpaceOffset + 7] = code[freeSpaceOffset + 19];
+
+            // In the free space now opened up, write the three roamer species.
+            for (int i = 0; i < roamers.length; i++) {
+                int offset = freeSpaceOffset + 8 + (i * 4);
+                int species = roamers[i].pkmn.getBaseNumber();
+                FileFunctions.writeFullIntLittleEndian(code, offset, species);
+            }
+
+            // To load the species ID, the game currently does "moveq r4, #0x90" for Articuno and similar
+            // things for Zapdos and Moltres. Instead, just pc-relative load what we wrote before. The fact
+            // that we change the conditional moveq to the unconditional pc-relative load only matters for
+            // the case where the player's starter index is *not* 0, 1, or 2, but that can't happen outside
+            // of save editing.
+            for (int i = 0; i < roamers.length; i++) {
+                int offset = roamerSpeciesOffset + (i * 12);
+                code[offset] = (byte)(0xAC - (8 * i));
+                code[offset + 1] = 0x41;
+                code[offset + 2] = (byte) 0x9F;
+                code[offset + 3] = (byte) 0xE5;
+            }
+        }
+
+        // The level of the roamer is set by a separate function in DllField.
+        byte[] fieldCRO = readFile(romEntry.getString("Field"));
+        int levelOffset = find(fieldCRO, Gen6Constants.xyRoamerLevelPrefix);
+        if (levelOffset > 0) {
+            levelOffset += Gen6Constants.xyRoamerLevelPrefix.length() / 2; // because it was a prefix
+            fieldCRO[levelOffset] = (byte) roamers[0].level;
+        }
+        writeFile(romEntry.getString("Field"), fieldCRO);
     }
 
     private void fixRayquazaORAS(int rayquazaEncounterSpecies) throws IOException {

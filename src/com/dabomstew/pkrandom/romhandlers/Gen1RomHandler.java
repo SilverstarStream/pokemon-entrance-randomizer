@@ -116,6 +116,7 @@ public class Gen1RomHandler extends AbstractGBCRomHandler {
         private int version, nonJapanese;
         private String extraTableFile;
         private boolean isYellow;
+        private long expectedCRC32 = -1;
         private int crcInHeader = -1;
         private Map<String, String> tweakFiles = new HashMap<>();
         private List<TMTextEntry> tmTexts = new ArrayList<>();
@@ -201,6 +202,8 @@ public class Gen1RomHandler extends AbstractGBCRomHandler {
                             current.extraTableFile = r[1];
                         } else if (r[0].equals("CRCInHeader")) {
                             current.crcInHeader = parseRIInt(r[1]);
+                        } else if (r[0].equals("CRC32")) {
+                            current.expectedCRC32 = parseRIILong("0x" + r[1]);
                         } else if (r[0].endsWith("Tweak")) {
                             current.tweakFiles.put(r[0], r[1]);
                         } else if (r[0].equals("ExtraTypes")) {
@@ -304,6 +307,21 @@ public class Gen1RomHandler extends AbstractGBCRomHandler {
         }
     }
 
+    private static long parseRIILong(String off) {
+        int radix = 10;
+        off = off.trim().toLowerCase();
+        if (off.startsWith("0x") || off.startsWith("&h")) {
+            radix = 16;
+            off = off.substring(2);
+        }
+        try {
+            return Long.parseLong(off, radix);
+        } catch (NumberFormatException ex) {
+            System.err.println("invalid base " + radix + "number " + off);
+            return 0;
+        }
+    }
+
     // This ROM's data
     private Pokemon[] pokes;
     private List<Pokemon> pokemonList;
@@ -313,6 +331,7 @@ public class Gen1RomHandler extends AbstractGBCRomHandler {
     private String[] mapNames;
     private SubMap[] maps;
     private boolean xAccNerfed;
+    private long actualCRC32;
 
     @Override
     public boolean detectRom(byte[] rom) {
@@ -345,6 +364,7 @@ public class Gen1RomHandler extends AbstractGBCRomHandler {
         loadItemNames();
         preloadMaps();
         loadMapNames();
+        actualCRC32 = FileFunctions.getCRC32(rom);
     }
 
     private void loadPokedexOrder() {
@@ -2539,6 +2559,11 @@ public class Gen1RomHandler extends AbstractGBCRomHandler {
         if (extraSpaceEnabled) {
             System.arraycopy(extraDataBlock, 0, rom, extraSpaceOffset, extraDataBlock.length);
         }
+    }
+
+    @Override
+    public boolean isRomValid() {
+        return romEntry.expectedCRC32 == actualCRC32;
     }
 
     @Override

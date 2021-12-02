@@ -31,7 +31,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Random;
-import java.util.zip.CRC32;
 
 import com.dabomstew.pkrandom.FileFunctions;
 import com.dabomstew.pkrandom.exceptions.RandomizerIOException;
@@ -108,9 +107,7 @@ public abstract class AbstractGBRomHandler extends AbstractRomHandler {
 
     @Override
     public void printRomDiagnostics(PrintStream logStream) {
-        CRC32 checksum = new CRC32();
-        checksum.update(originalRom);
-        long crc = checksum.getValue();
+        long crc = FileFunctions.getCRC32(originalRom);
         logStream.println("Original ROM CRC32: " + String.format("%08X", crc));
     }
 

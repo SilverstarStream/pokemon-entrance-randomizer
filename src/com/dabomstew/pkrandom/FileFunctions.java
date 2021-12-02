@@ -242,6 +242,12 @@ public class FileFunctions {
         return true;
     }
 
+    public static long getCRC32(byte[] data) {
+        CRC32 checksum = new CRC32();
+        checksum.update(data);
+        return checksum.getValue();
+    }
+
     private static byte[] getCodeTweakFile(String filename) throws IOException {
         InputStream is = FileFunctions.class.getResourceAsStream("/com/dabomstew/pkrandom/patches/" + filename);
         byte[] buf = readFullyIntoBuffer(is, is.available());

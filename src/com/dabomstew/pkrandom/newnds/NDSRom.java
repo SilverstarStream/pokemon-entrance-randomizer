@@ -2,7 +2,6 @@ package com.dabomstew.pkrandom.newnds;
 
 import java.io.*;
 import java.util.*;
-import java.util.zip.CRC32;
 
 import com.dabomstew.pkrandom.SysConstants;
 import com.dabomstew.pkrandom.FileFunctions;
@@ -478,9 +477,7 @@ public class NDSRom {
             byte[] arm9 = new byte[arm9_size];
             this.baseRom.seek(arm9_offset);
             this.baseRom.readFully(arm9);
-            CRC32 checksum = new CRC32();
-            checksum.update(arm9);
-            originalArm9CRC = checksum.getValue();
+            originalArm9CRC = FileFunctions.getCRC32(arm9);
             // footer check
             int nitrocode = readFromFile(this.baseRom, 4);
             if (nitrocode == 0xDEC00621) {

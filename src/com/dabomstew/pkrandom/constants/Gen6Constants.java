@@ -239,12 +239,15 @@ public class Gen6Constants {
     public static final int[] boxLegendaryCodeOffsetsXY = new int[]{ 144, 300, 584 };
     public static final String rayquazaFunctionPrefixORAS = "0900A0E1F08FBDE8";
     public static final int[] rayquazaScriptOffsetsORAS = new int[]{ 3334, 14734 }, rayquazaCodeOffsetsORAS = new int[]{ 136, 292, 576 };
-    public static final String nationalDexFunctionLocator = "080094E5010000E21080BDE8170F122F",xyGetDexFlagFunctionLocator = "000055E30100A0030A00000A",
+    public static final String nationalDexFunctionLocator = "080094E5010000E21080BDE8170F122F", xyGetDexFlagFunctionLocator = "000055E30100A0030A00000A",
             orasGetHoennDexCaughtFunctionPrefix = "170F122F1CC15800";
     public static final int megastoneTableStartingOffsetORAS = 0xABA, megastoneTableEntrySizeORAS = 0x20, megastoneTableLengthORAS = 27;
 
     public static final String pickupTableLocator = "110012001A00";
     public static final int numberOfPickupItems = 29;
+
+    public static final String xyRoamerFreeSpacePostfix = "540095E50220A0E30810A0E1", xyRoamerSpeciesLocator = "9040A0030400000A",
+            xyRoamerLevelPrefix = "B020DDE13F3BC1E3";
 
     public static final List<Integer> consumableHeldItems = setupAllConsumableItems();
 
