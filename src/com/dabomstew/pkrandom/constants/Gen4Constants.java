@@ -2018,6 +2018,7 @@ public class Gen4Constants {
             }
         }
     }
+
     public static Map<Integer,Integer> scriptValues() {
         int headerEnd = scriptListTerminator; // 0 arg bytes
         int enableBadge = 0x015C; // 2 arg bytes
@@ -2116,28 +2117,28 @@ public class Gen4Constants {
         List<Location> locations = new ArrayList<>();
         Location l;
         l = new Location(0, "Jubilife City", false);
-        l.addExit(0,"Route 218",375,new int[] {0},em);
-        l.addExit(0,"Oreburgh Gate",330,new int[] {0},em);
-        l.addExit(0,"Ravaged Path",331,new int[] {0},em);
+        l.addExit(0,"Route 218",new int[] {0},375,em);
+        l.addExit(0,"Oreburgh Gate",new int[] {0},330,em);
+        l.addExit(0,"Ravaged Path",new int[] {0},331,em);
         locations.add(l);
 
         Location JubiOreCave = new Location(7, "Oreburgh Gate", false);
-        JubiOreCave.addExit(0,"Jubilife City [Route 203]",251,new int[] {0},em);
-        JubiOreCave.addExit(0,"Oreburgh City",251,new int[] {1},em);
+        JubiOreCave.addExit(0,"Jubilife City [Route 203]",new int[] {0},251,em);
+        JubiOreCave.addExit(0,"Oreburgh City",new int[] {1},251,em);
         JubiOreCave.addWildGroup(0, new int[] {54});
         JubiOreCave.addWildGroup(1, new int[] {55});
         JubiOreCave.addTrainerGroup(0, new int[] {265,329});
         locations.add(JubiOreCave);
 
         Location Oreburgh = new Location(0,"Oreburgh City", true);
-        Oreburgh.addExit(2,"Cycling Road",336,new int[] {0,1,10,11},em);
-        Oreburgh.addExit(2,"S. Coronet Cave",339,new int[] {0},em);
-        Oreburgh.addExit(0,"Oreburgh Gate",44,new int[] {10},em);
+        Oreburgh.addExit(2,"Cycling Road",new int[] {0,1,10,11},336,em);
+        Oreburgh.addExit(2,"S. Coronet Cave",new int[] {0},339,em);
+        Oreburgh.addExit(0,"Oreburgh Gate",new int[] {10},44,em);
         locations.add(Oreburgh);
 
         l = new Location(8,"Ravaged Path", false);
-        l.addExit(1,"Jubilife City [Route 204]",247,new int[] {0},em);
-        l.addExit(1,"Floaroma Town",247,new int[] {1},em);
+        l.addExit(1,"Jubilife City [Route 204]",new int[] {0},247,em);
+        l.addExit(1,"Floaroma Town",new int[] {1},247,em);
         l.addWildGroup(0, new int[] {53});
         // For Rock Smash:
         l.prereqs.add(JubiOreCave); // Rock Smash HM
@@ -2145,51 +2146,51 @@ public class Gen4Constants {
         locations.add(l);
 
         l = new Location(8, "Eterna Forest", false);
-        l.addExit(0,"Floaroma Town [Route 205]",201,new int[] {0,1},em);
-        l.addExit(0,"Eterna City",201,new int[] {2,3},em);
+        l.addExit(0,"Floaroma Town [Route 205]",new int[] {0,1},201,em);
+        l.addExit(0,"Eterna City",new int[] {2,3},201,em);
         l.addWildGroup(1, new int[] {8});
         l.addWildGroup(2, new int[] {125,126,127,128,129,130,131,132,133});
         l.addTrainerGroup(1, new int[] {201,204,206,205,202,203,395,398,608}); // Forest trainers Cheryl 608
         locations.add(l);
 
         l = new Location(1, "Eterna City & Floaroma Town", true);
-        l.addExit(1,"N. Coronet Cave",351,new int[] {0},em);
-        l.addExit(1,"Cycling Road",64,new int[] {8,9},em);
-        l.addExit(2,"Ravaged Path",332,new int[] {0},em);
-        l.addExit(2,"Eterna Forest [Route 205 entrance]",333,new int[] {0,1},em);
-        l.addExit(1,"Eterna Forest [Eterna entrance]",335,new int[] {0,1},em);
+        l.addExit(1,"N. Coronet Cave",new int[] {0},351,em);
+        l.addExit(1,"Cycling Road",new int[] {8,9},64,em);
+        l.addExit(2,"Ravaged Path",new int[] {0},332,em);
+        l.addExit(2,"Eterna Forest [Route 205 entrance]",new int[] {0,1},333,em);
+        l.addExit(1,"Eterna Forest [Eterna entrance]",new int[] {0,1},335,em);
         locations.add(l);
 
         l = new Location(8, "Cycling Road", false);
-        l.addExit(2,"Eterna City",79,new int[] {0,4,5},em);
-        l.addExit(2,"Oreburgh City [Route 206]",337,new int[] {1,4,5},em);
+        l.addExit(2,"Eterna City",new int[] {0,4,5},79,em);
+        l.addExit(2,"Oreburgh City [Route 206]",new int[] {1,4,5},337,em);
         l.addTrainerGroup(2, new int[] {25,29,26,30,27,28,32,31}); // We're bikers we're bikers we're bikers
         locations.add(l);
 
         // max of 7 because Mt. Coronet's Summit is accessed through here.
         l = new Location(7, "S. Coronet Cave", false);
-        l.addExit(0,"Oreburgh City [Route 207]",204,new int[] {0},em);
-        l.addExit(0,"Route 208",204,new int[] {1},em);
+        l.addExit(0,"Oreburgh City [Route 207]",new int[] {0},204,em);
+        l.addExit(0,"Route 208",new int[] {1},204,em);
         l.addWildGroup(2, new int[] {10});
         locations.add(l);
 
         l = new Location(8, "Route 208", false);
-        l.addExit(0,"S. Coronet Cave",340,new int[] {3},em);
-        l.addExit(0,"Hearthome City",340,new int[] {0,1},em);
+        l.addExit(0,"S. Coronet Cave",new int[] {3},340,em);
+        l.addExit(0,"Hearthome City",new int[] {0,1},340,em);
         l.addWildGroup(2, new int[] {149});
         l.addTrainerGroup(2, new int[] {41,42,39,44,45});
         locations.add(l);
 
         l = new Location(2, "Hearthome City", true);
-        l.addExit(0,"Route 208",108,new int[] {1},em);
-        l.addExit(0,"Pastoria City [Route 212]",85,new int[] {15,16},em);
-        l.addExit(3,"Solaceon Town [Route 209]",109,new int[] {1},em);
+        l.addExit(0,"Route 208",new int[] {1},108,em);
+        l.addExit(0,"Pastoria City [Route 212]",new int[] {15,16},85,em);
+        l.addExit(3,"Solaceon Town [Route 209]",new int[] {1},109,em);
         locations.add(l);
 
         Location Celestic = new Location(7, "Solaceon & Celestic Towns", false);
-        Celestic.addExit(0,"Hearthome City",342,new int[] {0,1},em);
-        Celestic.addExit(5,"N. Coronet Cave",352,new int[] {0},em);
-        Celestic.addExit(0,"Veilstone City",368,new int[] {0,1},em);
+        Celestic.addExit(0,"Hearthome City",new int[] {0,1},342,em);
+        Celestic.addExit(5,"N. Coronet Cave",new int[] {0},352,em);
+        Celestic.addExit(0,"Veilstone City",new int[] {0,1},368,em);
         Celestic.addWildGroup(3, new int[] {150}); // r209
         Celestic.addWildGroup(3, new int[] {151,152,153,154,155}); // lost tower
         Celestic.addWildGroup(3, new int[] {156}); // r210
@@ -2204,13 +2205,13 @@ public class Gen4Constants {
         locations.add(Celestic);
 
         l = new Location(3, "Veilstone City", true);
-        l.addExit(0,"Solaceon Town [Route 215]",148,new int[] {1},em);
-        l.addExit(0,"Valor Lakefront [Route 214]",367,new int[] {1},em);
+        l.addExit(0,"Solaceon Town [Route 215]",new int[] {1},148,em);
+        l.addExit(0,"Valor Lakefront [Route 214]",new int[] {1},367,em);
         locations.add(l);
 
         Location Valor = new Location(8, "Valor Lakefront", false); // + R213 & R214
-        Valor.addExit(0,"Veilstone City",366,new int[] {0,1},em);
-        Valor.addExit(0,"Pastoria City",359,new int[] {0,1},em);
+        Valor.addExit(0,"Veilstone City",new int[] {0,1},366,em);
+        Valor.addExit(0,"Pastoria City",new int[] {0,1},359,em);
         Valor.addWildGroup(4, new int[] {163});
         Valor.addWildGroup(4, new int[] {138});
         Valor.addWildGroup(4, new int[] {162});
@@ -2221,13 +2222,13 @@ public class Gen4Constants {
         locations.add(Valor);
 
         Location Pastoria = new Location(4, "Pastoria City", true);
-        Pastoria.addExit(0,"Valor Lakefront [Route 213]",360,new int[] {0},em);
-        Pastoria.addExit(5,"Hearthome City",110,new int[] {0},em);
+        Pastoria.addExit(0,"Valor Lakefront [Route 213]",new int[] {0},360,em);
+        Pastoria.addExit(5,"Hearthome City",new int[] {0},110,em);
         locations.add(Pastoria);
 
         l = new Location(8, "Route 218", false);
-        l.addExit(5,"Canalave City",374,new int[] {0,1},em);
-        l.addExit(5,"Jubilife City",374,new int[] {2,3},em);
+        l.addExit(5,"Canalave City",new int[] {0,1},374,em);
+        l.addExit(5,"Jubilife City",new int[] {2,3},374,em);
         l.addWildGroup(5, new int[] {167});
         l.addTrainerGroup(5, new int[] {153,154,338,300});
         // For Surf:
@@ -2237,26 +2238,26 @@ public class Gen4Constants {
         locations.add(l);
 
         l = new Location(5, "Canalave City", true);
-        l.addExit(0,"Route 218",376,new int[] {1},em); // to Route 218
+        l.addExit(0,"Route 218",new int[] {1},376,em); // to Route 218
         locations.add(l);
 
         // max of 7 because a map can't have all its exits closed if this is the last route to be placed
         l = new Location(7, "N. Coronet Cave [lower]", false);
-        l.addExit(6,"Eterna City",215,new int[] {2},em);
-        l.addExit(6,"Celestic Town",215,new int[] {3},em);
-        l.addExit(6,"N. Coronet Cave [upper]",215,new int[] {1},em,371);
+        l.addExit(6,"Eterna City",new int[] {2},215,em);
+        l.addExit(6,"Celestic Town",new int[] {3},215,em);
+        l.addExit(6,"N. Coronet Cave [upper]",new int[] {1},215,em,371);
         // Only including this EncounterSet because its very low level in vanilla, and this route's properties usually make it a very late game placement.
         l.addWildGroup(1, new int[] {21});
         locations.add(l);
 
         l = new Location(8, "N. Coronet Cave [upper]", false);
-        l.addExit(0,"N. Coronet Cave [lower]",216,new int[] {0},em,374);
-        l.addExit(0,"Snowpoint City [Route 216]",214,new int[] {1},em);
+        l.addExit(0,"N. Coronet Cave [lower]",new int[] {0},216,em,374);
+        l.addExit(0,"Snowpoint City [Route 216]",new int[] {1},214,em);
         l.addWildGroup(6, new int[] {22,20});
         locations.add(l);
 
         l = new Location(6, "Snowpoint City", true);
-        l.addExit(6,"N. Coronet Cave [upper]",369,new int[] {0},em);
+        l.addExit(6,"N. Coronet Cave [upper]",new int[] {0},369,em);
         locations.add(l);
 
         // Wild and Trainer Groups only include those Encounters and Trainers that will be randomized.
@@ -2281,42 +2282,42 @@ public class Gen4Constants {
         List<Location> gyms = new ArrayList<>();
         Location l;
         l = new Location(0, "Oreburgh Gym", false);
-        l.addExit(0,"",46,new int[] {0},em);
+        l.addExit(0,"",new int[] {0},46,em);
         l.addTrainerGroup(0, new int[] {244,245});
         gyms.add(l);
 
         l = new Location(1, "Eterna Gym", false);
-        l.addExit(1,"",66,new int[] {0},em);
+        l.addExit(1,"",new int[] {0},66,em);
         l.addTrainerGroup(1, new int[] {324,259,260});
         gyms.add(l);
 
         l = new Location(2, "Hearthome Gym", false);
-        l.addExit(2,"",87,new int[] {3},em);
+        l.addExit(2,"",new int[] {3},87,em);
         l.addTrainerGroup(2, new int[] {357,325,340,343,280,284});
         gyms.add(l);
 
         l = new Location(3, "Veilstone Gym", false);
-        l.addExit(3,"",132,new int[] {0},em);
+        l.addExit(3,"",new int[] {0},132,em);
         l.addTrainerGroup(3, new int[] {309,310,311,312});
         gyms.add(l);
 
         l = new Location(4, "Pastoria Gym", false);
-        l.addExit(4,"",121,new int[] {0},em);
+        l.addExit(4,"",new int[] {0},121,em);
         l.addTrainerGroup(4, new int[] {497,401,339,498,293,483});
         gyms.add(l);
 
         l = new Location(5, "Canalave Gym", false);
-        l.addExit(5,"",34,new int[] {0},em);
+        l.addExit(5,"",new int[] {0},34,em);
         l.addTrainerGroup(5, new int[] {314,257,256,279,367,232,283});
         gyms.add(l);
 
         l = new Location(6, "Snowpoint Gym", false);
-        l.addExit(6,"",166,new int[] {0},em);
+        l.addExit(6,"",new int[] {0},166,em);
         l.addTrainerGroup(6, new int[] {827,271,270,268,828,269});
         gyms.add(l);
 
         l = new Location(7, "Sunyshore Gym", false);
-        l.addExit(7,"",153,new int[] {0},em);
+        l.addExit(7,"",new int[] {0},153,em);
         l.addTrainerGroup(7, new int[] {344,341,301,331,303,285,302,281});
         gyms.add(l);
 
@@ -2327,35 +2328,35 @@ public class Gen4Constants {
         List<Location> cities = new ArrayList<>();
         Location l;
         l = new Location(0, "Oreburgh City", true);
-        l.addExit(0,"",44,new int[] {0},em);
+        l.addExit(0,"",new int[] {0},44,em);
         cities.add(l);
 
         l = new Location(1, "Eterna City", true);
-        l.addExit(1,"",64,new int[] {10},em);
+        l.addExit(1,"",new int[] {10},64,em);
         cities.add(l);
 
         l = new Location(2, "Hearthome City", true);
-        l.addExit(2,"",85,new int[] {8},em);
+        l.addExit(2,"",new int[] {8},85,em);
         cities.add(l);
 
         l = new Location(3, "Veilstone City", true);
-        l.addExit(3,"",131,new int[] {13},em);
+        l.addExit(3,"",new int[] {13},131,em);
         cities.add(l);
 
         l = new Location(4, "Pastoria City", true);
-        l.addExit(4,"",119,new int[] {0},em);
+        l.addExit(4,"",new int[] {0},119,em);
         cities.add(l);
 
         l = new Location(5, "Canalave City", true);
-        l.addExit(5,"",32,new int[] {0},em);
+        l.addExit(5,"",new int[] {0},32,em);
         cities.add(l);
 
         l = new Location(6, "Snowpoint City", true);
-        l.addExit(6,"",164,new int[] {5},em);
+        l.addExit(6,"",new int[] {5},164,em);
         cities.add(l);
 
         l = new Location(7, "Sunyshore City", true);
-        l.addExit(7,"",149,new int[] {12},em);
+        l.addExit(7,"",new int[] {12},149,em);
         cities.add(l);
 
         return cities;
@@ -2366,35 +2367,35 @@ public class Gen4Constants {
         List<Location> locations = new ArrayList<>();
         Location l;
         l = new Location(0, "League Entrance", false);
-        l.addExit(0,"to Aaron",174,new int[] {0},em);
+        l.addExit(0,"to Aaron",new int[] {0},174,em);
         locations.add(l);
 
         l = new Location(0, "Aaron", false);
-        l.addExit(0,"from League Entrance",175,new int[] {1},em);
-        l.addExit(0,"to Bertha",176,new int[] {0},em);
+        l.addExit(0,"from League Entrance",new int[] {1},175,em);
+        l.addExit(0,"to Bertha",new int[] {0},176,em);
         l.addTrainerGroup(0, new int[] {0x105,0x362}); // normal fight is index 0, rematch is index 1
         locations.add(l);
 
         l = new Location(0, "Bertha", false);
-        l.addExit(0,"from Aaron",177,new int[] {1},em);
-        l.addExit(0,"to Flint",178,new int[] {0},em);
+        l.addExit(0,"from Aaron",new int[] {1},177,em);
+        l.addExit(0,"to Flint",new int[] {0},178,em);
         l.addTrainerGroup(0, new int[] {0x106,0x363});
         locations.add(l);
 
         l = new Location(0, "Flint", false);
-        l.addExit(0,"from Bertha",179,new int[] {1},em);
-        l.addExit(0,"to Lucian",180,new int[] {0},em);
+        l.addExit(0,"from Bertha",new int[] {1},179,em);
+        l.addExit(0,"to Lucian",new int[] {0},180,em);
         l.addTrainerGroup(0, new int[] {0x107,0x364});
         locations.add(l);
 
         l = new Location(0, "Lucian", false);
-        l.addExit(0,"from Flint",181,new int[] {1},em);
-        l.addExit(0,"to Cynthia",182,new int[] {0},em);
+        l.addExit(0,"from Flint",new int[] {1},181,em);
+        l.addExit(0,"to Cynthia",new int[] {0},182,em);
         l.addTrainerGroup(0, new int[] {0x108,0x365});
         locations.add(l);
 
         l = new Location(0, "Cynthia", false);
-        l.addExit(0,"from Lucian",183,new int[] {1},em);
+        l.addExit(0,"from Lucian",new int[] {1},183,em);
         locations.add(l);
 
         return locations;

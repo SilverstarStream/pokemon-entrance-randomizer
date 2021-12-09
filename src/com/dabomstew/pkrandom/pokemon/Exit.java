@@ -24,43 +24,28 @@ package com.dabomstew.pkrandom.pokemon;
 /*--  along with this program. If not, see <http://www.gnu.org/licenses/>.  --*/
 /*----------------------------------------------------------------------------*/
 
-import java.util.*;
+import java.util.Random;
 
 public class Exit {
     public int minWeight; // the lowest badge required to reach this exit from the other exits
     public String destName; // the name of the Location that the Exit warps to in vanilla
     public int event; // the event number all tiles share
-    public int mapIndex; // the map number all tiles share
     public WarpData[] warps; // All the warp tile data
+    public int mapIndex; // the map number all tiles share
     private int targetMap = -1; // the new map that this Exit warps to
     public Location thisLocation; // the Location object that this Exit belongs to
     public int matrixMap = -1; // if this Exit needs something about its map's tiles changed, this is set by the relevant constructor
 
-    public Exit(int weight, String destName, int event, int[] warpIDs, Map<Integer, Integer> eventToMapID, Location thisLocation) {
+    public Exit(int weight, String destName, int[] warpIDs, int mapIndex, Location thisLocation) {
         this.minWeight = weight;
         this.destName = destName;
-        this.event = event;
-        this.mapIndex = eventToMapID.get(event);
-        int warpTileCount = warpIDs.length;
-        this.warps = new WarpData[warpTileCount];
-        for (int i = 0; i < warpTileCount; i++) {
+        int warpCount = warpIDs.length;
+        this.warps = new WarpData[warpCount];
+        for (int i = 0; i < warpCount; i++) {
             this.warps[i] = new WarpData(warpIDs[i]);
         }
+        this.mapIndex = mapIndex;
         this.thisLocation = thisLocation;
-    }
-
-    public Exit(int weight, String destName, int event, int[] warpIDs, Map<Integer, Integer> eventToMapID, Location thisLocation, int matrixMap) {
-        this.minWeight = weight;
-        this.destName = destName;
-        this.event = event;
-        this.mapIndex = eventToMapID.get(event);
-        int warpTileCount = warpIDs.length;
-        this.warps = new WarpData[warpTileCount];
-        for (int i = 0; i < warpTileCount; i++) {
-            this.warps[i] = new WarpData(warpIDs[i]);
-        }
-        this.thisLocation = thisLocation;
-        this.matrixMap = matrixMap;
     }
 
     public static void connectExits(Exit exitA, Exit exitB, Random rand) {

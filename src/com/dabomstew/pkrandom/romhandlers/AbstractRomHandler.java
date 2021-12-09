@@ -6395,7 +6395,7 @@ public abstract class AbstractRomHandler implements RomHandler {
             gymOrder.add(i);
         }
         List<Location> gymLocations = this.getGymLocations();
-        List<Location> cityLocations = this.getGymCityLocations();
+        List<Location> cityLocations = this.getGymCityLocations(); // The only reason isGymCity is true on these is lore reason
         List<ScriptData> scripts = this.getGymScripts();
         // jArray is for testing
         //int[] jArray = {6, 6, 5, 5, 6, 7, 6}; // Should result in gym order: 7 1 6 3 2 8 5 4
@@ -7003,7 +7003,7 @@ public abstract class AbstractRomHandler implements RomHandler {
             badgeRegion = badgeExitA;
         }
         location.badgePlacement = badgeRegion;
-        String output = "Connected " + location.name + "(badge " + badgeRegion + ") " + " between " +
+        String output = "Connected " + location.name + "(badge " + badgeRegion + ") between " +
                 exitA.thisLocation.name + " (" + joiningExitA.destName + " entrance with " + exitA.destName + " entrance) and " +
                 exitB.thisLocation.name + " (" + joiningExitB.destName + " entrance with " + exitB.destName + " entrance)\n";
         red.entrancesLog.append(output);

@@ -29,10 +29,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import com.dabomstew.pkrandom.pokemon.ItemList;
-import com.dabomstew.pkrandom.pokemon.MoveCategory;
-import com.dabomstew.pkrandom.pokemon.Trainer;
-import com.dabomstew.pkrandom.pokemon.Type;
+import com.dabomstew.pkrandom.pokemon.*;
 
 public class Gen5Constants {
 
@@ -1903,4 +1900,158 @@ public class Gen5Constants {
         }
     }
 
+    public static List<Location> gymLocationDataBW() {
+        List<Location> gyms = new ArrayList<>();
+        Location l;
+        l = new Location(0, "Striaton Gym", false);
+        l.addExit(0,"",7,new int[] {0});
+        gyms.add(l);
+
+        l = new Location(1, "Nacrene Gym", false);
+        l.addExit(1,"",18,new int[] {0});
+        gyms.add(l);
+
+        l = new Location(2, "Castelia Gym", false);
+        l.addExit(2,"",29,new int[] {0});
+        gyms.add(l);
+
+        l = new Location(3, "Nimbasa Gym", false);
+        l.addExit(3,"",63,new int[] {0});
+        gyms.add(l);
+
+        l = new Location(4, "Driftveil Gym", false);
+        l.addExit(4,"",98,new int[] {0});
+        gyms.add(l);
+
+        l = new Location(5, "Mistralton Gym", false);
+        l.addExit(5,"",108,new int[] {0});
+        gyms.add(l);
+
+        l = new Location(6, "Icirrus Gym", false);
+        l.addExit(6,"",114,new int[] {0});
+        gyms.add(l);
+
+        l = new Location(7, "Opelucid Gym", false);
+        l.addExit(7,"",121,new int[] {0});
+        gyms.add(l);
+
+        return gyms;
+    }
+
+    public static List<Location> gymCityLocationDataBW() {
+        List<Location> cities = new ArrayList<>();
+        Location l;
+        l = new Location(0, "Striaton City", true);
+        l.addExit(0,"",6,new int[] {5});
+        cities.add(l);
+
+        l = new Location(1, "Nacrene City", true);
+        // This is the museum, and the gym starts in the next room.
+        l.addExit(1,"",17,new int[] {1});
+        cities.add(l);
+
+        l = new Location(2, "Castelia City", true);
+        l.addExit(2,"",31,new int[] {2});
+        cities.add(l);
+
+        l = new Location(3, "Nimbasa City", true);
+        l.addExit(3,"",64,new int[] {1});
+        cities.add(l);
+
+        l = new Location(4, "Driftveil City", true);
+        l.addExit(4,"",96,new int[] {9});
+        cities.add(l);
+
+        l = new Location(5, "Mistralton City", true);
+        l.addExit(5,"",107,new int[] {2});
+        cities.add(l);
+
+        l = new Location(6, "Icirrus City", true);
+        l.addExit(6,"",113,new int[] {3});
+        cities.add(l);
+
+        l = new Location(7, "Opelucid City", true);
+        l.addExit(7,"",120,new int[] {2});
+        cities.add(l);
+
+        return cities;
+    }
+
+    public static List<Location> gymLocationDataBW2() {
+        List<Location> gyms = new ArrayList<>();
+        Location l;
+        // These either need to be the map number or overworld number - not sure which yet
+        // Reference the notes on Gym Locations if this needs to be changed.
+        l = new Location(0, "Aspertia Gym", false);
+        l.addExit(0,"",436,new int[] {0});
+        gyms.add(l);
+
+        l = new Location(1, "Virbank Gym", false);
+        l.addExit(1,"",448,new int[] {1});
+        gyms.add(l);
+
+        l = new Location(2, "Castelia Gym", false);
+        l.addExit(2,"",29,new int[] {0});
+        gyms.add(l);
+
+        l = new Location(3, "Nimbasa Gym", false);
+        l.addExit(3,"",63,new int[] {0});
+        gyms.add(l);
+
+        l = new Location(4, "Driftveil Gym", false);
+        l.addExit(4,"",98,new int[] {0});
+        gyms.add(l);
+
+        l = new Location(5, "Mistralton Gym", false);
+        l.addExit(5,"",108,new int[] {0});
+        gyms.add(l);
+
+        l = new Location(6, "Opelucid Gym", false);
+        l.addExit(6,"",121,new int[] {0});
+        gyms.add(l);
+
+        l = new Location(7, "Humilau Gym", false);
+        l.addExit(7,"",473,new int[] {0});
+        gyms.add(l);
+
+        return gyms;
+    }
+
+    public static List<Location> gymCityLocationDataBW2() {
+        List<Location> cities = new ArrayList<>();
+        Location l;
+        l = new Location(0, "Aspertia City", true);
+        l.addExit(0,"",436,new int[] {1});
+        cities.add(l);
+
+        l = new Location(1, "Virbank City", true);
+        l.addExit(1,"",448,new int[] {6});
+        cities.add(l);
+
+        l = new Location(2, "Castelia City", true);
+        l.addExit(2,"",31,new int[] {2});
+        cities.add(l);
+
+        l = new Location(3, "Nimbasa City", true);
+        l.addExit(3,"",64,new int[] {1});
+        cities.add(l);
+
+        l = new Location(4, "Driftveil City", true);
+        l.addExit(4,"",96,new int[] {9});
+        cities.add(l);
+
+        l = new Location(5, "Mistralton City", true);
+        l.addExit(5,"",107,new int[] {2});
+        cities.add(l);
+
+        l = new Location(6, "Opelucid City", true);
+        l.addExit(6,"",120,new int[] {2});
+        cities.add(l);
+
+        l = new Location(7, "Humilau City", true);
+        l.addExit(7,"",465,new int[] {1});
+        cities.add(l);
+
+        return cities;
+    }
 }

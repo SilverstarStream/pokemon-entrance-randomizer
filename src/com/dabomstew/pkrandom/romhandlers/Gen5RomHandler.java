@@ -377,7 +377,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
     private boolean effectivenessUpdated;
     private int pickupItemsTableOffset;
     
-    private NARCArchive pokeNarc, moveNarc, stringsNarc, storyTextNarc, scriptNarc, shopNarc;
+    private NARCArchive pokeNarc, moveNarc, stringsNarc, storyTextNarc, scriptNarc, shopNarc, mapNarc;
 
     @Override
     protected boolean detectNDSRom(String ndsCode) {
@@ -427,6 +427,11 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
             } catch (IOException e) {
                 throw new RandomizerIOException(e);
             }
+        }
+        try {
+            mapNarc = readNARC(romEntry.getString("MapFiles"));
+        } catch (IOException e) {
+            throw new RandomizerIOException(e);
         }
         loadPokemonStats();
         pokemonListInclFormes = Arrays.asList(pokes);
@@ -609,6 +614,12 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
 
         try {
             writeNARC(romEntry.getString("Scripts"), scriptNarc);
+        } catch (IOException e) {
+            throw new RandomizerIOException(e);
+        }
+
+        try {
+            writeNARC(romEntry.getString("MapFiles"), mapNarc);
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
@@ -1929,24 +1940,19 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
         }
 
         // Foongus/Amoongus fake ball encounters
-        try {
-            NARCArchive mapNARC = readNARC(romEntry.getString("MapFiles"));
-            for (int i = 0; i < romEntry.staticPokemonFakeBall.size(); i++) {
-                StaticPokemon statP = romEntry.staticPokemonFakeBall.get(i);
-                StaticEncounter se = new StaticEncounter();
-                Pokemon newPK = statP.getPokemon(this, scriptNARC);
-                se.pkmn = newPK;
-                se.level = statP.getLevel(mapNARC, 0);
-                for (int levelEntry = 1; levelEntry < statP.getLevelCount(); levelEntry++) {
-                    StaticEncounter linkedStatic = new StaticEncounter();
-                    linkedStatic.pkmn = newPK;
-                    linkedStatic.level = statP.getLevel(mapNARC, levelEntry);
-                    se.linkedEncounters.add(linkedStatic);
-                }
-                sp.add(se);
+        for (int i = 0; i < romEntry.staticPokemonFakeBall.size(); i++) {
+            StaticPokemon statP = romEntry.staticPokemonFakeBall.get(i);
+            StaticEncounter se = new StaticEncounter();
+            Pokemon newPK = statP.getPokemon(this, scriptNARC);
+            se.pkmn = newPK;
+            se.level = statP.getLevel(mapNarc, 0);
+            for (int levelEntry = 1; levelEntry < statP.getLevelCount(); levelEntry++) {
+                StaticEncounter linkedStatic = new StaticEncounter();
+                linkedStatic.pkmn = newPK;
+                linkedStatic.level = statP.getLevel(mapNarc, levelEntry);
+                se.linkedEncounters.add(linkedStatic);
             }
-        } catch (IOException e) {
-            throw new RandomizerIOException(e);
+            sp.add(se);
         }
 
         // BW2 hidden grotto encounters
@@ -2047,20 +2053,14 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
         }
 
         // Foongus/Amoongus fake ball encounters
-        try {
-            NARCArchive mapNARC = readNARC(romEntry.getString("MapFiles"));
-            for (StaticPokemon statP : romEntry.staticPokemonFakeBall) {
-                StaticEncounter se = statics.next();
-                statP.setPokemon(this, scriptNARC, se.pkmn);
-                statP.setLevel(mapNARC, se.level, 0);
-                for (int i = 0; i < se.linkedEncounters.size(); i++) {
-                    StaticEncounter linkedStatic = se.linkedEncounters.get(i);
-                    statP.setLevel(mapNARC, linkedStatic.level, i + 1);
-                }
+        for (StaticPokemon statP : romEntry.staticPokemonFakeBall) {
+            StaticEncounter se = statics.next();
+            statP.setPokemon(this, scriptNARC, se.pkmn);
+            statP.setLevel(mapNarc, se.level, 0);
+            for (int i = 0; i < se.linkedEncounters.size(); i++) {
+                StaticEncounter linkedStatic = se.linkedEncounters.get(i);
+                statP.setLevel(mapNarc, linkedStatic.level, i + 1);
             }
-            this.writeNARC(romEntry.getString("MapFiles"), mapNARC);
-        } catch (IOException e) {
-            throw new RandomizerIOException(e);
         }
 
         // BW2 hidden grotto encounters
@@ -4067,9 +4067,61 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
     // Entrance Randomizer added methods
     // ==========================
 
+    // Shuffle Gyms
+
     @Override
     public int getGymCount() {
         return 8;
+    }
+
+    @Override
+    public List<Location> getGymLocations() {
+        if (this.romEntry.romType == Gen5Constants.Type_BW) {
+            return Gen5Constants.gymLocationDataBW();
+        }
+        return Gen5Constants.gymLocationDataBW2();
+    }
+
+    @Override
+    public List<Location> getGymCityLocations() {
+        if (this.romEntry.romType == Gen5Constants.Type_BW) {
+            return Gen5Constants.gymCityLocationDataBW();
+        }
+        return Gen5Constants.gymCityLocationDataBW2();
+    }
+
+    @Override
+    public Map<String, List<TrainerPokemon>> getGymLeaderTeams(List<Integer> gymOrder) {
+        LeaderTeams leaderTeams = FileFunctions.getLeaderTeams(getLeaderNames(), getGymCount(), getGameAbbr());
+        return leaderTeams.getTeams(gymOrder, pokeNameLookup(), moveNameLookup(), itemNameLookup());
+    }
+
+    // Note to self: when implementing getGymLeaders() and getLeaderNames(), make sure that each function only returns the 10 values for that game
+    // (Drayden and Iris shouldn't be in the same list)
+
+    @Override
+    public List<Trainer> getGymLeaders(List<Trainer> allTrainers) {
+        List<Trainer> leaders = new ArrayList<>();
+        for (Trainer t : allTrainers) {
+            if (t.tag.endsWith("-LEADER")) {
+                leaders.add(t);
+            }
+        }
+        return leaders;
+    }
+
+    @Override
+    public List<String> getLeaderNames() {
+        if (this.romEntry.romType == Gen5Constants.Type_BW2) {
+            return Arrays.asList("Cheren", "Roxie", "Burgh", "Elesa", "Clay", "Skyla", "Drayden", "Marlon");
+        }
+        List<String> names = Arrays.asList("Cilan", "Chili", "Cress", "Lenora", "Burgh", "Elesa", "Clay", "Skyla", "Bryson");
+        if (this.romEntry.isBlack) {
+            names.add("Drayden");
+        } else {
+            names.add("Iris");
+        }
+        return names;
     }
 
     @Override
@@ -4077,9 +4129,41 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
         if (this.romEntry.romType == Gen5Constants.Type_BW) {
             return "bw";
         }
-        return "bw2";
+        return "b2w2";
     }
 
-    // Note to self: when implementing getGymLeaders() and getLeaderNames(), make sure that each function only returns the 8 values for that game
-    // (Drayden and Iris shouldn't be in the same list)
+    @Override
+    public boolean isEnglishROM() {
+        String code = getROMCodeFromFile(loadedFilename());
+        return code.charAt(3) == 'O';
+    }
+
+    // Common Location functions
+
+    @Override
+    public void setWarps(List<Location> locations) {
+        for (Location l : locations) {
+            for (Exit e : l.exits) {
+                writeExit(e);
+            }
+        }
+    }
+
+    private void writeExit(Exit exit) {
+        if (exit.getTargetMap() == -1) {
+            // Since targetMap never got overwritten, its targetMap should be vanilla and shouldn't be overwritten
+            return;
+        }
+        byte[] map = mapNarc.files.get(exit.mapIndex);
+        int furnitureCount = readByte(map, 4);
+        int npcCount = readByte(map, 5);
+        int warpsOff = 8 + (0x14 + furnitureCount) + (0x24 + npcCount);
+        Exit.WarpData[] warps = exit.warps;
+        for(Exit.WarpData warp : warps) {
+            int warpOffset = warpsOff + (0x14 * warp.warp);
+            // Set the warp's target map and target warp
+            writeWord(map, warpOffset, exit.getTargetMap());
+            writeWord(map, warpOffset + 2, warp.targetWarp);
+        }
+    }
 }

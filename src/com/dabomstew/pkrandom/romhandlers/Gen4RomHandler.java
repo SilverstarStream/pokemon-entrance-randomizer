@@ -421,7 +421,6 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
     private NARCArchive msgNarc;
     private NARCArchive scriptNarc;
     private NARCArchive eventNarc;
-    private NARCArchive mapNarc;
     private byte[] arm9;
     private List<String> abilityNames;
     private List<String> itemNames;
@@ -472,11 +471,6 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
         }
         try {
             eventNarc = readNARC(romEntry.getString("Events"));
-        } catch (IOException e) {
-            throw new RandomizerIOException(e);
-        }
-        try {
-            mapNarc = readNARC(romEntry.getString("Maps"));
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
@@ -656,11 +650,6 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
         }
         try {
             writeNARC(romEntry.getString("Events"), eventNarc);
-        } catch (IOException e) {
-            throw new RandomizerIOException(e);
-        }
-        try {
-            writeNARC(romEntry.getString("Maps"), mapNarc);
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
@@ -5479,18 +5468,12 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
     @Override
     public List<Trainer> getGymLeaders(List<Trainer> allTrainers) {
         List<Trainer> leaders = new ArrayList<>();
-        for (int i : getLeaderOffs()) {
-            Trainer leader = allTrainers.get(i - 1);
-            leaders.add(leader);
+        for (Trainer t : allTrainers) {
+            if (t.tag != null && t.tag.startsWith("GYM") && t.tag.endsWith("-LEADER")) {
+                leaders.add(t);
+            }
         }
         return leaders;
-    }
-
-    private int[] getLeaderOffs() {
-        if (!romEntry.arrayEntries.containsKey("LeaderTrainerOffsets")) {
-            throw new RandomizationException("Missing offset(s) for getLeaderOffs() in the gen4_offsets ini.");
-        }
-        return romEntry.arrayEntries.get("LeaderTrainerOffsets");
     }
 
     @Override
@@ -5526,10 +5509,7 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
     @Override
     public boolean isEnglishROM() {
         String code = getROMCodeFromFile(loadedFilename());
-        if ('E' == code.charAt(3)) {
-            return true;
-        }
-        return false;
+        return code.charAt(3) == 'E';
     }
 
     private void changeSignBlurbs(List<Integer> gymOrder) {
@@ -5754,33 +5734,40 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
             // Since targetMap never got overwritten, its targetMap should be vanilla and shouldn't be overwritten
             return;
         }
-        byte[] event = eventNarc.files.get(exit.event);
-        int furnitureCount = readLong(event, 0);
-        int overworldOff = 4 + (0x14 * furnitureCount);
-        int overworldCount = readLong(event, overworldOff);
-        int matrixMap = exit.matrixMap;
-        WarpData[] warps = exit.warps;
-        for(WarpData warp : warps) {
-            int warpOffset = 0xC + (0x14 * furnitureCount) + (0x20 * overworldCount) + (0xC * warp.warp);
-            // Set the warp's target map and target warp
-            writeWord(event, warpOffset + 4, exit.getTargetMap());
-            writeWord(event, warpOffset + 6, warp.targetWarp);
-            if (matrixMap != -1) {
-                // Adjust stairs forcing the player to take one step if the exit has stairs.
-                // This changes the tile type from left/right stairs to a typical left/right warp.
-                // Maps that have stairs have a matrixMap that isn't -1.
-                int xPos = readWord(event, warpOffset) % 0x20;
-                int yPos = readWord(event, warpOffset + 2) % 0x20;
-                int pos = 0x10 + yPos * 0x40 + xPos * 2;
-                byte[] mapFile = mapNarc.files.get(matrixMap);
-                int movePerm = readWord(mapFile, pos);
-                if (movePerm == 0x005E) { // right stairs
-                    writeWord(mapFile, pos, 0x006C);
-                }
-                else if (movePerm == 0x005F) { // left stairs
-                    writeWord(mapFile, pos, 0x006D);
+        try {
+            NARCArchive mapNarc = readNARC(romEntry.getString("Maps"));
+            byte[] event = eventNarc.files.get(exit.event);
+            int furnitureCount = readLong(event, 0);
+            int overworldOff = 4 + (0x14 * furnitureCount);
+            int overworldCount = readLong(event, overworldOff);
+            int warpsOff = 0xC + (0x14 * furnitureCount) + (0x20 * overworldCount);
+            int matrixMap = exit.matrixMap;
+            WarpData[] warps = exit.warps;
+            for(WarpData warp : warps) {
+                int warpOffset = warpsOff + (0xC * warp.warp);
+                // Set the warp's target map and target warp
+                writeWord(event, warpOffset + 4, exit.getTargetMap());
+                writeWord(event, warpOffset + 6, warp.targetWarp);
+                if (matrixMap != -1) {
+                    // Adjust stairs forcing the player to take one step if the exit has stairs.
+                    // This changes the tile type from left/right stairs to a typical left/right warp.
+                    // Maps that have stairs have a matrixMap that isn't -1.
+                    int xPos = readWord(event, warpOffset) % 0x20;
+                    int yPos = readWord(event, warpOffset + 2) % 0x20;
+                    int tile = 0x10 + yPos * 0x40 + xPos * 2;
+                    byte[] mapFile = mapNarc.files.get(matrixMap);
+                    int movePerm = readWord(mapFile, tile);
+                    if (movePerm == 0x005E) { // right stairs
+                        writeWord(mapFile, tile, 0x006C);
+                    }
+                    else if (movePerm == 0x005F) { // left stairs
+                        writeWord(mapFile, tile, 0x006D);
+                    }
                 }
             }
+            writeNARC(romEntry.getString("Maps"), mapNarc);
+        } catch (IOException e) {
+            throw new RandomizerIOException(e);
         }
     }
 }
