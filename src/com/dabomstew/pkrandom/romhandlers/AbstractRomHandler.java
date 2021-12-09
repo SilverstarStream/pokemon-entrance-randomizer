@@ -6398,8 +6398,8 @@ public abstract class AbstractRomHandler implements RomHandler {
         List<Location> cityLocations = this.getGymCityLocations(); // The only reason isGymCity is true on these is lore reason
         List<ScriptData> scripts = this.getGymScripts();
         // jArray is for testing
-        //int[] jArray = {6, 6, 5, 5, 6, 7, 6}; // Should result in gym order: 7 1 6 3 2 8 5 4
-        for (int i = 0; i < gymCount - 1; i++) {
+        //int[] jArray = {6, 6, 5, 5, 6, 7, 6, 7}; // Should result in gym order: 7 1 6 3 2 8 5 4
+        for (int i = 0; i < gymCount; i++) {
             int j = random.nextInt(gymLocations.size() - i) + i;
             //int j = jArray[i];
             if (i != j) {
@@ -6413,15 +6413,12 @@ public abstract class AbstractRomHandler implements RomHandler {
             // and connect the selected gym to the city
             Location cityi = cityLocations.get(i);
             Location gymi = gymLocations.get(i);
-            if (i != j) {
-                Exit.connectExits(gymi.exits.get(0), cityi.exits.get(0), random);
-            }
+            Exit.connectExits(gymi.exits.get(0), cityi.exits.get(0), random);
             log("Gym " + (i + 1) + " " + cityi.name + ": " + gymi.name);
 
             // Swap specific instructions between scripts
             scripts.get(i).swapScriptData(scripts.get(j));
         }
-        log("Gym " + gymCount + " " + cityLocations.get(gymCount - 1).name + ": " + gymLocations.get(gymCount - 1).name);
         this.changeGymTeams(gymLocations, gymOrder);
         this.setWarps(gymLocations);
         this.setWarps(cityLocations);
@@ -6468,7 +6465,7 @@ public abstract class AbstractRomHandler implements RomHandler {
     }
 
     private void changeGymTeams(List<Location> gyms, List<Integer> gymOrder) {
-        // gymOrder represents the new order of gyms, so for exmaple: {7,0,...}
+        // gymOrder represents the new order of gyms, so for example: {7,0,...}
         // gym index 7 in list index 0 means Sunyshore (gym 8) as gym 1, Oreburgh as gym 2, ...
 
         List<Trainer> allTrainers = getTrainers();
