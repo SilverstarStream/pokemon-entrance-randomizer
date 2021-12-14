@@ -29,14 +29,14 @@ import java.util.Random;
 public class Exit {
     public int minWeight; // the lowest badge required to reach this exit from the other exits
     public String destName; // the name of the Location that the Exit warps to in vanilla
-    public int event; // the event number all tiles share
     public WarpData[] warps; // All the warp tile data
+    public int fileNum; // the number of the file that contains the warps
     public int mapIndex; // the map number all tiles share
     private int targetMap = -1; // the new map that this Exit warps to
     public Location thisLocation; // the Location object that this Exit belongs to
     public int matrixMap = -1; // if this Exit needs something about its map's tiles changed, this is set by the relevant constructor
 
-    public Exit(int weight, String destName, int[] warpIDs, int mapIndex, Location thisLocation) {
+    public Exit(int weight, String destName, int[] warpIDs, int fileNum, int mapIndex, Location thisLocation) {
         this.minWeight = weight;
         this.destName = destName;
         int warpCount = warpIDs.length;
@@ -44,6 +44,7 @@ public class Exit {
         for (int i = 0; i < warpCount; i++) {
             this.warps[i] = new WarpData(warpIDs[i]);
         }
+        this.fileNum = fileNum;
         this.mapIndex = mapIndex;
         this.thisLocation = thisLocation;
     }

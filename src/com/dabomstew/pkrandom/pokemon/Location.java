@@ -44,23 +44,16 @@ public class Location {
         this.isGymCity = isGymCity;
     }
 
-    public void addExit(int minWeight, String destName, int mapIndex, int[] warpIDs) {
-        Exit newExit = new Exit(minWeight, destName, warpIDs, mapIndex, this);
-        this.exits.add(newExit);
-    }
-
     public void addExit(int minWeight, String destName, int[] warpIDs,
-                        int event, Map<Integer, Integer> em) {
-        Exit newExit = new Exit(minWeight, destName, warpIDs, em.get(event), this);
-        newExit.event = event;
+                        int fileNum, Map<Integer, Integer> fileMap) {
+        Exit newExit = new Exit(minWeight, destName, warpIDs, fileNum, fileMap.get(fileNum), this);
         this.exits.add(newExit);
     }
 
     // This method is used to add which map in the matrix the Location belongs to (I don't remember the specific names or details)
     public void addExit(int minWeight, String destName, int[] warpIDs,
-                        int event, Map<Integer, Integer> em, int matrixMap) {
-        Exit newExit = new Exit(minWeight, destName, warpIDs, em.get(event), this);
-        newExit.event = event;
+                        int fileNum, Map<Integer, Integer> fileMap, int matrixMap) {
+        Exit newExit = new Exit(minWeight, destName, warpIDs, fileNum, fileMap.get(fileNum), this);
         newExit.matrixMap = matrixMap;
         this.exits.add(newExit);
     }

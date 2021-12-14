@@ -5191,24 +5191,24 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
 
     @Override
     public List<Location> getGymLocations() {
-        Map<Integer, Integer> eventToMap = getEventsToMaps();
+        Map<Integer, Integer> fileMap = getEventsToMaps();
         if (romEntry.romType == Gen4Constants.Type_DP) {
             throw new RandomizationException("Unsupported ROM.");
         }
         else if (romEntry.romType == Gen4Constants.Type_Plat) {
-            return Gen4Constants.gymLocationDataPt(eventToMap);
+            return Gen4Constants.gymLocationDataPt(fileMap);
         }
         throw new RandomizationException("Unsupported ROM.");
     }
 
     @Override
     public List<Location> getGymCityLocations() {
-        Map<Integer, Integer> eventToMap = getEventsToMaps();
+        Map<Integer, Integer> fileMap = getEventsToMaps();
         if (romEntry.romType == Gen4Constants.Type_DP) {
             throw new RandomizationException("Unsupported ROM.");
         }
         else if (romEntry.romType == Gen4Constants.Type_Plat) {
-            return Gen4Constants.gymCityLocationDataPt(eventToMap);
+            return Gen4Constants.gymCityLocationDataPt(fileMap);
         }
         throw new RandomizationException("Unsupported ROM.");
     }
@@ -5266,16 +5266,14 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
                 throw new RandomizationException("Error: unrecognized instruction " + String.format("0x%04X", instruction) +
                         " at " + String.format("0x%X", offset) + " in script " + scriptData.scriptNum);
             }
-            else if (instruction == 0x015C) {
+            else if (instruction == 0x015C) { // enableBadge
                 scriptData.enableOff = offset;
                 offset += 4;
                 break;
             }
-            else {
-                offset += 2 + instructionMap.get(instruction);
-            }
+            offset += 2 + instructionMap.get(instruction);
         }
-        // find the next jump offset after enableBadge
+        // find the next jump offset after enableBadge, marking setVar and flag instructions along the way
         while (true) {
             int instruction = readWord(scriptData.script, offset);
             if (!instructionMap.containsKey(instruction)) {
@@ -5289,29 +5287,28 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
             else if (instruction == 0x0028) { // setVar
                 scriptData.setVarOffs.add(offset);
                 scriptData.setVarMap.put(offset, readLong(scriptData.script, offset + 2));
-                scriptData.instByteCount += 6;
             }
             else if (instruction == 0x001E || instruction == 0x001F) { // clearFlag || setFlag
                 scriptData.flagOffs.add(offset);
                 // value stores the 2 instruction bytes in the 2 upper bytes and the 2 argument bytes in the 2 lower bytes.
                 int value = (readWord(scriptData.script, offset) << 16) | readWord(scriptData.script, offset + 2);
                 scriptData.flagMap.put(offset, value);
-                scriptData.instByteCount += 4;
             }
             offset += 2 + instructionMap.get(instruction);
         }
         scriptData.allOffs.addAll(scriptData.setVarOffs);
         scriptData.allOffs.addAll(scriptData.flagOffs);
+        Collections.sort(scriptData.allOffs);
     }
 
     private void removeFlagInsts(ScriptData scriptData) {
-        Collections.sort(scriptData.allOffs);
         for (int i = scriptData.allOffs.size() - 1; i >= 0; i--) {
             int offset = scriptData.allOffs.get(i);
             int removeCount = 4;
             if (scriptData.setVarMap.containsKey(offset)) {
                 removeCount = 6;
             }
+            scriptData.storedByteCount += removeCount;
             while (removeCount > 0) {
                 scriptData.scriptList.remove(offset);
                 removeCount--;
@@ -5381,7 +5378,7 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
     }
 
     private void adjustRelativeOffs(ScriptData scriptData) {
-        int difference = scriptData.setVarOffs.size() * 6 + scriptData.flagOffs.size() * 4 - scriptData.instByteCount;
+        int difference = scriptData.setVarOffs.size() * 6 + scriptData.flagOffs.size() * 4 - scriptData.storedByteCount;
 
         // Adjust header info
         for (int offset = 0; offset < scriptData.headerEndOff; offset += 4) {
@@ -5668,12 +5665,12 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
 
     @Override
     public List<Location> getMapLocations() {
-        Map<Integer, Integer> eventToMap = getEventsToMaps();
+        Map<Integer, Integer> fileMap = getEventsToMaps();
         if (romEntry.romType == Gen4Constants.Type_DP) {
             throw new RandomizationException("Unsupported ROM.");
         }
         else if (romEntry.romType == Gen4Constants.Type_Plat) {
-            return Gen4Constants.locationDataPt(eventToMap);
+            return Gen4Constants.locationDataPt(fileMap);
         }
         throw new RandomizationException("Unsupported ROM.");
     }
@@ -5691,12 +5688,12 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
 
     @Override
     public List<Location> getE4Locations() {
-        Map<Integer, Integer> eventToMap = getEventsToMaps();
+        Map<Integer, Integer> fileMap = getEventsToMaps();
         if (romEntry.romType == Gen4Constants.Type_DP) {
             throw new RandomizationException("Unsupported ROM.");
         }
         else if (romEntry.romType == Gen4Constants.Type_Plat) {
-            return Gen4Constants.e4LocationDataPt(eventToMap);
+            return Gen4Constants.e4LocationDataPt(fileMap);
         }
         throw new RandomizationException("Unsupported ROM.");
     }
@@ -5736,14 +5733,14 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
         }
         try {
             NARCArchive mapNarc = readNARC(romEntry.getString("Maps"));
-            byte[] event = eventNarc.files.get(exit.event);
+            byte[] event = eventNarc.files.get(exit.fileNum);
             int furnitureCount = readLong(event, 0);
             int overworldOff = 4 + (0x14 * furnitureCount);
             int overworldCount = readLong(event, overworldOff);
             int warpsOff = 0xC + (0x14 * furnitureCount) + (0x20 * overworldCount);
             int matrixMap = exit.matrixMap;
             WarpData[] warps = exit.warps;
-            for(WarpData warp : warps) {
+            for (WarpData warp : warps) {
                 int warpOffset = warpsOff + (0xC * warp.warp);
                 // Set the warp's target map and target warp
                 writeWord(event, warpOffset + 4, exit.getTargetMap());

@@ -3,7 +3,8 @@ package com.dabomstew.pkrandom.constants;
 /*----------------------------------------------------------------------------*/
 /*--  Gen5Constants.java - Constants for Black/White/Black 2/White 2        --*/
 /*--                                                                        --*/
-/*--  Part of "Universal Pokemon Randomizer ZX" by the UPR-ZX team          --*/
+/*--  Part of "Pokemon Entrance Randomizer" by SilverstarStream             --*/
+/*--  Modified from "Universal Pokemon Randomizer ZX" by the UPR-ZX team    --*/
 /*--  Originally part of "Universal Pokemon Randomizer" by Dabomstew        --*/
 /*--  Pokemon and any associated names and the like are                     --*/
 /*--  trademark and (C) Nintendo 1996-2020.                                 --*/
@@ -1900,156 +1901,349 @@ public class Gen5Constants {
         }
     }
 
-    public static List<Location> gymLocationDataBW() {
+    public static Map<Integer,Integer> scriptValues() {
+        Map<Integer, Integer> map = new HashMap<>();
+        int headerEnd = scriptListTerminator; // 0 arg bytes
+        map.put(headerEnd, 0);
+        int endScript = 2; // 0 arg
+        map.put(endScript, 0);
+        int returnAfterDelay = 3; // 2 arg
+        map.put(returnAfterDelay, 2);
+        int callRoutine = 4; // 1 target long
+        map.put(callRoutine, 4);
+        int endRoutine = 5; // 0 arg
+        map.put(endRoutine, 0);
+        int pushConst = 8; // 2 arg
+        map.put(pushConst, 2);
+        int pushVar = 9; // 2 arg
+        map.put(pushVar, 2);
+        int popToVar = 0x000A; // 2 arg
+        map.put(popToVar, 2);
+        int pushFlag = 0x0010; // 2 arg
+        map.put(pushFlag, 2);
+        int stackCmp = 0x0011; // 2 arg
+        map.put(stackCmp, 2);
+        int cmpVarConst = 0x0019; // 4 arg
+        map.put(cmpVarConst, 4);
+        int callGlobal = 0x001C; // 2 arg
+        map.put(callGlobal, 2);
+        int unconditionalJump = 0x001E; // 1 target long
+        map.put(unconditionalJump, 4);
+        int conditionalJump = 0x001F; // 1 arg, 1 target long
+        map.put(conditionalJump, 5);
+        int reserveScript = 0x0021; // 2 arg
+        map.put(reserveScript, 2);
+        int mapTypeChange = 0x0022; // 2 arg
+        map.put(mapTypeChange, 2);
+        int setFlag = 0x0023; // 2 arg
+        map.put(setFlag, 2);
+        int clearFlag = 0x0024; // 2 arg
+        map.put(clearFlag, 2);
+        int addToVar = 0x0026; // 4 arg
+        map.put(addToVar, 4);
+        int setVar = 0x0028; // 4 arg
+        map.put(setVar, 4);
+        int getWork = 0x0029; // 4 arg
+        map.put(getWork, 4);
+        int setWork = 0x002A; // 4 arg
+        map.put(setWork, 4);
+        int freezeAll = 0x002E; // 0 arg
+        map.put(freezeAll, 0);
+        int releaseAll = 0x002F; // 0 arg
+        map.put(releaseAll, 0);
+        int finishAllEvents = 0x0030; // 0 arg
+        map.put(finishAllEvents, 0);
+        int waitForButtonPress = 0x0032; // 0 arg
+        map.put(waitForButtonPress, 0);
+        int infoMsg = 0x0034; // 4 arg
+        map.put(infoMsg, 4);
+        int closeInfoMsg = 0x0036; // 0 arg
+        map.put(closeInfoMsg, 0);
+        int unassociatedMsg = 0x0038; // 3 arg
+        map.put(unassociatedMsg, 3);
+        int npcMsg = 0x003C; // 10 arg
+        map.put(npcMsg, 10);
+        int nonNpcMsg = 0x003D; // 8 arg
+        map.put(nonNpcMsg, 8);
+        int closeMessage = 0x003E; // 0 arg
+        map.put(closeMessage, 0);
+        int closeAllMessages = 0x003F; // 0 arg
+        map.put(closeAllMessages, 0);
+        int closeAllMessages2 = 0x004B; // 0 arg
+        map.put(closeAllMessages2, 0);
+        int nameToStrBuf = 0x004C; // 1 arg
+        map.put(nameToStrBuf, 1);
+        int applyMovement = 0x0064; // 2 arg, 1 target long
+        map.put(applyMovement, 6);
+        int waitMovement = 0x0065; // 0 arg
+        map.put(waitMovement, 0);
+        int showActor = 0x006B; // 2 arg
+        map.put(showActor, 2);
+        int hideActor = 0x006C; // 2 arg
+        map.put(hideActor, 2);
+        int setActorGPosition = 0x006D; // 10 arg
+        map.put(setActorGPosition, 10);
+        int getPlayerDirection = 0x006E; // 2 arg
+        map.put(getPlayerDirection, 2);
+        int turnNPCToPlayer = 0x0074; // 0 arg
+        map.put(turnNPCToPlayer, 0);
+        int jumpActorToPos = 0x007B; // 8 arg
+        map.put(jumpActorToPos, 8);
+        int trainerBattle = 0x0085; // 6 arg
+        map.put(trainerBattle, 6);
+        int callTrainerLose = 0x008C; // 0 arg
+        map.put(callTrainerLose, 0);
+        int getBattleResult = 0x008D; // 2 arg
+        map.put(getBattleResult, 2);
+        int callTrainerWin = 0x008E; // 0 arg
+        map.put(callTrainerWin, 0);
+        int setTrainerFlag = 0x0095; // 2 arg
+        map.put(setTrainerFlag, 2);
+        int getTrainerFlag = 0x0097; // 4 arg
+        map.put(getTrainerFlag, 4);
+        int playSound = 0x00A6; // 2 arg
+        map.put(playSound, 2);
+        int stopSound = 0x00A7; // 0 arg
+        map.put(stopSound, 0);
+        int waitSound = 0x00A8; // 0 arg
+        map.put(waitSound, 0);
+        int playMusic = 0x00A9; // 2 arg
+        map.put(playMusic, 2);
+        int waitMusic = 0x00AA; // 0 arg
+        map.put(waitMusic, 0);
+        int teleportWarp = 0x00C4; // 10 arg
+        map.put(teleportWarp, 10);
+        int checkBadge = 0x00D5; // 4 arg
+        map.put(checkBadge, 4);
+        int giveBadge = 0x00D6; // 2 arg
+        map.put(giveBadge, 2);
+        int getPlayerGender = 0x00E1; // 2 arg
+        map.put(getPlayerGender, 2);
+        int getPartyCountByType = 0x0103; // 4 arg
+        map.put(getPartyCountByType, 4);
+        int x011E = 0x011E; // 2 arg
+        map.put(x011E, 2);
+        int initCamera = 0x013F; // 0 arg
+        map.put(initCamera, 0);
+        int endCamera = 0x0140; // 0 arg
+        map.put(endCamera, 0);
+        int unbindCamera = 0x0141; // 0 arg
+        map.put(unbindCamera, 0);
+        int rebindCamera = 0x0142; // 0 arg
+        map.put(rebindCamera, 0);
+        int moveCamera = 0x0143; // 22 arg
+        map.put(moveCamera, 22);
+        int waitCamera = 0x0145; // 0 arg
+        map.put(waitCamera, 0);
+        int resetCamera = 0x0147; // 2 arg
+        map.put(resetCamera, 2);
+        int x0186 = 0x0186; // 0 arg
+        map.put(x0186, 0);
+        int x018C = 0x018C; // 4 arg
+        map.put(x018C, 4);
+        int x018D = 0x018D; // 2 arg
+        map.put(x018D, 2);
+        int playFieldEffect = 0x019B; // 2 arg
+        map.put(playFieldEffect, 2);
+        int blackout = 0x1A4; // 0 arg
+        map.put(blackout, 0);
+        int endFade = 0x01A7; // 0 arg
+        map.put(endFade, 0);
+        int endBlackoutFast = 0x01AB; // 0 arg
+        map.put(endBlackoutFast, 0);
+        int blackoutFast = 0x01AC; // 0 arg
+        map.put(blackoutFast, 0);
+        int moveActorToCoordinates = 0x024F; // 12 arg
+        map.put(moveActorToCoordinates, 12);
+        int x025A = 0x025A; // 2 arg
+        map.put(x025A, 2);
+        int x025B = 0x025B; // 0 arg
+        map.put(x025B, 0);
+        int x025F = 0x025F; // 2 arg
+        map.put(x025F, 2);
+        int x0262 = 0x0262; // 4 arg
+        map.put(x0262, 4);
+        int x0269 = 0x0269; // 0 arg
+        map.put(x0269, 0);
+        int x0291 = 0x0291; // 2 arg
+        map.put(x0291, 2);
+        int x0292 = 0x0292; // 2 arg
+        map.put(x0292, 2);
+        int registerMedal = 0x029F; // 2 arg
+        map.put(registerMedal, 2);
+        int x02A2 = 0x02A2; // 0 arg
+        map.put(x02A2, 0);
+        int x02A3 = 0x02A3; // 0 arg
+        map.put(x02A3, 0);
+        int x02A4 = 0x02A4; // 0 arg
+        map.put(x02A4, 0);
+        int x02A5 = 0x02A5; // 2 arg
+        map.put(x02A5, 2);
+        int x02A6 = 0x02A6; // 0 arg
+        map.put(x02A6, 0);
+        int x02A7 = 0x02A7; // 2 arg
+        map.put(x02A7, 2);
+        int x02A8 = 0x02A8; // 0 arg
+        map.put(x02A8, 0);
+        int x02A9 = 0x02A9; // 0 arg
+        map.put(x02A9, 0);
+        int getDifficulty = 0x02AF; // 2 arg
+        map.put(getDifficulty, 2);
+        int x02BB = 0x02BB; // 0 arg
+        map.put(x02BB, 0);
+
+        return map;
+    }
+
+    public static List<Location> gymLocationDataBW(Map<Integer, Integer> fm) {
+        // in BW, every map number is the same as the file number of its entity/overworld file, no exceptions
         List<Location> gyms = new ArrayList<>();
         Location l;
         l = new Location(0, "Striaton Gym", false);
-        l.addExit(0,"",7,new int[] {0});
+        l.addExit(0,"",new int[] {0},7, fm);
         gyms.add(l);
 
         l = new Location(1, "Nacrene Gym", false);
-        l.addExit(1,"",18,new int[] {0});
+        l.addExit(1,"",new int[] {0},18, fm);
         gyms.add(l);
 
         l = new Location(2, "Castelia Gym", false);
-        l.addExit(2,"",29,new int[] {0});
+        l.addExit(2,"",new int[] {0},29, fm);
         gyms.add(l);
 
         l = new Location(3, "Nimbasa Gym", false);
-        l.addExit(3,"",63,new int[] {0});
+        l.addExit(3,"",new int[] {0},63, fm);
         gyms.add(l);
 
         l = new Location(4, "Driftveil Gym", false);
-        l.addExit(4,"",98,new int[] {0});
+        l.addExit(4,"",new int[] {0},98, fm);
         gyms.add(l);
 
         l = new Location(5, "Mistralton Gym", false);
-        l.addExit(5,"",108,new int[] {0});
+        l.addExit(5,"",new int[] {0},108, fm);
         gyms.add(l);
 
         l = new Location(6, "Icirrus Gym", false);
-        l.addExit(6,"",114,new int[] {0});
+        l.addExit(6,"",new int[] {0},114, fm);
         gyms.add(l);
 
         l = new Location(7, "Opelucid Gym", false);
-        l.addExit(7,"",121,new int[] {0});
+        l.addExit(7,"",new int[] {0},121, fm);
         gyms.add(l);
 
         return gyms;
     }
 
-    public static List<Location> gymCityLocationDataBW() {
+    public static List<Location> gymCityLocationDataBW(Map<Integer, Integer> fm) {
         List<Location> cities = new ArrayList<>();
         Location l;
         l = new Location(0, "Striaton City", true);
-        l.addExit(0,"",6,new int[] {5});
+        l.addExit(0,"",new int[] {5},6, fm);
         cities.add(l);
 
         l = new Location(1, "Nacrene City", true);
         // This is the museum, and the gym starts in the next room.
-        l.addExit(1,"",17,new int[] {1});
+        l.addExit(1,"",new int[] {1},17, fm);
         cities.add(l);
 
         l = new Location(2, "Castelia City", true);
-        l.addExit(2,"",31,new int[] {2});
+        l.addExit(2,"",new int[] {2},31, fm);
         cities.add(l);
 
         l = new Location(3, "Nimbasa City", true);
-        l.addExit(3,"",64,new int[] {1});
+        l.addExit(3,"",new int[] {1},64, fm);
         cities.add(l);
 
         l = new Location(4, "Driftveil City", true);
-        l.addExit(4,"",96,new int[] {9});
+        l.addExit(4,"",new int[] {9},96, fm);
         cities.add(l);
 
         l = new Location(5, "Mistralton City", true);
-        l.addExit(5,"",107,new int[] {2});
+        l.addExit(5,"",new int[] {2},107, fm);
         cities.add(l);
 
         l = new Location(6, "Icirrus City", true);
-        l.addExit(6,"",113,new int[] {3});
+        l.addExit(6,"",new int[] {3},113, fm);
         cities.add(l);
 
         l = new Location(7, "Opelucid City", true);
-        l.addExit(7,"",120,new int[] {2});
+        l.addExit(7,"",new int[] {2},120, fm);
         cities.add(l);
 
         return cities;
     }
 
-    public static List<Location> gymLocationDataBW2() {
+    public static List<Location> gymLocationDataBW2(Map<Integer, Integer> fm) {
         List<Location> gyms = new ArrayList<>();
         Location l;
-        // These either need to be the map number or overworld number - not sure which yet
-        // Reference the notes on Gym Locations if this needs to be changed.
         l = new Location(0, "Aspertia Gym", false);
-        l.addExit(0,"",436,new int[] {0});
+        l.addExit(0,"",new int[] {0},165,fm);
         gyms.add(l);
 
         l = new Location(1, "Virbank Gym", false);
-        l.addExit(1,"",448,new int[] {1});
+        l.addExit(1,"",new int[] {1},175,fm);
         gyms.add(l);
 
         l = new Location(2, "Castelia Gym", false);
-        l.addExit(2,"",29,new int[] {0});
+        l.addExit(2,"",new int[] {0},29,fm);
         gyms.add(l);
 
         l = new Location(3, "Nimbasa Gym", false);
-        l.addExit(3,"",63,new int[] {0});
+        l.addExit(3,"",new int[] {0},67,fm);
         gyms.add(l);
 
         l = new Location(4, "Driftveil Gym", false);
-        l.addExit(4,"",98,new int[] {0});
+        l.addExit(4,"",new int[] {0},103,fm);
         gyms.add(l);
 
         l = new Location(5, "Mistralton Gym", false);
-        l.addExit(5,"",108,new int[] {0});
+        l.addExit(5,"",new int[] {0},121,fm);
         gyms.add(l);
 
         l = new Location(6, "Opelucid Gym", false);
-        l.addExit(6,"",121,new int[] {0});
+        l.addExit(6,"",new int[] {0},134,fm);
         gyms.add(l);
 
         l = new Location(7, "Humilau Gym", false);
-        l.addExit(7,"",473,new int[] {0});
+        l.addExit(7,"",new int[] {0},184,fm);
         gyms.add(l);
 
         return gyms;
     }
 
-    public static List<Location> gymCityLocationDataBW2() {
+    public static List<Location> gymCityLocationDataBW2(Map<Integer, Integer> fm) {
         List<Location> cities = new ArrayList<>();
         Location l;
         l = new Location(0, "Aspertia City", true);
-        l.addExit(0,"",436,new int[] {1});
+        l.addExit(0,"",new int[] {1},164,fm);
         cities.add(l);
 
         l = new Location(1, "Virbank City", true);
-        l.addExit(1,"",448,new int[] {6});
+        l.addExit(1,"",new int[] {6},174,fm);
         cities.add(l);
 
         l = new Location(2, "Castelia City", true);
-        l.addExit(2,"",31,new int[] {2});
+        l.addExit(2,"",new int[] {2},32,fm);
         cities.add(l);
 
         l = new Location(3, "Nimbasa City", true);
-        l.addExit(3,"",64,new int[] {1});
+        l.addExit(3,"",new int[] {1},68,fm);
         cities.add(l);
 
         l = new Location(4, "Driftveil City", true);
-        l.addExit(4,"",96,new int[] {9});
+        l.addExit(4,"",new int[] {9},101,fm);
         cities.add(l);
 
         l = new Location(5, "Mistralton City", true);
-        l.addExit(5,"",107,new int[] {2});
+        l.addExit(5,"",new int[] {2},120,fm);
         cities.add(l);
 
         l = new Location(6, "Opelucid City", true);
-        l.addExit(6,"",120,new int[] {2});
+        l.addExit(6,"",new int[] {2},133,fm);
         cities.add(l);
 
         l = new Location(7, "Humilau City", true);
-        l.addExit(7,"",465,new int[] {1});
+        l.addExit(7,"",new int[] {1},183,fm);
         cities.add(l);
 
         return cities;

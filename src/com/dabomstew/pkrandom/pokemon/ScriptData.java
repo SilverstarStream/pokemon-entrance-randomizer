@@ -29,19 +29,19 @@ import java.util.List;
 import java.util.Map;
 
 public class ScriptData {
-    public int scriptNum;
-    public int headerEndOff;
-    public int enableOff;
-    public int nextJumpOff;
-    public int instByteCount = 0;
+    public int scriptNum; // file number
+    public int headerEndOff; // The offset of the headerEnd delimiter, typically 0x13FD
+    public int enableOff; // The offset of the instruction that grants the player the badge
+    public int nextJumpOff; // The offset of the end of the section of the script that resolves the player defeating the leader
+    public int storedByteCount = 0; // holds how many bytes of stored flag and setVar commands there are
     public byte[] script;
-    public List<Byte> scriptList = new ArrayList<>();
+    public List<Byte> scriptList = new ArrayList<>(); // The script in list form for easy insertion and deletion of elements
 
-    public List<Integer> setVarOffs = new ArrayList<>();
-    public List<Integer> flagOffs = new ArrayList<>();
-    public List<Integer> allOffs = new ArrayList<>();
-    public Map<Integer, Integer> setVarMap = new HashMap<>();
-    public Map<Integer, Integer> flagMap = new HashMap<>();
+    public List<Integer> setVarOffs = new ArrayList<>(); // List of the original offsets of the setVar commands that are stored
+    public List<Integer> flagOffs = new ArrayList<>(); // ^ for flag commands
+    public List<Integer> allOffs = new ArrayList<>(); // Contains the contents of both above Lists; should be sorted
+    public Map<Integer, Integer> setVarMap = new HashMap<>(); // maps the offset of each setVar command to its argument
+    public Map<Integer, Integer> flagMap = new HashMap<>(); // ^ for flag commands
 
     public ScriptData(int scriptNum, byte[] script) {
         this.scriptNum = scriptNum;
@@ -72,9 +72,9 @@ public class ScriptData {
         temp = this.nextJumpOff;
         this.nextJumpOff = that.nextJumpOff;
         that.nextJumpOff = temp;
-        temp = this.instByteCount;
-        this.instByteCount = that.instByteCount;
-        that.instByteCount = temp;
+        temp = this.storedByteCount;
+        this.storedByteCount = that.storedByteCount;
+        that.storedByteCount = temp;
         byte[] tempArray = this.script;
         this.script = that.script;
         that.script = tempArray;

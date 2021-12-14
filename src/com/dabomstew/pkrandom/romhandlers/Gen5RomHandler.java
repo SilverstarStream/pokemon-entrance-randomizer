@@ -453,6 +453,11 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
         nonBadItems = Gen5Constants.nonBadItems.copy();
         regularShopItems = Gen5Constants.regularShopItems;
         opShopItems = Gen5Constants.opShopItems;
+        testFunction();
+    }
+
+    private void testFunction() {
+        getOverworldsToMaps();
     }
 
     private void loadPokemonStats() {
@@ -4076,24 +4081,108 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
 
     @Override
     public List<Location> getGymLocations() {
+        Map<Integer, Integer> fileMap = getOverworldsToMaps();
         if (this.romEntry.romType == Gen5Constants.Type_BW) {
-            return Gen5Constants.gymLocationDataBW();
+            return Gen5Constants.gymLocationDataBW(fileMap);
         }
-        return Gen5Constants.gymLocationDataBW2();
+        return Gen5Constants.gymLocationDataBW2(fileMap);
     }
 
     @Override
     public List<Location> getGymCityLocations() {
+        Map<Integer, Integer> fileMap = getOverworldsToMaps();
         if (this.romEntry.romType == Gen5Constants.Type_BW) {
-            return Gen5Constants.gymCityLocationDataBW();
+            return Gen5Constants.gymCityLocationDataBW(fileMap);
         }
-        return Gen5Constants.gymCityLocationDataBW2();
+        return Gen5Constants.gymCityLocationDataBW2(fileMap);
     }
 
     @Override
     public Map<String, List<TrainerPokemon>> getGymLeaderTeams(List<Integer> gymOrder) {
         LeaderTeams leaderTeams = FileFunctions.getLeaderTeams(getLeaderNames(), getGymCount(), getGameAbbr());
         return leaderTeams.getTeams(gymOrder, pokeNameLookup(), moveNameLookup(), itemNameLookup());
+    }
+
+    // Script functions
+
+    @Override
+    public List<ScriptData> getGymScripts() {
+        List<ScriptData> scripts = new ArrayList<>();
+        Map<Integer, Integer> instructionMap = getInstructionMap();
+        if (!romEntry.arrayEntries.containsKey("GymScriptOffsets")) {
+            throw new RandomizationException("No GymScriptOffsets in the gen5_offsets ini.");
+        }
+        int[] offsets = romEntry.arrayEntries.get("GymScriptOffsets");
+        for (int offset : offsets) {
+            byte[] script = scriptNarc.files.get(offset);
+            ScriptData scriptData = new ScriptData(offset, script);
+            parseScript(scriptData, instructionMap);
+            // the instructions need to be removed before the offsets get swapped, so remove upon instantiation
+            removeFlagInsts(scriptData);
+            scripts.add(scriptData);
+            System.out.println("script " + scriptData.scriptNum + " enableOff = " + String.format("0x%X", scriptData.enableOff) +
+                    " nextJumpOff = " + String.format("0x%X", scriptData.nextJumpOff) + " instByteCount");
+        }
+        return scripts;
+    }
+
+    private Map<Integer, Integer> getInstructionMap() {
+        // Maps each 2-byte instruction code to the number of argument bytes that instruction uses
+        // Currently only maps instructions relevant for swapping instructions between gym leader scripts
+        return Gen5Constants.scriptValues();
+    }
+
+    private void parseScript(ScriptData scriptData, Map<Integer, Integer> instructionMap) {
+        int offset = 0;
+        int word = 0;
+        // find the end of the header
+        while (word != Gen5Constants.scriptListTerminator) {
+            word = readWord(scriptData.script, offset);
+            offset += 4;
+        }
+        // find the giveBadge offset
+        // new strat: use search to find the giveBadge, it's all unique
+        byte[] search = {(byte) 0xD6, 0x00};
+        List<Integer> offsets = RomFunctions.search(scriptData.script, scriptData.headerEndOff, search);
+        scriptData.enableOff = offsets.get(0);
+        offset = scriptData.enableOff + 4;
+
+        // find the next endRoutine offset after giveBadge, marking flag commands alone the way
+        // However, Opelucid (gym 7, script 242) contains its GiveBadge command in a script, not a routine
+        // This all works under the assumption that jumps are only forward, or jumps backwards are non-offset-based endRoutines
+        while (true) {
+            int instruction = readWord(scriptData.script, offset);
+            if (!instructionMap.containsKey(instruction)) {
+                throw new RandomizationException("Error: unrecognized instruction " + String.format("0x%04X", instruction) +
+                        " at " + String.format("0x%X", offset) + " in script " + scriptData.scriptNum);
+            }
+            else if (instruction == 0x0005 || instruction == 0x0002) { // endRoutine || endScript
+                scriptData.nextJumpOff = offset;
+                break;
+            }
+            else if (instruction == 0x0023 || instruction == 0x0024) { // setFlag || clearFlag
+                scriptData.flagOffs.add(offset);
+                // value stores the 2 instruction bytes in the 2 upper bytes and the 2 argument bytes in the 2 lower bytes.
+                int value = (readWord(scriptData.script, offset) << 16) | readWord(scriptData.script, offset + 2);
+                scriptData.flagMap.put(offset, value);
+            }
+            offset += 2 + instructionMap.get(instruction);
+        }
+        scriptData.allOffs.addAll(scriptData.flagOffs);
+    }
+
+    private void removeFlagInsts(ScriptData scriptData) {
+        Collections.sort(scriptData.allOffs);
+        for (int i = scriptData.allOffs.size() - 1; i >= 0; i--) {
+            int offset = scriptData.allOffs.get(i);
+            int removeCount = 4;
+            scriptData.storedByteCount += removeCount;
+            while (removeCount > 0) {
+                scriptData.scriptList.remove(offset);
+                removeCount--;
+            }
+        }
+        scriptData.nextJumpOff -= (scriptData.setVarOffs.size() * 6 + scriptData.flagOffs.size() * 4);
     }
 
     // Note to self: when implementing getGymLeaders() and getLeaderNames(), make sure that each function only returns the 10 values for that game
@@ -4103,7 +4192,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
     public List<Trainer> getGymLeaders(List<Trainer> allTrainers) {
         List<Trainer> leaders = new ArrayList<>();
         for (Trainer t : allTrainers) {
-            if (t.tag.endsWith("-LEADER")) {
+            if (t.tag != null && t.tag.startsWith("GYM") && t.tag.endsWith("-LEADER")) {
                 leaders.add(t);
             }
         }
@@ -4140,6 +4229,25 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
 
     // Common Location functions
 
+    private Map<Integer, Integer> getOverworldsToMaps() {
+        try {
+            Map<Integer, Integer> filesToMaps = new HashMap<>();
+            byte[] mapHeaderData = this.readNARC(romEntry.getString("MapTableFile")).files.get(0);
+            int numMapHeaders = mapHeaderData.length / 48;
+            for (int map = 0; map < numMapHeaders; map++) {
+                int baseOffset = map * 48;
+                int overworld = readWord(mapHeaderData, baseOffset + 22);
+                filesToMaps.put(overworld, map);
+                if (overworld != map) {
+                    System.out.println("map " + map + "; overworld " + overworld);
+                }
+            }
+            return filesToMaps;
+        } catch (IOException e) {
+            throw new RandomizerIOException(e);
+        }
+    }
+
     @Override
     public void setWarps(List<Location> locations) {
         for (Location l : locations) {
@@ -4154,16 +4262,16 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
             // Since targetMap never got overwritten, its targetMap should be vanilla and shouldn't be overwritten
             return;
         }
-        byte[] map = mapNarc.files.get(exit.mapIndex);
-        int furnitureCount = readByte(map, 4);
-        int npcCount = readByte(map, 5);
+        byte[] overworld = mapNarc.files.get(exit.fileNum);
+        int furnitureCount = readByte(overworld, 4);
+        int npcCount = readByte(overworld, 5);
         int warpsOff = 8 + (0x14 + furnitureCount) + (0x24 + npcCount);
         Exit.WarpData[] warps = exit.warps;
         for(Exit.WarpData warp : warps) {
             int warpOffset = warpsOff + (0x14 * warp.warp);
             // Set the warp's target map and target warp
-            writeWord(map, warpOffset, exit.getTargetMap());
-            writeWord(map, warpOffset + 2, warp.targetWarp);
+            writeWord(overworld, warpOffset, exit.getTargetMap());
+            writeWord(overworld, warpOffset + 2, warp.targetWarp);
         }
     }
 }
