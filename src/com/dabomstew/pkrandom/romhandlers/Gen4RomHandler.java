@@ -5470,6 +5470,7 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
                 leaders.add(t);
             }
         }
+        leaders.sort((Trainer t1, Trainer t2) -> t1.tag.compareTo(t2.tag));
         return leaders;
     }
 
