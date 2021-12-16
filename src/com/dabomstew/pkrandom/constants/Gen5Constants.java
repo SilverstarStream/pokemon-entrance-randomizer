@@ -174,6 +174,14 @@ public class Gen5Constants {
         return absolutePokeNumsByBaseForme.getOrDefault(baseForme,dummyAbsolutePokeNums).getOrDefault(formNum,baseForme);
     }
 
+    public static final List<Integer> irregularFormes = Arrays.asList(
+            Species.Gen5Formes.castformF, Species.Gen5Formes.castformW, Species.Gen5Formes.castformI,
+            Species.Gen5Formes.darmanitanZ,
+            Species.Gen5Formes.meloettaP,
+            Species.Gen5Formes.kyuremW,
+            Species.Gen5Formes.kyuremB
+    );
+
     public static final List<Integer> emptyPlaythroughTrainers = Arrays.asList(new Integer[] { });
     
     public static final List<Integer> bw1MainPlaythroughTrainers = Arrays.asList(
@@ -394,6 +402,7 @@ public class Gen5Constants {
         map.put(Type.ELECTRIC, Items.electricGem);
         map.put(Type.GRASS, Items.grassGem);
         map.put(Type.ICE, Items.iceGem);
+        map.put(Type.FIGHTING, Items.fightingGem);
         map.put(Type.POISON, Items.poisonGem);
         map.put(Type.GROUND, Items.groundGem);
         map.put(Type.FLYING, Items.flyingGem);
@@ -575,49 +584,48 @@ public class Gen5Constants {
     private static Map<Integer,String> setupFormeSuffixes(int gameVersion) {
         Map<Integer,String> formeSuffixes = new HashMap<>();
         if (gameVersion == Gen5Constants.Type_BW) {
-            formeSuffixes.put(650,"-A"); // Deoxys-A
-            formeSuffixes.put(651,"-D"); // Deoxys-D
-            formeSuffixes.put(652,"-S"); // Deoxys-S
-            formeSuffixes.put(653,"-S"); // Wormadam-S
-            formeSuffixes.put(654,"-T"); // Wormadam-T
-            formeSuffixes.put(655,"-S"); // Shaymin-S
-            formeSuffixes.put(656,"-O"); // Giratina-O
-            formeSuffixes.put(657,"-H"); // Rotom-H
-            formeSuffixes.put(658,"-W"); // Rotom-W
-            formeSuffixes.put(659,"-Fr"); // Rotom-Fr
-            formeSuffixes.put(660,"-Fa"); // Rotom-Fa
-            formeSuffixes.put(661,"-M"); // Rotom-M
-            formeSuffixes.put(662,"-F"); // Castform-F
-            formeSuffixes.put(663,"-W"); // Castform-W
-            formeSuffixes.put(664,"-I"); // Castform-I
-            formeSuffixes.put(665,"-B"); // Basculin-B
-            formeSuffixes.put(666,"-Z"); // Darmanitan-Z
-            formeSuffixes.put(667,"-P"); // Meloetta-P
+            formeSuffixes.put(Species.Gen5Formes.deoxysA,"-A");
+            formeSuffixes.put(Species.Gen5Formes.deoxysD,"-D");
+            formeSuffixes.put(Species.Gen5Formes.deoxysS,"-S");
+            formeSuffixes.put(Species.Gen5Formes.wormadamS,"-S");
+            formeSuffixes.put(Species.Gen5Formes.wormadamT,"-T");
+            formeSuffixes.put(Species.Gen5Formes.shayminS,"-S");
+            formeSuffixes.put(Species.Gen5Formes.giratinaO,"-O");
+            formeSuffixes.put(Species.Gen5Formes.rotomH,"-H");
+            formeSuffixes.put(Species.Gen5Formes.rotomW,"-W");
+            formeSuffixes.put(Species.Gen5Formes.rotomFr,"-Fr");
+            formeSuffixes.put(Species.Gen5Formes.rotomFa,"-Fa");
+            formeSuffixes.put(Species.Gen5Formes.rotomM,"-M");
+            formeSuffixes.put(Species.Gen5Formes.castformF,"-F");
+            formeSuffixes.put(Species.Gen5Formes.castformW,"-W");
+            formeSuffixes.put(Species.Gen5Formes.castformI,"-I");
+            formeSuffixes.put(Species.Gen5Formes.basculinB,"-B");
+            formeSuffixes.put(Species.Gen5Formes.darmanitanZ,"-Z");
+            formeSuffixes.put(Species.Gen5Formes.meloettaP,"-P");
         } else if (gameVersion == Gen5Constants.Type_BW2) {
-            formeSuffixes.put(685,"-A"); // Deoxys-A
-            formeSuffixes.put(686,"-D"); // Deoxys-D
-            formeSuffixes.put(687,"-S"); // Deoxys-S
-            formeSuffixes.put(688,"-S"); // Wormadam-S
-            formeSuffixes.put(689,"-T"); // Wormadam-T
-            formeSuffixes.put(690,"-S"); // Shaymin-S
-            formeSuffixes.put(691,"-O"); // Giratina-O
-            formeSuffixes.put(692,"-H"); // Rotom-H
-            formeSuffixes.put(693,"-W"); // Rotom-W
-            formeSuffixes.put(694,"-Fr"); // Rotom-Fr
-            formeSuffixes.put(695,"-Fa"); // Rotom-Fa
-            formeSuffixes.put(696,"-M"); // Rotom-M
-            formeSuffixes.put(697,"-F"); // Castform-F
-            formeSuffixes.put(698,"-W"); // Castform-W
-            formeSuffixes.put(699,"-I"); // Castform-I
-            formeSuffixes.put(700,"-B"); // Basculin-B
-            formeSuffixes.put(701,"-Z"); // Darmanitan-Z
-            formeSuffixes.put(702,"-P"); // Meloetta-P
-            formeSuffixes.put(703,"-W"); // Kyurem-W
-            formeSuffixes.put(704,"-B"); // Kyurem-B
-            formeSuffixes.put(705,"-R"); // Keldeo-R
-            formeSuffixes.put(706,"-T"); // Tornadus-T
-            formeSuffixes.put(707,"-T"); // Thundurus-T
-            formeSuffixes.put(708,"-T"); // Landorus-T
+            formeSuffixes.put(Species.Gen5Formes.deoxysA + bw2formeOffset,"-A");
+            formeSuffixes.put(Species.Gen5Formes.deoxysD + bw2formeOffset,"-D");
+            formeSuffixes.put(Species.Gen5Formes.deoxysS + bw2formeOffset,"-S");
+            formeSuffixes.put(Species.Gen5Formes.wormadamS + bw2formeOffset,"-S");
+            formeSuffixes.put(Species.Gen5Formes.wormadamT + bw2formeOffset,"-T");
+            formeSuffixes.put(Species.Gen5Formes.shayminS + bw2formeOffset,"-S");
+            formeSuffixes.put(Species.Gen5Formes.giratinaO + bw2formeOffset,"-O");
+            formeSuffixes.put(Species.Gen5Formes.rotomH + bw2formeOffset,"-H");
+            formeSuffixes.put(Species.Gen5Formes.rotomW + bw2formeOffset,"-W");
+            formeSuffixes.put(Species.Gen5Formes.rotomFr + bw2formeOffset,"-Fr");
+            formeSuffixes.put(Species.Gen5Formes.rotomFa + bw2formeOffset,"-Fa");
+            formeSuffixes.put(Species.Gen5Formes.rotomM + bw2formeOffset,"-M");
+            formeSuffixes.put(Species.Gen5Formes.castformF + bw2formeOffset,"-F");
+            formeSuffixes.put(Species.Gen5Formes.castformW + bw2formeOffset,"-W");
+            formeSuffixes.put(Species.Gen5Formes.castformI + bw2formeOffset,"-I");
+            formeSuffixes.put(Species.Gen5Formes.basculinB + bw2formeOffset,"-B");
+            formeSuffixes.put(Species.Gen5Formes.darmanitanZ + bw2formeOffset,"-Z");
+            formeSuffixes.put(Species.Gen5Formes.meloettaP + bw2formeOffset,"-P");
+            formeSuffixes.put(Species.Gen5Formes.kyuremW + bw2formeOffset,"-W");
+            formeSuffixes.put(Species.Gen5Formes.kyuremB + bw2formeOffset,"-B");
+            formeSuffixes.put(Species.Gen5Formes.tornadusT + bw2formeOffset,"-T");
+            formeSuffixes.put(Species.Gen5Formes.thundurusT + bw2formeOffset,"-T");
+            formeSuffixes.put(Species.Gen5Formes.landorusT + bw2formeOffset,"-T");
         }
 
         return formeSuffixes;
@@ -706,69 +714,69 @@ public class Gen5Constants {
         Map<Integer,Map<Integer,Integer>> map = new HashMap<>();
 
         Map<Integer,Integer> deoxysMap = new HashMap<>();
-        deoxysMap.put(1,650);
-        deoxysMap.put(2,651);
-        deoxysMap.put(3,652);
+        deoxysMap.put(1,Species.Gen5Formes.deoxysA);
+        deoxysMap.put(2,Species.Gen5Formes.deoxysD);
+        deoxysMap.put(3,Species.Gen5Formes.deoxysS);
         map.put(Species.deoxys, deoxysMap);
 
         Map<Integer,Integer> wormadamMap = new HashMap<>();
-        wormadamMap.put(1,653);
-        wormadamMap.put(2,654);
+        wormadamMap.put(1,Species.Gen5Formes.wormadamS);
+        wormadamMap.put(2,Species.Gen5Formes.wormadamT);
         map.put(Species.wormadam, wormadamMap);
 
         Map<Integer,Integer> shayminMap = new HashMap<>();
-        shayminMap.put(1,655);
+        shayminMap.put(1,Species.Gen5Formes.shayminS);
         map.put(Species.shaymin, shayminMap);
 
         Map<Integer,Integer> giratinaMap = new HashMap<>();
-        giratinaMap.put(1,656);
+        giratinaMap.put(1,Species.Gen5Formes.giratinaO);
         map.put(Species.giratina, giratinaMap);
 
         Map<Integer,Integer> rotomMap = new HashMap<>();
-        rotomMap.put(1,657);
-        rotomMap.put(2,658);
-        rotomMap.put(3,659);
-        rotomMap.put(4,660);
-        rotomMap.put(5,661);
+        rotomMap.put(1,Species.Gen5Formes.rotomH);
+        rotomMap.put(2,Species.Gen5Formes.rotomW);
+        rotomMap.put(3,Species.Gen5Formes.rotomFr);
+        rotomMap.put(4,Species.Gen5Formes.rotomFa);
+        rotomMap.put(5,Species.Gen5Formes.rotomM);
         map.put(Species.rotom, rotomMap);
 
         Map<Integer,Integer> castformMap = new HashMap<>();
-        castformMap.put(1,662);
-        castformMap.put(2,663);
-        castformMap.put(3,664);
+        castformMap.put(1,Species.Gen5Formes.castformF);
+        castformMap.put(2,Species.Gen5Formes.castformW);
+        castformMap.put(3,Species.Gen5Formes.castformI);
         map.put(Species.castform, castformMap);
 
         Map<Integer,Integer> basculinMap = new HashMap<>();
-        basculinMap.put(1,665);
+        basculinMap.put(1,Species.Gen5Formes.basculinB);
         map.put(Species.basculin, basculinMap);
 
         Map<Integer,Integer> darmanitanMap = new HashMap<>();
-        darmanitanMap.put(1,666);
+        darmanitanMap.put(1,Species.Gen5Formes.darmanitanZ);
         map.put(Species.darmanitan, darmanitanMap);
 
         Map<Integer,Integer> meloettaMap = new HashMap<>();
-        meloettaMap.put(1,667);
+        meloettaMap.put(1,Species.Gen5Formes.meloettaP);
         map.put(Species.meloetta, meloettaMap);
 
         Map<Integer,Integer> kyuremMap = new HashMap<>();
-        kyuremMap.put(1,668);
-        kyuremMap.put(2,669);
+        kyuremMap.put(1,Species.Gen5Formes.kyuremW);
+        kyuremMap.put(2,Species.Gen5Formes.kyuremB);
         map.put(Species.kyurem, kyuremMap);
 
         Map<Integer,Integer> keldeoMap = new HashMap<>();
-        keldeoMap.put(1,670);
+        keldeoMap.put(1,Species.Gen5Formes.keldeoCosmetic1);
         map.put(Species.keldeo, keldeoMap);
 
         Map<Integer,Integer> tornadusMap = new HashMap<>();
-        tornadusMap.put(1,671);
+        tornadusMap.put(1,Species.Gen5Formes.tornadusT);
         map.put(Species.tornadus, tornadusMap);
 
         Map<Integer,Integer> thundurusMap = new HashMap<>();
-        thundurusMap.put(1,672);
+        thundurusMap.put(1,Species.Gen5Formes.thundurusT);
         map.put(Species.thundurus, thundurusMap);
 
         Map<Integer,Integer> landorusMap = new HashMap<>();
-        landorusMap.put(1,673);
+        landorusMap.put(1,Species.Gen5Formes.landorusT);
         map.put(Species.landorus, landorusMap);
 
         return map;

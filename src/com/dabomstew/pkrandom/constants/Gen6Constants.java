@@ -43,13 +43,22 @@ public class Gen6Constants {
     private static final int orasformeMovesetOffset = 35;
 
     public static final List<Integer> actuallyCosmeticForms = Arrays.asList(
-            737, // Cherrim
-            743, // Keldeo
-            749, 750, 751, 752, 753, 754, 755, 756, 757, // Furfrou
-            788, 789, 790, // Pumpkaboo
-            791, 792, 793, // Gourgeist
-            794, 795, 796, 797, // Floette (non-Eternal)
-            815, 816, 817, 818, 819, 820 // Cosplay Pikachu
+            Species.Gen6Formes.cherrimCosmetic1,
+            Species.Gen6Formes.keldeoCosmetic1,
+            Species.Gen6Formes.furfrouCosmetic1, Species.Gen6Formes.furfrouCosmetic2,
+            Species.Gen6Formes.furfrouCosmetic3, Species.Gen6Formes.furfrouCosmetic4,
+            Species.Gen6Formes.furfrouCosmetic5, Species.Gen6Formes.furfrouCosmetic6,
+            Species.Gen6Formes.furfrouCosmetic7, Species.Gen6Formes.furfrouCosmetic8,
+            Species.Gen6Formes.furfrouCosmetic9,
+            Species.Gen6Formes.pumpkabooCosmetic1, Species.Gen6Formes.pumpkabooCosmetic2,
+            Species.Gen6Formes.pumpkabooCosmetic3,
+            Species.Gen6Formes.gourgeistCosmetic1, Species.Gen6Formes.gourgeistCosmetic2,
+            Species.Gen6Formes.gourgeistCosmetic3,
+            Species.Gen6Formes.floetteCosmetic1, Species.Gen6Formes.floetteCosmetic2,
+            Species.Gen6Formes.floetteCosmetic3, Species.Gen6Formes.floetteCosmetic4,
+            Species.Gen6Formes.pikachuCosmetic1, Species.Gen6Formes.pikachuCosmetic2,
+            Species.Gen6Formes.pikachuCosmetic3, Species.Gen6Formes.pikachuCosmetic4,
+            Species.Gen6Formes.pikachuCosmetic5, Species.Gen6Formes.pikachuCosmetic6 // Cosplay Pikachu
     );
 
     public static final String criesTablePrefixXY = "60000A006B000A0082000A003D010A00";
@@ -70,6 +79,63 @@ public class Gen6Constants {
     public static String getFormeSuffixByBaseForme(int baseForme, int formNum) {
         return formeSuffixesByBaseForme.getOrDefault(baseForme,dummyFormeSuffixes).getOrDefault(formNum,"");
     }
+
+    public static final List<Integer> irregularFormes = Arrays.asList(
+            Species.Gen6Formes.castformF, Species.Gen6Formes.castformW, Species.Gen6Formes.castformI,
+            Species.Gen6Formes.darmanitanZ,
+            Species.Gen6Formes.meloettaP,
+            Species.Gen6Formes.kyuremW,
+            Species.Gen6Formes.kyuremB,
+            Species.Gen6Formes.gengarMega,
+            Species.Gen6Formes.gardevoirMega,
+            Species.Gen6Formes.ampharosMega,
+            Species.Gen6Formes.venusaurMega,
+            Species.Gen6Formes.charizardMegaX, Species.Gen6Formes.charizardMegaY,
+            Species.Gen6Formes.mewtwoMegaX, Species.Gen6Formes.mewtwoMegaY,
+            Species.Gen6Formes.blazikenMega,
+            Species.Gen6Formes.medichamMega,
+            Species.Gen6Formes.houndoomMega,
+            Species.Gen6Formes.aggronMega,
+            Species.Gen6Formes.banetteMega,
+            Species.Gen6Formes.tyranitarMega,
+            Species.Gen6Formes.scizorMega,
+            Species.Gen6Formes.pinsirMega,
+            Species.Gen6Formes.aerodactylMega,
+            Species.Gen6Formes.lucarioMega,
+            Species.Gen6Formes.abomasnowMega,
+            Species.Gen6Formes.aegislashB,
+            Species.Gen6Formes.blastoiseMega,
+            Species.Gen6Formes.kangaskhanMega,
+            Species.Gen6Formes.gyaradosMega,
+            Species.Gen6Formes.absolMega,
+            Species.Gen6Formes.alakazamMega,
+            Species.Gen6Formes.heracrossMega,
+            Species.Gen6Formes.mawileMega,
+            Species.Gen6Formes.manectricMega,
+            Species.Gen6Formes.garchompMega,
+            Species.Gen6Formes.latiosMega,
+            Species.Gen6Formes.latiasMega,
+            Species.Gen6Formes.swampertMega,
+            Species.Gen6Formes.sceptileMega,
+            Species.Gen6Formes.sableyeMega,
+            Species.Gen6Formes.altariaMega,
+            Species.Gen6Formes.galladeMega,
+            Species.Gen6Formes.audinoMega,
+            Species.Gen6Formes.sharpedoMega,
+            Species.Gen6Formes.slowbroMega,
+            Species.Gen6Formes.steelixMega,
+            Species.Gen6Formes.pidgeotMega,
+            Species.Gen6Formes.glalieMega,
+            Species.Gen6Formes.diancieMega,
+            Species.Gen6Formes.metagrossMega,
+            Species.Gen6Formes.kyogreP,
+            Species.Gen6Formes.groudonP,
+            Species.Gen6Formes.rayquazaMega,
+            Species.Gen6Formes.cameruptMega,
+            Species.Gen6Formes.lopunnyMega,
+            Species.Gen6Formes.salamenceMega,
+            Species.Gen6Formes.beedrillMega
+    );
 
     private static final int moveCountXY = 617, moveCountORAS = 621;
     private static final int highestAbilityIndexXY = Abilities.auraBreak, highestAbilityIndexORAS = Abilities.deltaStream;
@@ -248,6 +314,9 @@ public class Gen6Constants {
 
     public static final String xyRoamerFreeSpacePostfix = "540095E50220A0E30810A0E1", xyRoamerSpeciesLocator = "9040A0030400000A",
             xyRoamerLevelPrefix = "B020DDE13F3BC1E3";
+
+    public static List<Integer> xyHardcodedTradeOffsets = Arrays.asList(1, 8);
+    public static List<Integer> xyHardcodedTradeTexts = Arrays.asList(129, 349);
 
     public static final List<Integer> consumableHeldItems = setupAllConsumableItems();
 
@@ -550,94 +619,93 @@ public class Gen6Constants {
 
     private static Map<Integer,String> setupFormeSuffixes() {
         Map<Integer,String> formeSuffixes = new HashMap<>();
-        formeSuffixes.put(722,"-A"); // Deoxys-A
-        formeSuffixes.put(723,"-D"); // Deoxys-D
-        formeSuffixes.put(724,"-S"); // Deoxys-S
-        formeSuffixes.put(725,"-S"); // Wormadam-S
-        formeSuffixes.put(726,"-T"); // Wormadam-T
-        formeSuffixes.put(727,"-S"); // Shaymin-S
-        formeSuffixes.put(728,"-O"); // Giratina-O
-        formeSuffixes.put(729,"-H"); // Rotom-H
-        formeSuffixes.put(730,"-W"); // Rotom-W
-        formeSuffixes.put(731,"-Fr"); // Rotom-Fr
-        formeSuffixes.put(732,"-Fa"); // Rotom-Fa
-        formeSuffixes.put(733,"-M"); // Rotom-M
-        formeSuffixes.put(734,"-F"); // Castform-F
-        formeSuffixes.put(735,"-W"); // Castform-W
-        formeSuffixes.put(736,"-I"); // Castform-I
-        formeSuffixes.put(737,"-S"); // Cherrim-S (cosmetic)
-        formeSuffixes.put(738,"-B"); // Basculin-B
-        formeSuffixes.put(739,"-Z"); // Darmanitan-Z
-        formeSuffixes.put(740,"-P"); // Meloetta-P
-        formeSuffixes.put(741,"-W"); // Kyurem-W
-        formeSuffixes.put(742,"-B"); // Kyurem-B
-        formeSuffixes.put(743,"-R"); // Keldeo-R (cosmetic)
-        formeSuffixes.put(744,"-T"); // Tornadus-T
-        formeSuffixes.put(745,"-T"); // Thundurus-T
-        formeSuffixes.put(746,"-T"); // Landorus-T
-        formeSuffixes.put(747,"-Mega"); // Mega Gengar
-        formeSuffixes.put(748,"-F"); // Meowstic
+        formeSuffixes.put(Species.Gen6Formes.deoxysA,"-A");
+        formeSuffixes.put(Species.Gen6Formes.deoxysD,"-D");
+        formeSuffixes.put(Species.Gen6Formes.deoxysS,"-S");
+        formeSuffixes.put(Species.Gen6Formes.wormadamS,"-S");
+        formeSuffixes.put(Species.Gen6Formes.wormadamT,"-T");
+        formeSuffixes.put(Species.Gen6Formes.shayminS,"-S");
+        formeSuffixes.put(Species.Gen6Formes.giratinaO,"-O");
+        formeSuffixes.put(Species.Gen6Formes.rotomH,"-H");
+        formeSuffixes.put(Species.Gen6Formes.rotomW,"-W");
+        formeSuffixes.put(Species.Gen6Formes.rotomFr,"-Fr");
+        formeSuffixes.put(Species.Gen6Formes.rotomFa,"-Fa");
+        formeSuffixes.put(Species.Gen6Formes.rotomM,"-M");
+        formeSuffixes.put(Species.Gen6Formes.castformF,"-F");
+        formeSuffixes.put(Species.Gen6Formes.castformW,"-W");
+        formeSuffixes.put(Species.Gen6Formes.castformI,"-I");
+        formeSuffixes.put(Species.Gen6Formes.basculinB,"-B");
+        formeSuffixes.put(Species.Gen6Formes.darmanitanZ,"-Z");
+        formeSuffixes.put(Species.Gen6Formes.meloettaP,"-P");
+        formeSuffixes.put(Species.Gen6Formes.kyuremW,"-W");
+        formeSuffixes.put(Species.Gen6Formes.kyuremB,"-B");
+        formeSuffixes.put(Species.Gen6Formes.keldeoCosmetic1,"-R");
+        formeSuffixes.put(Species.Gen6Formes.tornadusT,"-T");
+        formeSuffixes.put(Species.Gen6Formes.thundurusT,"-T");
+        formeSuffixes.put(Species.Gen6Formes.landorusT,"-T");
+        formeSuffixes.put(Species.Gen6Formes.gengarMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.meowsticF,"-F");
         // 749 - 757 Furfrou
-        formeSuffixes.put(758,"-Mega"); // Mega Gardevoir
-        formeSuffixes.put(759,"-Mega"); // Mega Ampharos
-        formeSuffixes.put(760,"-Mega"); // Mega Venusaur
-        formeSuffixes.put(761,"-Mega-X"); // Mega Charizard X
-        formeSuffixes.put(762,"-Mega-Y"); // Mega Charizard Y
-        formeSuffixes.put(763,"-Mega-X"); // Mega Mewtwo X
-        formeSuffixes.put(764,"-Mega-Y"); // Mega Mewtwo Y
-        formeSuffixes.put(765,"-Mega"); // Mega Blaziken
-        formeSuffixes.put(766,"-Mega"); // Mega Medicham
-        formeSuffixes.put(767,"-Mega"); // Mega Houndoom
-        formeSuffixes.put(768,"-Mega"); // Mega Aggron
-        formeSuffixes.put(769,"-Mega"); // Mega Banette
-        formeSuffixes.put(770,"-Mega"); // Mega Tyranitar
-        formeSuffixes.put(771,"-Mega"); // Mega Scizor
-        formeSuffixes.put(772,"-Mega"); // Mega Pinsir
-        formeSuffixes.put(773,"-Mega"); // Mega Aerodactyl
-        formeSuffixes.put(774,"-Mega"); // Mega Lucario
-        formeSuffixes.put(775,"-Mega"); // Mega Abomasnow
-        formeSuffixes.put(776,"-B");    // Aegislash-B
-        formeSuffixes.put(777,"-Mega"); // Mega Blastoise
-        formeSuffixes.put(778,"-Mega"); // Mega Kangaskhan
-        formeSuffixes.put(779,"-Mega"); // Mega Gyarados
-        formeSuffixes.put(780,"-Mega"); // Mega Absol
-        formeSuffixes.put(781,"-Mega"); // Mega Alakazam
-        formeSuffixes.put(782,"-Mega"); // Mega Heracross
-        formeSuffixes.put(783,"-Mega"); // Mega Mawile
-        formeSuffixes.put(784,"-Mega"); // Mega Manectric
-        formeSuffixes.put(785,"-Mega"); // Mega Garchomp
-        formeSuffixes.put(786,"-Mega"); // Mega Latios
-        formeSuffixes.put(787,"-Mega"); // Mega Latias
-        formeSuffixes.put(788,"-M"); // Pumpkaboo-M
-        formeSuffixes.put(789,"-L"); // Pumpkaboo-L
-        formeSuffixes.put(790,"-XL"); // Pumpkaboo-XL
-        formeSuffixes.put(791,"-M"); // Gourgeist-M
-        formeSuffixes.put(792,"-L"); // Gourgeist-L
-        formeSuffixes.put(793,"-XL"); // Gourgeist-XL
+        formeSuffixes.put(Species.Gen6Formes.gardevoirMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.ampharosMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.venusaurMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.charizardMegaX,"-Mega-X");
+        formeSuffixes.put(Species.Gen6Formes.charizardMegaY,"-Mega-Y");
+        formeSuffixes.put(Species.Gen6Formes.mewtwoMegaX,"-Mega-X");
+        formeSuffixes.put(Species.Gen6Formes.mewtwoMegaY,"-Mega-Y");
+        formeSuffixes.put(Species.Gen6Formes.blazikenMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.medichamMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.houndoomMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.aggronMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.banetteMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.tyranitarMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.scizorMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.pinsirMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.aerodactylMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.lucarioMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.abomasnowMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.aegislashB,"-B");
+        formeSuffixes.put(Species.Gen6Formes.blastoiseMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.kangaskhanMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.gyaradosMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.absolMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.alakazamMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.heracrossMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.mawileMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.manectricMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.garchompMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.latiosMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.latiasMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.pumpkabooCosmetic1,"-M");
+        formeSuffixes.put(Species.Gen6Formes.pumpkabooCosmetic2,"-L");
+        formeSuffixes.put(Species.Gen6Formes.pumpkabooCosmetic3,"-XL");
+        formeSuffixes.put(Species.Gen6Formes.gourgeistCosmetic1,"-M");
+        formeSuffixes.put(Species.Gen6Formes.gourgeistCosmetic2,"-L");
+        formeSuffixes.put(Species.Gen6Formes.gourgeistCosmetic3,"-XL");
         // 794 - 797 Floette
-        formeSuffixes.put(798,"-E"); // Floette-E
-        formeSuffixes.put(799,"-Mega"); // Mega Swampert
-        formeSuffixes.put(800,"-Mega"); // Mega Sceptile
-        formeSuffixes.put(801,"-Mega"); // Mega Sableye
-        formeSuffixes.put(802,"-Mega"); // Mega Altaria
-        formeSuffixes.put(803,"-Mega"); // Mega Gallade
-        formeSuffixes.put(804,"-Mega"); // Mega Audino
-        formeSuffixes.put(805,"-Mega"); // Mega Sharpedo
-        formeSuffixes.put(806,"-Mega"); // Mega Slowbro
-        formeSuffixes.put(807,"-Mega"); // Mega Steelix
-        formeSuffixes.put(808,"-Mega"); // Mega Pidgeot
-        formeSuffixes.put(809,"-Mega"); // Mega Glalie
-        formeSuffixes.put(810,"-Mega"); // Mega Diancie
-        formeSuffixes.put(811,"-Mega"); // Mega Metagross
-        formeSuffixes.put(812,"-P"); // Kyogre-P
-        formeSuffixes.put(813,"-P"); // Groudon-P
-        formeSuffixes.put(814,"-Mega"); // Mega Rayquaza
+        formeSuffixes.put(Species.Gen6Formes.floetteE,"-E");
+        formeSuffixes.put(Species.Gen6Formes.swampertMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.sceptileMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.sableyeMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.altariaMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.galladeMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.audinoMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.sharpedoMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.slowbroMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.steelixMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.pidgeotMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.glalieMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.diancieMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.metagrossMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.kyogreP,"-P");
+        formeSuffixes.put(Species.Gen6Formes.groudonP,"-P");
+        formeSuffixes.put(Species.Gen6Formes.rayquazaMega,"-Mega");
         // 815 - 820 contest Pikachu
-        formeSuffixes.put(821,"-U"); // Hoopa-U
-        formeSuffixes.put(822,"-Mega"); // Mega Camerupt
-        formeSuffixes.put(823,"-Mega"); // Mega Lopunny
-        formeSuffixes.put(824,"-Mega"); // Mega Salamence
-        formeSuffixes.put(825,"-Mega"); // Mega Beedrill
+        formeSuffixes.put(Species.Gen6Formes.hoopaU,"-U");
+        formeSuffixes.put(Species.Gen6Formes.cameruptMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.lopunnyMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.salamenceMega,"-Mega");
+        formeSuffixes.put(Species.Gen6Formes.beedrillMega,"-Mega");
 
         return formeSuffixes;
     }

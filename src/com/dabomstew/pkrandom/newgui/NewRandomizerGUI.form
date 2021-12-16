@@ -11,7 +11,7 @@
     <children>
       <grid id="73235" layout-manager="GridBagLayout">
         <constraints>
-          <grid row="1" column="2" row-span="2" col-span="1" vsize-policy="3" hsize-policy="3" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
+          <grid row="1" column="2" row-span="3" col-span="1" vsize-policy="3" hsize-policy="3" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
           <gridbag weightx="0.0" weighty="0.0"/>
         </constraints>
         <properties>
@@ -25,7 +25,7 @@
         <children>
           <component id="f2100" class="javax.swing.JCheckBox" binding="raceModeCheckBox" default-binding="true">
             <constraints>
-              <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="2" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
               <gridbag top="0" left="0" bottom="0" right="30" weightx="0.0" weighty="0.0"/>
             </constraints>
             <properties>
@@ -53,6 +53,17 @@
             <properties>
               <enabled value="false"/>
               <text resource-bundle="com/dabomstew/pkrandom/newgui/Bundle" key="GUI.limitPokemonCheckBox.text"/>
+            </properties>
+          </component>
+          <component id="41e69" class="javax.swing.JCheckBox" binding="noIrregularAltFormesCheckBox" default-binding="true">
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <gridbag weightx="0.0" weighty="0.0"/>
+            </constraints>
+            <properties>
+              <enabled value="false"/>
+              <text resource-bundle="com/dabomstew/pkrandom/newgui/Bundle" key="GUI.noIrregularAltFormesCheckBox.text"/>
+              <toolTipText resource-bundle="com/dabomstew/pkrandom/newgui/Bundle" key="GUI.noIrregularAltFormesCheckBox.toolTipText"/>
             </properties>
           </component>
         </children>
@@ -813,6 +824,17 @@
                       <enabled value="false"/>
                       <text resource-bundle="com/dabomstew/pkrandom/newgui/Bundle" key="GUI.peRemoveTimeBasedEvolutions.text"/>
                       <toolTipText resource-bundle="com/dabomstew/pkrandom/newgui/Bundle" key="GUI.peRemoveTimeBasedEvolutions.toolTipText"/>
+                    </properties>
+                  </component>
+                  <component id="7fc31" class="javax.swing.JRadioButton" binding="peRandomEveryLevelRadioButton">
+                    <constraints>
+                      <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                      <gridbag weightx="0.0" weighty="0.0"/>
+                    </constraints>
+                    <properties>
+                      <enabled value="false"/>
+                      <text resource-bundle="com/dabomstew/pkrandom/newgui/Bundle" key="GUI.peRandomEveryLevelRadioButton.text"/>
+                      <toolTipText resource-bundle="com/dabomstew/pkrandom/newgui/Bundle" key="GUI.peRandomEveryLevelRadioButton.toolTipText"/>
                     </properties>
                   </component>
                 </children>
@@ -3885,6 +3907,7 @@
     <group name="pokemonEvoButtonGroup">
       <member id="9dc25"/>
       <member id="577d"/>
+      <member id="7fc31"/>
     </group>
     <group name="pokemonAbilityButtonGroup">
       <member id="fa40d"/>

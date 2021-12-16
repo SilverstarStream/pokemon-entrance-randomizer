@@ -177,6 +177,9 @@ public class Randomizer {
         if (settings.getEvolutionsMod() == Settings.EvolutionsMod.RANDOM) {
             romHandler.randomizeEvolutions(settings);
             evolutionsChanged = true;
+        } else if (settings.getEvolutionsMod() == Settings.EvolutionsMod.RANDOM_EVERY_LEVEL) {
+            romHandler.randomizeEvolutionsEveryLevel(settings);
+            evolutionsChanged = true;
         }
 
         if (evolutionsChanged) {
@@ -1236,14 +1239,14 @@ public class Randomizer {
     }
 
     private void logShops(final PrintStream log) {
-        String[] shopNames = romHandler.getShopNames();
         String[] itemNames = romHandler.getItemNames();
         log.println("--Shops--");
-        Map<Integer, List<Integer>> shopsDict = romHandler.getShopItems();
+        Map<Integer, Shop> shopsDict = romHandler.getShopItems();
         for (int shopID : shopsDict.keySet()) {
-            log.printf("%s", shopNames[shopID]);
+            Shop shop = shopsDict.get(shopID);
+            log.printf("%s", shop.name);
             log.println();
-            List<Integer> shopItems = shopsDict.get(shopID);
+            List<Integer> shopItems = shop.items;
             for (int shopItemID : shopItems) {
                 log.printf("- %5s", itemNames[shopItemID]);
                 log.println();

@@ -99,6 +99,8 @@ public interface RomHandler {
 
     Pokemon getAltFormeOfPokemon(Pokemon pk, int forme);
 
+    List<Pokemon> getIrregularFormes();
+
     // ==================================
     // Methods to set up Gen Restrictions
     // ==================================
@@ -510,21 +512,17 @@ public interface RomHandler {
     // Special Shops
     // =============
 
-    String[] getShopNames();
-
     boolean hasShopRandomization();
 
     void shuffleShopItems();
 
     void randomizeShopItems(Settings settings);
 
-    Map<Integer, List<Integer>> getShopItems();
+    Map<Integer, Shop> getShopItems();
 
-    void setShopItems(Map<Integer, List<Integer>> shopItems);
+    void setShopItems(Map<Integer, Shop> shopItems);
 
     void setShopPrices();
-
-    List<Integer> getMainGameShops();
 
     // ============
     // Pickup Items
@@ -571,6 +569,13 @@ public interface RomHandler {
     Set<EvolutionUpdate> getTimeBasedEvoUpdates();
 
     void randomizeEvolutions(Settings settings);
+
+    void randomizeEvolutionsEveryLevel(Settings settings);
+
+    // In the earlier games, alt formes use the same evolutions as the base forme.
+    // In later games, this was changed so that alt formes can have unique evolutions
+    // compared to the base forme.
+    boolean altFormesCanHaveDifferentEvolutions();
 
     // ==================================
     // (Mostly) unchanging lists of moves

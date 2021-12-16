@@ -1514,36 +1514,36 @@ public class Gen4Constants {
 
     private static Map<Integer,String> setupFormeSuffixes() {
         Map<Integer,String> formeSuffixes = new HashMap<>();
-        formeSuffixes.put(496,"-A"); // Deoxys-A
-        formeSuffixes.put(497,"-D"); // Deoxys-D
-        formeSuffixes.put(498,"-S"); // Deoxys-S
-        formeSuffixes.put(499,"-S"); // Wormadam-S
-        formeSuffixes.put(500,"-T"); // Wormadam-T
-        formeSuffixes.put(501,"-O"); // Giratina-O
-        formeSuffixes.put(502,"-S"); // Shaymin-S
-        formeSuffixes.put(503,"-H"); // Rotom-H
-        formeSuffixes.put(504,"-W"); // Rotom-W
-        formeSuffixes.put(505,"-Fr"); // Rotom-Fr
-        formeSuffixes.put(506,"-Fa"); // Rotom-Fa
-        formeSuffixes.put(507,"-M"); // Rotom-M
+        formeSuffixes.put(Species.Gen4Formes.deoxysA + formeOffset,"-A");
+        formeSuffixes.put(Species.Gen4Formes.deoxysD + formeOffset,"-D");
+        formeSuffixes.put(Species.Gen4Formes.deoxysS + formeOffset,"-S");
+        formeSuffixes.put(Species.Gen4Formes.wormadamS + formeOffset,"-S");
+        formeSuffixes.put(Species.Gen4Formes.wormadamT + formeOffset,"-T");
+        formeSuffixes.put(Species.Gen4Formes.giratinaO + formeOffset,"-O");
+        formeSuffixes.put(Species.Gen4Formes.shayminS + formeOffset,"-S");
+        formeSuffixes.put(Species.Gen4Formes.rotomH + formeOffset,"-H");
+        formeSuffixes.put(Species.Gen4Formes.rotomW + formeOffset,"-W");
+        formeSuffixes.put(Species.Gen4Formes.rotomFr + formeOffset,"-Fr");
+        formeSuffixes.put(Species.Gen4Formes.rotomFa + formeOffset,"-Fa");
+        formeSuffixes.put(Species.Gen4Formes.rotomM + formeOffset,"-M");
         return formeSuffixes;
     }
 
     private static Map<Integer,FormeInfo> setupFormeMappings() {
         Map<Integer,FormeInfo> formeMappings = new TreeMap<>();
 
-        formeMappings.put(496,new FormeInfo(386,1, 0));
-        formeMappings.put(497,new FormeInfo(386,2, 0));
-        formeMappings.put(498,new FormeInfo(386,3, 0));
-        formeMappings.put(499,new FormeInfo(413,1, 0));
-        formeMappings.put(500,new FormeInfo(413,2, 0));
-        formeMappings.put(501,new FormeInfo(487,1, 0));
-        formeMappings.put(502,new FormeInfo(492,1, 0));
-        formeMappings.put(503,new FormeInfo(479,1, 0));
-        formeMappings.put(504,new FormeInfo(479,2, 0));
-        formeMappings.put(505,new FormeInfo(479,3, 0));
-        formeMappings.put(506,new FormeInfo(479,4, 0));
-        formeMappings.put(507,new FormeInfo(479,5, 0));
+        formeMappings.put(Species.Gen4Formes.deoxysA + formeOffset,new FormeInfo(Species.deoxys,1, 0));
+        formeMappings.put(Species.Gen4Formes.deoxysD + formeOffset,new FormeInfo(Species.deoxys,2, 0));
+        formeMappings.put(Species.Gen4Formes.deoxysS + formeOffset,new FormeInfo(Species.deoxys,3, 0));
+        formeMappings.put(Species.Gen4Formes.wormadamS + formeOffset,new FormeInfo(Species.wormadam,1, 0));
+        formeMappings.put(Species.Gen4Formes.wormadamT + formeOffset,new FormeInfo(Species.wormadam,2, 0));
+        formeMappings.put(Species.Gen4Formes.giratinaO + formeOffset,new FormeInfo(Species.giratina,1, 0));
+        formeMappings.put(Species.Gen4Formes.shayminS + formeOffset,new FormeInfo(Species.shaymin,1, 0));
+        formeMappings.put(Species.Gen4Formes.rotomH + formeOffset,new FormeInfo(Species.rotom,1, 0));
+        formeMappings.put(Species.Gen4Formes.rotomW + formeOffset,new FormeInfo(Species.rotom,2, 0));
+        formeMappings.put(Species.Gen4Formes.rotomFr + formeOffset,new FormeInfo(Species.rotom,3, 0));
+        formeMappings.put(Species.Gen4Formes.rotomFa + formeOffset,new FormeInfo(Species.rotom,4, 0));
+        formeMappings.put(Species.Gen4Formes.rotomM + formeOffset,new FormeInfo(Species.rotom,5, 0));
 
         return formeMappings;
     }
@@ -1565,20 +1565,20 @@ public class Gen4Constants {
         deoxysMap.put(1,"-A");
         deoxysMap.put(2,"-D");
         deoxysMap.put(3,"-S");
-        map.put(386,deoxysMap);
+        map.put(Species.deoxys,deoxysMap);
 
         Map<Integer,String> wormadamMap = new HashMap<>();
         wormadamMap.put(1,"-S");
         wormadamMap.put(2,"-T");
-        map.put(413,wormadamMap);
+        map.put(Species.wormadam,wormadamMap);
 
         Map<Integer,String> shayminMap = new HashMap<>();
         shayminMap.put(1,"-S");
-        map.put(492,shayminMap);
+        map.put(Species.shaymin,shayminMap);
 
         Map<Integer,String> giratinaMap = new HashMap<>();
         giratinaMap.put(1,"-O");
-        map.put(487,giratinaMap);
+        map.put(Species.giratina,giratinaMap);
 
         Map<Integer,String> rotomMap = new HashMap<>();
         rotomMap.put(1,"-H");
@@ -1586,7 +1586,7 @@ public class Gen4Constants {
         rotomMap.put(3,"-Fr");
         rotomMap.put(4,"-Fa");
         rotomMap.put(5,"-M");
-        map.put(479,rotomMap);
+        map.put(Species.rotom,rotomMap);
 
         return map;
     }
@@ -1601,30 +1601,30 @@ public class Gen4Constants {
         Map<Integer,Map<Integer,Integer>> map = new HashMap<>();
 
         Map<Integer,Integer> deoxysMap = new HashMap<>();
-        deoxysMap.put(1,494);
-        deoxysMap.put(2,495);
-        deoxysMap.put(3,496);
+        deoxysMap.put(1,Species.Gen4Formes.deoxysA);
+        deoxysMap.put(2,Species.Gen4Formes.deoxysD);
+        deoxysMap.put(3,Species.Gen4Formes.deoxysS);
         map.put(Species.deoxys, deoxysMap);
 
         Map<Integer,Integer> wormadamMap = new HashMap<>();
-        wormadamMap.put(1,497);
-        wormadamMap.put(2,498);
+        wormadamMap.put(1,Species.Gen4Formes.wormadamS);
+        wormadamMap.put(2,Species.Gen4Formes.wormadamT);
         map.put(Species.wormadam, wormadamMap);
 
         Map<Integer,Integer> giratinaMap = new HashMap<>();
-        giratinaMap.put(1,499);
+        giratinaMap.put(1,Species.Gen4Formes.giratinaO);
         map.put(Species.giratina, giratinaMap);
 
         Map<Integer,Integer> shayminMap = new HashMap<>();
-        shayminMap.put(1,500);
+        shayminMap.put(1,Species.Gen4Formes.shayminS);
         map.put(Species.shaymin, shayminMap);
 
         Map<Integer,Integer> rotomMap = new HashMap<>();
-        rotomMap.put(1,501);
-        rotomMap.put(2,502);
-        rotomMap.put(3,503);
-        rotomMap.put(4,504);
-        rotomMap.put(5,505);
+        rotomMap.put(1,Species.Gen4Formes.rotomH);
+        rotomMap.put(2,Species.Gen4Formes.rotomW);
+        rotomMap.put(3,Species.Gen4Formes.rotomFr);
+        rotomMap.put(4,Species.Gen4Formes.rotomFa);
+        rotomMap.put(5,Species.Gen4Formes.rotomM);
         map.put(Species.rotom, rotomMap);
 
         return map;
