@@ -1817,7 +1817,7 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
                 // constant that has the same effect.
                 int newRange = maxLevel - level;
                 int divisor = (0xFFFF / (newRange + 1)) + 1;
-                FileFunctions.writeFullIntLittleEndian(encounterOverlay, offset + 148, divisor);
+                FileFunctions.writeFullInt(encounterOverlay, offset + 148, divisor);
             }
             writeExtraEncountersDPPt(honeyTreeData, 0, honeyTreeEncounters.encounters);
         }
@@ -3171,7 +3171,7 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
         // The original code had an entry for Darkrai; its species ID is pc-relative loaded. Since this
         // entry is clearly unused, just replace Darkrai's species ID constant with Cresselia's, since
         // in the original code, her ID is computed as 0x7A << 0x2
-        FileFunctions.writeFullIntLittleEndian(arm9, offset + 244, Species.cresselia);
+        FileFunctions.writeFullInt(arm9, offset + 244, Species.cresselia);
 
         // Now write a pc-relative load to our new constant over where Cresselia's ID is normally mov'd
         // into r7 and shifted.

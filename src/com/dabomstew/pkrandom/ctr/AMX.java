@@ -27,7 +27,6 @@ import com.dabomstew.pkrandom.exceptions.RandomizerIOException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -61,10 +60,10 @@ public class AMX {
     public AMX(byte[] data, int scriptNum) throws IOException {
         int found = 0;
         for (int i = 0; i < data.length - 3; i++) {
-            int val = FileFunctions.readFullIntLittleEndian(data,i);
+            int val = FileFunctions.readFullInt(data,i);
             if (val == amxMagic) {
                 if (found == scriptNum) {
-                    int length = FileFunctions.readFullIntLittleEndian(data,i-4);
+                    int length = FileFunctions.readFullInt(data,i-4);
                     readHeaderAndDecompress(Arrays.copyOfRange(data,i-4,i-4+length));
                     scriptOffset = i-4;
                     break;
@@ -81,8 +80,8 @@ public class AMX {
 
     // Credit to the creators of pk3DS (Kaphotics et al)
     private void readHeaderAndDecompress(byte[] encData) throws IOException {
-        length = FileFunctions.readFullIntLittleEndian(encData,0);
-        int magic = FileFunctions.readFullIntLittleEndian(encData,4);
+        length = FileFunctions.readFullInt(encData,0);
+        int magic = FileFunctions.readFullInt(encData,4);
         if (magic != amxMagic) {
             throw new IOException();
         }
@@ -90,10 +89,10 @@ public class AMX {
         ptrOffset = FileFunctions.read2ByteInt(encData,8);
         ptrCount = FileFunctions.read2ByteInt(encData,0xA);
 
-        scriptInstrStart = FileFunctions.readFullIntLittleEndian(encData,0xC);
-        scriptMovementStart = FileFunctions.readFullIntLittleEndian(encData,0x10);
-        finalOffset = FileFunctions.readFullIntLittleEndian(encData,0x14);
-        allocatedMemory = FileFunctions.readFullIntLittleEndian(encData,0x18);
+        scriptInstrStart = FileFunctions.readFullInt(encData,0xC);
+        scriptMovementStart = FileFunctions.readFullInt(encData,0x10);
+        finalOffset = FileFunctions.readFullInt(encData,0x14);
+        allocatedMemory = FileFunctions.readFullInt(encData,0x18);
 
         compLength = length - scriptInstrStart;
         byte[] compressedBytes = Arrays.copyOfRange(encData,scriptInstrStart,length);

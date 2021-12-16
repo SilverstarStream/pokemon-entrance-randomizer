@@ -29,7 +29,11 @@ package com.dabomstew.pkrandom.newgui;
 import com.dabomstew.pkrandom.*;
 import com.dabomstew.pkrandom.cli.CliRandomizer;
 import com.dabomstew.pkrandom.constants.GlobalConstants;
-import com.dabomstew.pkrandom.exceptions.*;
+import com.dabomstew.pkrandom.exceptions.EncryptedROMException;
+import com.dabomstew.pkrandom.exceptions.InvalidSupplementFilesException;
+import com.dabomstew.pkrandom.exceptions.RandomizationException;
+import com.dabomstew.pkrandom.exceptions.UnsupportedUpdateException;
+import com.dabomstew.pkrandom.exceptions.LeaderTeamsException;
 import com.dabomstew.pkrandom.pokemon.ExpCurve;
 import com.dabomstew.pkrandom.pokemon.GenRestrictions;
 import com.dabomstew.pkrandom.pokemon.Pokemon;
@@ -1171,14 +1175,19 @@ public class NewRandomizerGUI {
             baseGameTitleIdChars[7] = 'E';
             String expectedUpdateTitleId = String.valueOf(baseGameTitleIdChars);
             if (actualUpdateTitleId.equals(expectedUpdateTitleId)) {
-                gameUpdates.put(romHandler.getROMCode(), fh.getAbsolutePath());
-                attemptWriteConfig();
                 try {
                     romHandler.loadGameUpdate(fh.getAbsolutePath());
                 } catch (EncryptedROMException ex) {
                     JOptionPane.showMessageDialog(mainPanel,
                             String.format(bundle.getString("GUI.encryptedRom"), fh.getAbsolutePath()));
+                    return;
+                } catch (UnsupportedUpdateException ex) {
+                    JOptionPane.showMessageDialog(mainPanel,
+                            String.format(bundle.getString("GUI.unsupportedUpdate"), fh.getName()));
+                    return;
                 }
+                gameUpdates.put(romHandler.getROMCode(), fh.getAbsolutePath());
+                attemptWriteConfig();
                 removeGameUpdateMenuItem.setVisible(true);
                 romNameLabel.setText(romHandler.getROMName() + " (" + romHandler.getGameUpdateVersion() + ")");
                 String text = String.format(bundle.getString("GUI.gameUpdateApplied"), romHandler.getROMName());

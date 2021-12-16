@@ -85,11 +85,11 @@ public class Mini {
 
         int count = FileFunctions.read2ByteInt(fileData, 2);
         int ctr = 4;
-        int start = FileFunctions.readFullIntLittleEndian(fileData, ctr);
+        int start = FileFunctions.readFullInt(fileData, ctr);
         ctr += 4;
         byte[][] returnData = new byte[count][];
         for (int i = 0; i < count; i++) {
-            int end = FileFunctions.readFullIntLittleEndian(fileData, ctr);
+            int end = FileFunctions.readFullInt(fileData, ctr);
             ctr += 4;
             int len = end - start;
             byte[] data = new byte[len];

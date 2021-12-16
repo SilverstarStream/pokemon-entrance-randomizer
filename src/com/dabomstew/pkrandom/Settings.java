@@ -793,14 +793,14 @@ public class Settings {
         settings.setShinyChance(restoreState(data[27], 6));
 
         // gen restrictions
-        int genLimit = FileFunctions.readFullInt(data, 28);
+        int genLimit = FileFunctions.readFullIntBigEndian(data, 28);
         GenRestrictions restrictions = null;
         if (genLimit != 0) {
             restrictions = new GenRestrictions(genLimit);
         }
         settings.setCurrentRestrictions(restrictions);
 
-        int codeTweaks = FileFunctions.readFullInt(data, 32);
+        int codeTweaks = FileFunctions.readFullIntBigEndian(data, 32);
 
         settings.setCurrentMiscTweaks(codeTweaks);
 

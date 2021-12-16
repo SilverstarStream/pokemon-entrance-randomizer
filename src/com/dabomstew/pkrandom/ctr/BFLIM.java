@@ -160,7 +160,7 @@ public class BFLIM {
 
         public Header(byte[] bflimBytes) {
             int headerOffset = bflimBytes.length - 0x28;
-            int signature = FileFunctions.readFullInt(bflimBytes, headerOffset);
+            int signature = FileFunctions.readFullIntBigEndian(bflimBytes, headerOffset);
             if (signature != 0x464C494D) {
                 throw new IllegalArgumentException("Invalid BFLIM: cannot find FLIM header");
             }
@@ -172,7 +172,7 @@ public class BFLIM {
             if (headerSize != 0x14) {
                 throw new IllegalArgumentException("Invalid BFLIM: header length does not equal 0x14");
             }
-            version = FileFunctions.readFullIntLittleEndian(bflimBytes, headerOffset + 8);
+            version = FileFunctions.readFullInt(bflimBytes, headerOffset + 8);
         }
     }
 
@@ -187,17 +187,17 @@ public class BFLIM {
 
         public Image(byte[] bflimBytes) {
             int imageHeaderOffset = bflimBytes.length - 0x14;
-            int signature = FileFunctions.readFullInt(bflimBytes, imageHeaderOffset);
+            int signature = FileFunctions.readFullIntBigEndian(bflimBytes, imageHeaderOffset);
             if (signature != 0x696D6167) {
                 throw new IllegalArgumentException("Invalid BFLIM: cannot find imag header");
             }
-            size = FileFunctions.readFullIntLittleEndian(bflimBytes, imageHeaderOffset + 4);
+            size = FileFunctions.readFullInt(bflimBytes, imageHeaderOffset + 4);
             width = (short) FileFunctions.read2ByteInt(bflimBytes, imageHeaderOffset + 8);
             height = (short) FileFunctions.read2ByteInt(bflimBytes, imageHeaderOffset + 10);
             alignment = (short) FileFunctions.read2ByteInt(bflimBytes, imageHeaderOffset + 12);
             format = bflimBytes[imageHeaderOffset + 14];
             flags = bflimBytes[imageHeaderOffset + 15];
-            imageSize = FileFunctions.readFullIntLittleEndian(bflimBytes, imageHeaderOffset + 16);
+            imageSize = FileFunctions.readFullInt(bflimBytes, imageHeaderOffset + 16);
         }
     }
 }

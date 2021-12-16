@@ -354,11 +354,11 @@ public abstract class AbstractDSRomHandler extends AbstractRomHandler {
         int tcmCopyingPointersOffset = find(arm9, prefix);
         tcmCopyingPointersOffset += prefix.length() / 2; // because it was a prefix
 
-        int oldDestPointersOffset = FileFunctions.readFullIntLittleEndian(arm9, tcmCopyingPointersOffset) - arm9Offset;
+        int oldDestPointersOffset = FileFunctions.readFullInt(arm9, tcmCopyingPointersOffset) - arm9Offset;
         int itcmSrcOffset =
-                FileFunctions.readFullIntLittleEndian(arm9, tcmCopyingPointersOffset + 8) - arm9Offset;
+                FileFunctions.readFullInt(arm9, tcmCopyingPointersOffset + 8) - arm9Offset;
         int itcmSizeOffset = oldDestPointersOffset + 4;
-        int oldITCMSize = FileFunctions.readFullIntLittleEndian(arm9, itcmSizeOffset);
+        int oldITCMSize = FileFunctions.readFullInt(arm9, itcmSizeOffset);
 
         int oldDTCMOffset = itcmSrcOffset + oldITCMSize;
 
@@ -368,11 +368,11 @@ public abstract class AbstractDSRomHandler extends AbstractRomHandler {
         // 1. Pointer to destination pointers/sizes
         // 2. ARM9 size
         // 3. Size of the area copied to ITCM
-        FileFunctions.writeFullIntLittleEndian(newARM9, tcmCopyingPointersOffset,
+        FileFunctions.writeFullInt(newARM9, tcmCopyingPointersOffset,
                 oldDestPointersOffset + extendBy + arm9Offset);
-        FileFunctions.writeFullIntLittleEndian(newARM9, tcmCopyingPointersOffset + 4,
+        FileFunctions.writeFullInt(newARM9, tcmCopyingPointersOffset + 4,
                 newARM9.length + arm9Offset);
-        FileFunctions.writeFullIntLittleEndian(newARM9, itcmSizeOffset, oldITCMSize + extendBy);
+        FileFunctions.writeFullInt(newARM9, itcmSizeOffset, oldITCMSize + extendBy);
 
         // Finally, shift everything
         System.arraycopy(newARM9, oldDTCMOffset, newARM9, oldDTCMOffset + extendBy,
