@@ -29,6 +29,8 @@ import cuecompressors.BLZCoder;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.*;
 import java.util.*;
 
@@ -137,6 +139,7 @@ public class NCCH {
     }
 
     private void readExefs() throws IOException {
+        System.out.println("NCCH: Reading exefs...");
         byte[] exefsHeaderData = new byte[exefs_header_size];
         baseRom.seek(exefsOffset);
         baseRom.readFully(exefsHeaderData);
@@ -161,9 +164,11 @@ public class NCCH {
                 smdh = new SMDH(smdhBytes);
             }
         }
+        System.out.println("NCCH: Done reading exefs");
     }
 
     private void readRomfs() throws IOException {
+        System.out.println("NCCH: Reading romfs...");
         byte[] romfsHeaderData = new byte[romfs_header_size];
         baseRom.seek(romfsOffset);
         baseRom.readFully(romfsHeaderData);
@@ -171,6 +176,7 @@ public class NCCH {
         int magic1 = FileFunctions.readFullIntBigEndian(romfsHeaderData, 0x00);
         int magic2 = FileFunctions.readFullIntBigEndian(romfsHeaderData, 0x04);
         if (magic1 != romfs_magic_1 || magic2 != romfs_magic_2) {
+            System.err.println("NCCH: romfs does not contain magic values");
             // Not a valid romfs
             return;
         }
@@ -184,6 +190,7 @@ public class NCCH {
         int headerLength = FileFunctions.readFullInt(level3HeaderData, 0x00);
         if (headerLength != level3_header_size) {
             // Not a valid romfs
+            System.err.println("NCCH: romfs does not have a proper level 3 header");
             return;
         }
         int directoryMetadataOffset = FileFunctions.readFullInt(level3HeaderData, 0x0C);
@@ -202,6 +209,7 @@ public class NCCH {
         fileMetadataList = new ArrayList<>();
         romfsFiles = new TreeMap<>();
         visitDirectory(0, "", directoryMetadataBlock, fileMetadataBlock);
+        System.out.println("NCCH: Done reading romfs");
     }
 
     private void visitDirectory(int offset, String rootPath, byte[] directoryMetadataBlock, byte[] fileMetadataBlock) {
@@ -225,6 +233,7 @@ public class NCCH {
     private void visitFile(int offset, String rootPath, byte[] fileMetadataBlock) {
         FileMetadata metadata = new FileMetadata(fileMetadataBlock, offset);
         String currentPath = rootPath + metadata.name;
+        System.out.println("NCCH: Visiting file " + currentPath);
         RomfsFile file = new RomfsFile(this);
         file.offset = fileDataOffset + metadata.fileDataOffset;
         file.size = (int) metadata.fileDataLength;  // no Pokemon game has a file larger than unsigned int max
@@ -335,6 +344,7 @@ public class NCCH {
     }
 
     private long rebuildExefs(RandomAccessFile fNew, long newExefsOffset) throws IOException, NoSuchAlgorithmException {
+        System.out.println("NCCH: Rebuilding exefs...");
         byte[] code = getCode();
         if (codeCompressed) {
             code = new BLZCoder(null).BLZ_EncodePub(code, false, true, ".code");
@@ -391,10 +401,13 @@ public class NCCH {
             exefsLength++;
         }
 
+        System.out.println("NCCH: Done rebuilding exefs");
         return exefsLength;
     }
 
     private long rebuildRomfs(RandomAccessFile fNew, long newRomfsOffset) throws IOException, NoSuchAlgorithmException {
+        System.out.println("NCCH: Rebuilding romfs...");
+
         // Start by copying the romfs header straight from the original ROM. We'll update the
         // header as we continue to build the romfs
         byte[] romfsHeaderData = new byte[romfs_header_size];
@@ -455,6 +468,7 @@ public class NCCH {
         int fileDataOffset = FileFunctions.readFullInt(level3HeaderData, 0x24);
         long endOfFileDataOffset = 0;
         for (FileMetadata metadata : fileMetadataList) {
+            System.out.println("NCCH: Writing file " + metadata.file.fullPath + " to romfs");
             // Users have sent us bug reports with really bizarre errors here that seem to indicate
             // broken metadata; do this in a try-catch solely so we can log the metadata if we fail
             try {
@@ -543,6 +557,8 @@ public class NCCH {
         while (fNew.getFilePointer() < newRomfsOffset + newRomfsLength) {
             fNew.writeByte(0);
         }
+
+        System.out.println("NCCH: Done rebuilding romfs");
         return newRomfsLength;
     }
 
@@ -726,6 +742,8 @@ public class NCCH {
     }
 
     public void printRomDiagnostics(PrintStream logStream, NCCH gameUpdate) {
+        Path p = Paths.get(this.romFilename);
+        logStream.println("File name: " + p.getFileName().toString());
         if (gameUpdate == null) {
             logStream.println(".code: " + String.format("%08X", this.originalCodeCRC));
         } else {

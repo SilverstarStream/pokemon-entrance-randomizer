@@ -67,7 +67,7 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
         super(random, logStream);
     }
 
-    private static class FileEntry {
+    private static class RomFileEntry {
         public String path;
         public long expectedCRC32;
     }
@@ -84,7 +84,7 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
         private Map<String, String> tweakFiles = new HashMap<>();
         private Map<String, Integer> numbers = new HashMap<>();
         private Map<String, int[]> arrayEntries = new HashMap<>();
-        private Map<String, FileEntry> files = new HashMap<>();
+        private Map<String, RomFileEntry> files = new HashMap<>();
         private Map<Integer, Long> overlayExpectedCRC32s = new HashMap<>();
         private List<StaticPokemon> staticPokemon = new ArrayList<>();
         private List<RoamingPokemon> roamingPokemon = new ArrayList<>();
@@ -110,7 +110,7 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
 
         private String getFile(String key) {
             if (!files.containsKey(key)) {
-                files.put(key, new FileEntry());
+                files.put(key, new RomFileEntry());
             }
             return files.get(key).path;
         }
@@ -195,7 +195,7 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
                         } else if (r[0].startsWith("File<")) {
                             String key = r[0].split("<")[1].split(">")[0];
                             String[] values = r[1].substring(1, r[1].length() - 1).split(",");
-                            FileEntry entry = new FileEntry();
+                            RomFileEntry entry = new RomFileEntry();
                             entry.path = values[0].trim();
                             entry.expectedCRC32 = parseRILong("0x" + values[1].trim());
                             current.files.put(key, entry);
@@ -2793,6 +2793,96 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
             throw new RandomizerIOException(e);
         }
 
+    }
+
+    @Override
+    public Map<Integer, List<Integer>> getEggMoves() {
+        Map<Integer, List<Integer>> eggMoves = new TreeMap<>();
+        try {
+            if (romEntry.romType == Gen4Constants.Type_HGSS) {
+                NARCArchive eggMoveNARC = this.readNARC(romEntry.getFile("EggMoves"));
+                byte[] eggMoveData = eggMoveNARC.files.get(0);
+                eggMoves = readEggMoves(eggMoveData, 0);
+            } else {
+                byte[] fieldOvl = readOverlay(romEntry.getInt("FieldOvlNumber"));
+                int offset = find(fieldOvl, Gen4Constants.dpptEggMoveTablePrefix);
+                if (offset > 0) {
+                    offset += Gen4Constants.dpptEggMoveTablePrefix.length() / 2; // because it was a prefix
+                    eggMoves = readEggMoves(fieldOvl, offset);
+                }
+            }
+        } catch (IOException e) {
+            throw new RandomizerIOException(e);
+        }
+
+        return eggMoves;
+    }
+
+    @Override
+    public void setEggMoves(Map<Integer, List<Integer>> eggMoves) {
+        try {
+            if (romEntry.romType == Gen4Constants.Type_HGSS) {
+                NARCArchive eggMoveNARC = this.readNARC(romEntry.getFile("EggMoves"));
+                byte[] eggMoveData = eggMoveNARC.files.get(0);
+                writeEggMoves(eggMoves, eggMoveData, 0);
+                eggMoveNARC.files.set(0, eggMoveData);
+                this.writeNARC(romEntry.getFile("EggMoves"), eggMoveNARC);
+            } else {
+                byte[] fieldOvl = readOverlay(romEntry.getInt("FieldOvlNumber"));
+                int offset = find(fieldOvl, Gen4Constants.dpptEggMoveTablePrefix);
+                if (offset > 0) {
+                    offset += Gen4Constants.dpptEggMoveTablePrefix.length() / 2; // because it was a prefix
+                    writeEggMoves(eggMoves, fieldOvl, offset);
+                    this.writeOverlay(romEntry.getInt("FieldOvlNumber"), fieldOvl);
+                }
+            }
+        } catch (IOException e) {
+            throw new RandomizerIOException(e);
+        }
+    }
+
+    private Map<Integer, List<Integer>> readEggMoves(byte[] data, int startingOffset) {
+        Map<Integer, List<Integer>> eggMoves = new TreeMap<>();
+        int currentOffset = startingOffset;
+        int currentSpecies = 0;
+        List<Integer> currentMoves = new ArrayList<>();
+        int val = FileFunctions.read2ByteInt(data, currentOffset);
+
+        // Egg move data is stored exactly like in Gen 3, so check egg_moves.h in the
+        // Gen 3 decomps for more info on how this algorithm works.
+        while (val != 0xFFFF) {
+            if (val > 20000) {
+                int species = val - 20000;
+                if (currentMoves.size() > 0) {
+                    eggMoves.put(currentSpecies, currentMoves);
+                }
+                currentSpecies = species;
+                currentMoves = new ArrayList<>();
+            } else {
+                currentMoves.add(val);
+            }
+            currentOffset += 2;
+            val = FileFunctions.read2ByteInt(data, currentOffset);
+        }
+
+        // Need to make sure the last entry gets recorded too
+        if (currentMoves.size() > 0) {
+            eggMoves.put(currentSpecies, currentMoves);
+        }
+
+        return eggMoves;
+    }
+
+    private void writeEggMoves(Map<Integer, List<Integer>> eggMoves, byte[] data, int startingOffset) {
+        int currentOffset = startingOffset;
+        for (int species : eggMoves.keySet()) {
+            FileFunctions.write2ByteInt(data, currentOffset, species + 20000);
+            currentOffset += 2;
+            for (int move : eggMoves.get(species)) {
+                FileFunctions.write2ByteInt(data, currentOffset, move);
+                currentOffset += 2;
+            }
+        }
     }
 
     private static class ScriptEntry {

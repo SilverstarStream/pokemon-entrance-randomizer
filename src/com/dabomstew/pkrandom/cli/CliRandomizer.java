@@ -92,7 +92,7 @@ public class CliRandomizer {
 
                     String filename = fh.getAbsolutePath();
 
-                    Randomizer randomizer = new Randomizer(settings, romHandler, saveAsDirectory);
+                    Randomizer randomizer = new Randomizer(settings, romHandler, bundle, saveAsDirectory);
                     randomizer.randomize(filename, verboseLog);
                     verboseLog.close();
                     byte[] out = baos.toByteArray();

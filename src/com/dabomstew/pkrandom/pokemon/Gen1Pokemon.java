@@ -100,6 +100,32 @@ public class Gen1Pokemon extends Pokemon {
     }
 
     @Override
+    public void assignNewStatsForEvolution(Pokemon evolvesFrom, Random random) {
+        double ourBST = bst();
+        double theirBST = evolvesFrom.bst();
+
+        double bstDiff = ourBST - theirBST;
+
+        // Make weightings
+        double hpW = random.nextDouble(), atkW = random.nextDouble(), defW = random.nextDouble();
+        double specW = random.nextDouble(), speW = random.nextDouble();
+
+        double totW = hpW + atkW + defW + specW + speW;
+
+        double hpDiff = Math.round((hpW / totW) * bstDiff);
+        double atkDiff = Math.round((atkW / totW) * bstDiff);
+        double defDiff = Math.round((defW / totW) * bstDiff);
+        double specDiff = Math.round((specW / totW) * bstDiff);
+        double speDiff = Math.round((speW / totW) * bstDiff);
+
+        hp = (int) Math.min(255, Math.max(1, evolvesFrom.hp + hpDiff));
+        attack = (int) Math.min(255, Math.max(1, evolvesFrom.attack + atkDiff));
+        defense = (int) Math.min(255, Math.max(1, evolvesFrom.defense + defDiff));
+        speed = (int) Math.min(255, Math.max(1, evolvesFrom.speed + speDiff));
+        special = (int) Math.min(255, Math.max(1, evolvesFrom.special + specDiff));
+    }
+
+    @Override
     protected int bst() {
         return hp + attack + defense + special + speed;
     }

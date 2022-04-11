@@ -1,6 +1,8 @@
 package com.dabomstew.pkrandom.newnds;
 
 import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 import com.dabomstew.pkrandom.SysConstants;
@@ -638,6 +640,8 @@ public class NDSRom {
         }
         Collections.sort(overlayList);
         Collections.sort(fileList);
+        Path p = Paths.get(this.romFilename);
+        logStream.println("File name: " + p.getFileName().toString());
         logStream.println("arm9: " + String.format("%08X", originalArm9CRC));
         for (String overlayLog : overlayList) {
             logStream.println(overlayLog);
@@ -646,8 +650,6 @@ public class NDSRom {
             logStream.println(fileLog);
         }
     }
-
-    // Helper methods to get variable-size ints out of files
 
     public String getTmpFolder() {
         return tmpFolder;

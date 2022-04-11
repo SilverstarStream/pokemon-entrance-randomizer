@@ -32,7 +32,6 @@ import com.dabomstew.pkrandom.constants.GlobalConstants;
 import com.dabomstew.pkrandom.exceptions.EncryptedROMException;
 import com.dabomstew.pkrandom.exceptions.InvalidSupplementFilesException;
 import com.dabomstew.pkrandom.exceptions.RandomizationException;
-import com.dabomstew.pkrandom.exceptions.UnsupportedUpdateException;
 import com.dabomstew.pkrandom.exceptions.LeaderTeamsException;
 import com.dabomstew.pkrandom.pokemon.ExpCurve;
 import com.dabomstew.pkrandom.pokemon.GenRestrictions;
@@ -73,6 +72,7 @@ public class NewRandomizerGUI {
     private JCheckBox pbsStandardizeEXPCurvesCheckBox;
     private JCheckBox pbsFollowEvolutionsCheckBox;
     private JCheckBox pbsUpdateBaseStatsCheckBox;
+    private JCheckBox ptIsDualTypeCheckBox;
     private JRadioButton ptUnchangedRadioButton;
     private JRadioButton ptRandomFollowEvolutionsRadioButton;
     private JRadioButton ptRandomCompletelyRadioButton;
@@ -565,6 +565,7 @@ public class NewRandomizerGUI {
         tmLevelupMoveSanityCheckBox.addActionListener(e -> enableOrDisableSubControls());
         mtLevelupMoveSanityCheckBox.addActionListener(e -> enableOrDisableSubControls());
         noIrregularAltFormesCheckBox.addActionListener(e -> enableOrDisableSubControls());
+        ptIsDualTypeCheckBox.addActionListener(e->enableOrDisableSubControls());
     }
 
     // Entrance Randomizer is removing the call to showInitialPopup() at least for now
@@ -599,7 +600,7 @@ public class NewRandomizerGUI {
     private void showInvalidRomPopup() {
         if (showInvalidRomPopup) {
             String message = String.format(bundle.getString("GUI.invalidRomMessage"));
-            JLabel label = new JLabel("<html><b>You will NOT receive official support for randomizing this ROM.</b>");
+            JLabel label = new JLabel("<html><b>Randomizing ROM hacks or bad ROM dumps is not supported and may cause issues.</b>");
             JCheckBox checkbox = new JCheckBox("Don't show this again");
             Object[] messages = {message, label, checkbox};
             Object[] options = {"OK"};
@@ -936,7 +937,7 @@ public class NewRandomizerGUI {
                 boolean succeededSave = false;
                 try {
                     romHandler.setLog(verboseLog);
-                    finishedCV.set(new Randomizer(settings, romHandler, saveAsDirectory).randomize(filename,
+                    finishedCV.set(new Randomizer(settings, romHandler, bundle, saveAsDirectory).randomize(filename,
                             verboseLog, seed));
                     succeededSave = true;
                 } catch (RandomizationException ex) {
@@ -1181,15 +1182,11 @@ public class NewRandomizerGUI {
                     JOptionPane.showMessageDialog(mainPanel,
                             String.format(bundle.getString("GUI.encryptedRom"), fh.getAbsolutePath()));
                     return;
-                } catch (UnsupportedUpdateException ex) {
-                    JOptionPane.showMessageDialog(mainPanel,
-                            String.format(bundle.getString("GUI.unsupportedUpdate"), fh.getName()));
-                    return;
                 }
                 gameUpdates.put(romHandler.getROMCode(), fh.getAbsolutePath());
                 attemptWriteConfig();
                 removeGameUpdateMenuItem.setVisible(true);
-                romNameLabel.setText(romHandler.getROMName() + " (" + romHandler.getGameUpdateVersion() + ")");
+                setRomNameLabel();
                 String text = String.format(bundle.getString("GUI.gameUpdateApplied"), romHandler.getROMName());
                 String url = "https://github.com/Ajarmar/universal-pokemon-randomizer-zx/wiki/Randomizing-the-3DS-games#3ds-game-updates";
                 showMessageDialogWithLink(text, url);
@@ -1208,7 +1205,7 @@ public class NewRandomizerGUI {
         attemptWriteConfig();
         romHandler.removeGameUpdate();
         removeGameUpdateMenuItem.setVisible(false);
-        romNameLabel.setText(romHandler.getROMName());
+        setRomNameLabel();
     }
 
     private void loadGetSettingsMenuItemActionPerformed() {
@@ -1338,6 +1335,7 @@ public class NewRandomizerGUI {
         if (currentRestrictions != null) {
             currentRestrictions.limitToGen(romHandler.generationOfPokemon());
         }
+        noIrregularAltFormesCheckBox.setSelected(settings.isBanIrregularAltFormes());
         raceModeCheckBox.setSelected(settings.isRaceMode());
 
         peChangeImpossibleEvosCheckBox.setSelected(settings.isChangeImpossibleEvolutions());
@@ -1345,6 +1343,7 @@ public class NewRandomizerGUI {
         mdUpdateComboBox.setSelectedIndex(Math.max(0,settings.getUpdateMovesToGeneration() - (romHandler.generationOfPokemon()+1)));
         tpRandomizeTrainerNamesCheckBox.setSelected(settings.isRandomizeTrainerNames());
         tpRandomizeTrainerClassNamesCheckBox.setSelected(settings.isRandomizeTrainerClassNames());
+        ptIsDualTypeCheckBox.setSelected(settings.isDualTypeOnly());
 
         pbsRandomRadioButton.setSelected(settings.getBaseStatisticsMod() == Settings.BaseStatisticsMod.RANDOM);
         pbsShuffleRadioButton.setSelected(settings.getBaseStatisticsMod() == Settings.BaseStatisticsMod.SHUFFLE);
@@ -1631,6 +1630,7 @@ public class NewRandomizerGUI {
                 ptRandomCompletelyRadioButton.isSelected());
         settings.setTypesFollowMegaEvolutions(ptFollowMegaEvosCheckBox.isSelected() && ptFollowMegaEvosCheckBox.isVisible());
         settings.setBlockBrokenMovesetMoves(pmsNoGameBreakingMovesCheckBox.isSelected());
+        settings.setDualTypeOnly(ptIsDualTypeCheckBox.isSelected());
 
         settings.setMakeEvolutionsEasier(peMakeEvolutionsEasierCheckBox.isSelected());
         settings.setRemoveTimeBasedEvolutions(peRemoveTimeBasedEvolutionsCheckBox.isSelected());
@@ -1836,6 +1836,9 @@ public class NewRandomizerGUI {
             ex.printStackTrace();
             ps.println();
             ps.println("--ROM Diagnostics--");
+            if (!romHandler.isRomValid()) {
+                ps.println(bundle.getString("Log.InvalidRomLoaded"));
+            }
             romHandler.printRomDiagnostics(ps);
             System.setErr(e1);
             ps.close();
@@ -1970,6 +1973,9 @@ public class NewRandomizerGUI {
         ptFollowMegaEvosCheckBox.setVisible(true);
         ptFollowMegaEvosCheckBox.setEnabled(false);
         ptFollowMegaEvosCheckBox.setSelected(false);
+        ptIsDualTypeCheckBox.setVisible(true);
+        ptIsDualTypeCheckBox.setEnabled(false);
+        ptIsDualTypeCheckBox.setSelected(false);
         pokemonAbilitiesPanel.setVisible(true);
         paUnchangedRadioButton.setVisible(true);
         paUnchangedRadioButton.setEnabled(false);
@@ -2560,18 +2566,7 @@ public class NewRandomizerGUI {
         try {
             int pokemonGeneration = romHandler.generationOfPokemon();
 
-            if (romHandler.hasGameUpdateLoaded()) {
-                romNameLabel.setText(romHandler.getROMName() + " (" + romHandler.getGameUpdateVersion() + ")");
-            } else {
-                romNameLabel.setText(romHandler.getROMName());
-            }
-            if (!romHandler.isRomValid()) {
-                romNameLabel.setForeground(Color.RED);
-                romNameLabel.setText(romNameLabel.getText() + " [Bad CRC32]");
-                showInvalidRomPopup();
-            } else {
-                romNameLabel.setForeground(Color.BLACK);
-            }
+            setRomNameLabel();
             romCodeLabel.setText(romHandler.getROMCode());
             romSupportLabel.setText(bundle.getString("GUI.romSupportPrefix") + " "
                     + this.romHandler.getSupportLevel());
@@ -2615,6 +2610,7 @@ public class NewRandomizerGUI {
             ptRandomFollowEvolutionsRadioButton.setEnabled(true);
             ptRandomCompletelyRadioButton.setEnabled(true);
             ptFollowMegaEvosCheckBox.setVisible(romHandler.hasMegaEvolutions());
+            ptIsDualTypeCheckBox.setEnabled(false);
 
             // Pokemon Abilities
             if (pokemonGeneration >= 3) {
@@ -2935,6 +2931,21 @@ public class NewRandomizerGUI {
         }
     }
 
+    private void setRomNameLabel() {
+        if (romHandler.hasGameUpdateLoaded()) {
+            romNameLabel.setText(romHandler.getROMName() + " (" + romHandler.getGameUpdateVersion() + ")");
+        } else {
+            romNameLabel.setText(romHandler.getROMName());
+        }
+        if (!romHandler.isRomValid()) {
+            romNameLabel.setForeground(Color.RED);
+            romNameLabel.setText(romNameLabel.getText() + " [Bad CRC32]");
+            showInvalidRomPopup();
+        } else {
+            romNameLabel.setForeground(Color.BLACK);
+        }
+    }
+
     private void setTweaksPanel(List<JCheckBox> usableCheckBoxes) {
         mtNoneAvailableLabel.setVisible(false);
         miscTweaksPanel.setVisible(false);
@@ -2993,6 +3004,12 @@ public class NewRandomizerGUI {
             peMakeEvolutionsEasierCheckBox.setSelected(false);
             peRemoveTimeBasedEvolutionsCheckBox.setEnabled(false);
             peRemoveTimeBasedEvolutionsCheckBox.setSelected(false);
+
+            // Disable "Force Fully Evolved" Trainer Pokemon
+            tpForceFullyEvolvedAtCheckBox.setSelected(false);
+            tpForceFullyEvolvedAtCheckBox.setEnabled(false);
+            tpForceFullyEvolvedAtSlider.setEnabled(false);
+            tpForceFullyEvolvedAtSlider.setValue(tpForceFullyEvolvedAtSlider.getMinimum());
         } else {
             // All other "Follow Evolutions" controls get properly set/unset below
             // except this one, so manually enable it again.
@@ -3004,6 +3021,9 @@ public class NewRandomizerGUI {
             peChangeImpossibleEvosCheckBox.setEnabled(true);
             peMakeEvolutionsEasierCheckBox.setEnabled(true);
             peRemoveTimeBasedEvolutionsCheckBox.setEnabled(true);
+
+            // Re-enable "Force Fully Evolved" Trainer Pokemon
+            tpForceFullyEvolvedAtCheckBox.setEnabled(true);
         }
 
         if (pbsUnchangedRadioButton.isSelected()) {
@@ -3050,8 +3070,11 @@ public class NewRandomizerGUI {
         if (ptUnchangedRadioButton.isSelected()) {
             ptFollowMegaEvosCheckBox.setEnabled(false);
             ptFollowMegaEvosCheckBox.setSelected(false);
+            ptIsDualTypeCheckBox.setEnabled(false);
+            ptIsDualTypeCheckBox.setSelected(false);
         } else {
             ptFollowMegaEvosCheckBox.setEnabled(followMegaEvolutionControlsEnabled);
+            ptIsDualTypeCheckBox.setEnabled(true);
         }
 
         if (paRandomRadioButton.isSelected()) {

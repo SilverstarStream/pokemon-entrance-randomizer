@@ -30,7 +30,7 @@ import java.util.Map;
 
 public class Version {
     public static final int VERSION = 820; // Keeping ZX's Version number, but adding 500 to it to avoid any overlap.
-    public static final String ZX_VERSION_STRING = "4.2.1";
+    public static final String ZX_VERSION_STRING = "4.4.0";
 
     public static final String ENTRANCE_VERSION_STRING = "0.1.1b";
 
@@ -39,27 +39,29 @@ public class Version {
     private static Map<Integer,String> setupVersionsMap() {
         Map<Integer,String> map = new HashMap<>();
 
-        map.put(100,"1.0.1a");
-        map.put(102,"1.0.2a");
-        map.put(110,"1.1.0");
-        map.put(111,"1.1.1");
-        map.put(112,"1.1.2");
-        map.put(120,"1.2.0a");
-        map.put(150,"1.5.0");
-        map.put(160,"1.6.0a");
-        map.put(161,"1.6.1");
-        map.put(162,"1.6.2");
-        map.put(163,"1.6.3b");
-        map.put(170,"1.7.0b");
-        map.put(171,"1.7.1");
-        map.put(172,"1.7.2");
-        map.put(310,"3.1.0");
-        map.put(311,"4.0.0");
-        map.put(312,"4.0.1");
-        map.put(313,"4.0.2");
-        map.put(314,"4.1.0");
-        map.put(315,"4.2.0");
-        map.put(316,"4.2.1");
+        map.put(100, "1.0.1a");
+        map.put(102, "1.0.2a");
+        map.put(110, "1.1.0");
+        map.put(111, "1.1.1");
+        map.put(112, "1.1.2");
+        map.put(120, "1.2.0a");
+        map.put(150, "1.5.0");
+        map.put(160, "1.6.0a");
+        map.put(161, "1.6.1");
+        map.put(162, "1.6.2");
+        map.put(163, "1.6.3b");
+        map.put(170, "1.7.0b");
+        map.put(171, "1.7.1");
+        map.put(172, "1.7.2");
+        map.put(310, "3.1.0");
+        map.put(311, "4.0.0");
+        map.put(312, "4.0.1");
+        map.put(313, "4.0.2");
+        map.put(314, "4.1.0");
+        map.put(315, "4.2.0");
+        map.put(316, "4.2.1");
+        map.put(317, "4.3.0");
+        map.put(318, "4.4.0");
 
         // Latest version - when version is updated, add the old version as an explicit put
         map.put(VERSION, ZX_VERSION_STRING);

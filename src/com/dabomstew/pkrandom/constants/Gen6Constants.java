@@ -80,7 +80,44 @@ public class Gen6Constants {
         return formeSuffixesByBaseForme.getOrDefault(baseForme,dummyFormeSuffixes).getOrDefault(formNum,"");
     }
 
-    public static final List<Integer> irregularFormes = Arrays.asList(
+    private static final List<Integer> xyIrregularFormes = Arrays.asList(
+            Species.Gen6Formes.castformF, Species.Gen6Formes.castformW, Species.Gen6Formes.castformI,
+            Species.Gen6Formes.darmanitanZ,
+            Species.Gen6Formes.meloettaP,
+            Species.Gen6Formes.kyuremW,
+            Species.Gen6Formes.kyuremB,
+            Species.Gen6Formes.gengarMega,
+            Species.Gen6Formes.gardevoirMega,
+            Species.Gen6Formes.ampharosMega,
+            Species.Gen6Formes.venusaurMega,
+            Species.Gen6Formes.charizardMegaX, Species.Gen6Formes.charizardMegaY,
+            Species.Gen6Formes.mewtwoMegaX, Species.Gen6Formes.mewtwoMegaY,
+            Species.Gen6Formes.blazikenMega,
+            Species.Gen6Formes.medichamMega,
+            Species.Gen6Formes.houndoomMega,
+            Species.Gen6Formes.aggronMega,
+            Species.Gen6Formes.banetteMega,
+            Species.Gen6Formes.tyranitarMega,
+            Species.Gen6Formes.scizorMega,
+            Species.Gen6Formes.pinsirMega,
+            Species.Gen6Formes.aerodactylMega,
+            Species.Gen6Formes.lucarioMega,
+            Species.Gen6Formes.abomasnowMega,
+            Species.Gen6Formes.aegislashB,
+            Species.Gen6Formes.blastoiseMega,
+            Species.Gen6Formes.kangaskhanMega,
+            Species.Gen6Formes.gyaradosMega,
+            Species.Gen6Formes.absolMega,
+            Species.Gen6Formes.alakazamMega,
+            Species.Gen6Formes.heracrossMega,
+            Species.Gen6Formes.mawileMega,
+            Species.Gen6Formes.manectricMega,
+            Species.Gen6Formes.garchompMega,
+            Species.Gen6Formes.latiosMega,
+            Species.Gen6Formes.latiasMega
+    );
+
+    private static final List<Integer> orasIrregularFormes = Arrays.asList(
             Species.Gen6Formes.castformF, Species.Gen6Formes.castformW, Species.Gen6Formes.castformI,
             Species.Gen6Formes.darmanitanZ,
             Species.Gen6Formes.meloettaP,
@@ -303,6 +340,8 @@ public class Gen6Constants {
     public static final String boxLegendaryFunctionPrefixXY = "14D08DE20900A0E1";
     public static final int boxLegendaryEncounterFileXY = 341, boxLegendaryLocalScriptOffsetXY = 0x6E0;
     public static final int[] boxLegendaryCodeOffsetsXY = new int[]{ 144, 300, 584 };
+    public static final int seaSpiritsDenEncounterFileXY = 351, seaSpiritsDenLocalScriptOffsetXY = 0x1C0;
+    public static final int[] seaSpiritsDenScriptOffsetsXY = new int[]{ 0x500, 0x508, 0x510 };
     public static final String rayquazaFunctionPrefixORAS = "0900A0E1F08FBDE8";
     public static final int[] rayquazaScriptOffsetsORAS = new int[]{ 3334, 14734 }, rayquazaCodeOffsetsORAS = new int[]{ 136, 292, 576 };
     public static final String nationalDexFunctionLocator = "080094E5010000E21080BDE8170F122F", xyGetDexFlagFunctionLocator = "000055E30100A0030A00000A",
@@ -314,6 +353,13 @@ public class Gen6Constants {
 
     public static final String xyRoamerFreeSpacePostfix = "540095E50220A0E30810A0E1", xyRoamerSpeciesLocator = "9040A0030400000A",
             xyRoamerLevelPrefix = "B020DDE13F3BC1E3";
+
+    public static final String xyTrashEncountersTablePrefix = "4028100000";
+    public static final int xyTrashEncounterDataLength = 16, xyTrashCanEncounterCount = 24,
+            pokemonVillageGarbadorOffset = 0, pokemonVillageGarbadorCount = 6, pokemonVillageBanetteOffset = 6,
+            pokemonVillageBanetteCount = 6, lostHotelGarbadorOffset = 12, lostHotelGarbadorCount = 3,
+            lostHotelTrubbishOffset = 15, lostHotelTrubbishCount = 3, lostHotelRotomOffset = 18, lostHotelRotomCount = 6;
+
 
     public static List<Integer> xyHardcodedTradeOffsets = Arrays.asList(1, 8);
     public static List<Integer> xyHardcodedTradeTexts = Arrays.asList(129, 349);
@@ -441,6 +487,15 @@ public class Gen6Constants {
         } else {
             return bsSizeORAS;
         }
+    }
+
+    public static List<Integer> getIrregularFormes(int romType) {
+        if (romType == Type_XY) {
+            return xyIrregularFormes;
+        } else if (romType == Type_ORAS) {
+            return orasIrregularFormes;
+        }
+        return new ArrayList<>();
     }
 
     public static int getFormeCount(int romType) {

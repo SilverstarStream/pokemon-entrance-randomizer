@@ -1150,9 +1150,9 @@ public class Gen3RomHandler extends AbstractGBRomHandler {
             if (romEntry.romCode.charAt(3) != 'J' && romEntry.romCode.charAt(3) != 'B') {
                 // Update PROF. Oak's descriptions for each starter
                 // First result for each STARTERNAME is the text we need
-                List<Integer> bulbasaurFoundTexts = RomFunctions.search(rom, translateString(pokes[Gen3Constants.frlgBaseStarter1].name));
-                List<Integer> charmanderFoundTexts = RomFunctions.search(rom, translateString(pokes[Gen3Constants.frlgBaseStarter2].name));
-                List<Integer> squirtleFoundTexts = RomFunctions.search(rom, translateString(pokes[Gen3Constants.frlgBaseStarter3].name));
+                List<Integer> bulbasaurFoundTexts = RomFunctions.search(rom, translateString(pokes[Gen3Constants.frlgBaseStarter1].name.toUpperCase()));
+                List<Integer> charmanderFoundTexts = RomFunctions.search(rom, translateString(pokes[Gen3Constants.frlgBaseStarter2].name.toUpperCase()));
+                List<Integer> squirtleFoundTexts = RomFunctions.search(rom, translateString(pokes[Gen3Constants.frlgBaseStarter3].name.toUpperCase()));
                 writeFRLGStarterText(bulbasaurFoundTexts, newStarters.get(0), "you want to go with\\nthe ");
                 writeFRLGStarterText(charmanderFoundTexts, newStarters.get(1), "you’re claiming the\\n");
                 writeFRLGStarterText(squirtleFoundTexts, newStarters.get(2), "you’ve decided on the\\n");
@@ -1769,6 +1769,52 @@ public class Gen3RomHandler extends AbstractGBRomHandler {
             }
             rom[offset + 1] = (byte) levelPart;
             return 2;
+        }
+    }
+
+    @Override
+    public Map<Integer, List<Integer>> getEggMoves() {
+        Map<Integer, List<Integer>> eggMoves = new TreeMap<>();
+        int baseOffset = romEntry.getValue("EggMoves");
+        int currentOffset = baseOffset;
+        int currentSpecies = 0;
+        List<Integer> currentMoves = new ArrayList<>();
+        int val = FileFunctions.read2ByteInt(rom, currentOffset);
+
+        // Check egg_moves.h in the Gen 3 decomps for more info on how this algorithm works.
+        while (val != 0xFFFF) {
+            if (val > 20000) {
+                int species = val - 20000;
+                if (currentMoves.size() > 0) {
+                    eggMoves.put(internalToPokedex[currentSpecies], currentMoves);
+                }
+                currentSpecies = species;
+                currentMoves = new ArrayList<>();
+            } else {
+                currentMoves.add(val);
+            }
+            currentOffset += 2;
+            val = FileFunctions.read2ByteInt(rom, currentOffset);
+        }
+
+        // Need to make sure the last entry gets recorded too
+        if (currentMoves.size() > 0) {
+            eggMoves.put(internalToPokedex[currentSpecies], currentMoves);
+        }
+        return eggMoves;
+    }
+
+    @Override
+    public void setEggMoves(Map<Integer, List<Integer>> eggMoves) {
+        int baseOffset = romEntry.getValue("EggMoves");
+        int currentOffset = baseOffset;
+        for (int species : eggMoves.keySet()) {
+            FileFunctions.write2ByteInt(rom, currentOffset, pokedexToInternal[species] + 20000);
+            currentOffset += 2;
+            for (int move : eggMoves.get(species)) {
+                FileFunctions.write2ByteInt(rom, currentOffset, move);
+                currentOffset += 2;
+            }
         }
     }
 

@@ -41,11 +41,13 @@ public class Randomizer {
 
     private final Settings settings;
     private final RomHandler romHandler;
+    private final ResourceBundle bundle;
     private final boolean saveAsDirectory;
 
-    public Randomizer(Settings settings, RomHandler romHandler, boolean saveAsDirectory) {
+    public Randomizer(Settings settings, RomHandler romHandler, ResourceBundle bundle, boolean saveAsDirectory) {
         this.settings = settings;
         this.romHandler = romHandler;
+        this.bundle = bundle;
         this.saveAsDirectory = saveAsDirectory;
     }
 
@@ -294,6 +296,7 @@ public class Randomizer {
         if (settings.getMovesetsMod() != Settings.MovesetsMod.UNCHANGED &&
                 settings.getMovesetsMod() != Settings.MovesetsMod.METRONOME_ONLY) {
             romHandler.randomizeMovesLearnt(settings);
+            romHandler.randomizeEggMoves(settings);
             movesetsChanged = true;
         }
 
@@ -707,7 +710,7 @@ public class Randomizer {
         // Diagnostics
         log.println("--ROM Diagnostics--");
         if (!romHandler.isRomValid()) {
-            printInvalidRomMessage(log);
+            log.println(bundle.getString("Log.InvalidRomLoaded"));
         }
         romHandler.printRomDiagnostics(log);
 
@@ -759,11 +762,11 @@ public class Randomizer {
         log.println("--Pokemon Movesets--");
         List<String> movesets = new ArrayList<>();
         Map<Integer, List<MoveLearnt>> moveData = romHandler.getMovesLearnt();
+        Map<Integer, List<Integer>> eggMoves = romHandler.getEggMoves();
         List<Move> moves = romHandler.getMoves();
         List<Pokemon> pkmnList = romHandler.getPokemonInclFormes();
         int i = 1;
         for (Pokemon pkmn : pkmnList) {
-
             if (pkmn == null || pkmn.actuallyCosmetic) {
                 continue;
             }
@@ -802,6 +805,14 @@ public class Randomizer {
                     sb.append("invalid move at level").append(ml.level);
                 }
             }
+            List<Integer> eggMove = eggMoves.get(pkmn.number);
+            if (eggMove != null && eggMove.size() != 0) {
+                sb.append("Egg Moves:").append(System.getProperty("line.separator"));
+                for (Integer move : eggMove) {
+                    sb.append(" - ").append(moves.get(move).name).append(System.getProperty("line.separator"));
+                }
+            }
+
             movesets.add(sb.toString());
         }
         Collections.sort(movesets);
@@ -1312,11 +1323,5 @@ public class Randomizer {
             checkValue ^= value;
         }
         return checkValue;
-    }
-
-    private static void printInvalidRomMessage(final PrintStream log) {
-        log.println("The ROM you loaded is not a clean, official ROM.");
-        log.println("YOU WILL NOT RECEIVE OFFICIAL SUPPORT FOR RANDOMIZING THIS ROM.");
-        log.println();
     }
 }

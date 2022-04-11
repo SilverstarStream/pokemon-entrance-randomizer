@@ -99,7 +99,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
         private int offset;
     }
 
-    private static class FileWithCRC32Entry {
+    private static class RomFileEntry {
         public String path;
         public long expectedCRC32;
     }
@@ -117,7 +117,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
         private Map<String, String> tweakFiles = new HashMap<>();
         private Map<String, int[]> arrayEntries = new HashMap<>();
         private Map<String, OffsetWithinEntry[]> offsetArrayEntries = new HashMap<>();
-        private Map<String, FileWithCRC32Entry> files = new HashMap<>();
+        private Map<String, RomFileEntry> files = new HashMap<>();
         private Map<Integer, Long> overlayExpectedCRC32s = new HashMap<>();
         private List<StaticPokemon> staticPokemon = new ArrayList<>();
         private List<StaticPokemon> staticPokemonFakeBall = new ArrayList<>();
@@ -141,7 +141,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
 
         private String getFile(String key) {
             if (!files.containsKey(key)) {
-                files.put(key, new FileWithCRC32Entry());
+                files.put(key, new RomFileEntry());
             }
             return files.get(key).path;
         }
@@ -216,7 +216,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
                         } else if (r[0].startsWith("File<")) {
                             String key = r[0].split("<")[1].split(">")[0];
                             String[] values = r[1].substring(1, r[1].length() - 1).split(",");
-                            FileWithCRC32Entry entry = new FileWithCRC32Entry();
+                            RomFileEntry entry = new RomFileEntry();
                             entry.path = values[0].trim();
                             entry.expectedCRC32 = parseRILong("0x" + values[1].trim());
                             current.files.put(key, entry);
@@ -637,7 +637,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
                     // Deerling/Sawsbuck: handled automatically in gen 5
                     pkmn.cosmeticForms = formeCount;
                 }
-                if (pkmn.number == 670) {
+                if (pkmn.number == Species.Gen5Formes.keldeoCosmetic1) {
                     pkmn.actuallyCosmetic = true;
                 }
             }
@@ -793,7 +793,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
 
     @Override
     public List<Pokemon> getIrregularFormes() {
-        return Gen5Constants.irregularFormes.stream().map(i -> pokes[i]).collect(Collectors.toList());
+        return Gen5Constants.getIrregularFormes(romEntry.romType).stream().map(i -> pokes[i]).collect(Collectors.toList());
     }
 
     @Override
@@ -1724,6 +1724,47 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
 
     }
 
+    @Override
+    public Map<Integer, List<Integer>> getEggMoves() {
+        Map<Integer, List<Integer>> eggMoves = new TreeMap<>();
+        try {
+            NARCArchive eggMovesNarc = this.readNARC(romEntry.getFile("EggMoves"));
+            for (int i = 1; i <= Gen5Constants.pokemonCount; i++) {
+                Pokemon pkmn = pokes[i];
+                byte[] movedata = eggMovesNarc.files.get(i);
+                int numberOfEggMoves = readWord(movedata, 0);
+                List<Integer> moves = new ArrayList<>();
+                for (int j = 0; j < numberOfEggMoves; j++) {
+                    int move = readWord(movedata, 2 + (j * 2));
+                    moves.add(move);
+                }
+                eggMoves.put(pkmn.number, moves);
+            }
+        } catch (IOException e) {
+            throw new RandomizerIOException(e);
+        }
+        return eggMoves;
+    }
+
+    @Override
+    public void setEggMoves(Map<Integer, List<Integer>> eggMoves) {
+        try {
+            NARCArchive eggMovesNarc = this.readNARC(romEntry.getFile("EggMoves"));
+            for (int i = 1; i <= Gen5Constants.pokemonCount; i++) {
+                Pokemon pkmn = pokes[i];
+                byte[] movedata = eggMovesNarc.files.get(i);
+                List<Integer> moves = eggMoves.get(pkmn.number);
+                for (int j = 0; j < moves.size(); j++) {
+                    writeWord(movedata, 2 + (j * 2), moves.get(j));
+                }
+            }
+            // Save
+            this.writeNARC(romEntry.getFile("EggMoves"), eggMovesNarc);
+        } catch (IOException e) {
+            throw new RandomizerIOException(e);
+        }
+    }
+
     private static class FileEntry {
         private int file;
         private int offset;
@@ -2496,19 +2537,18 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
     }
 
     private void forceChallengeMode() {
-        int offset = find(arm9, Gen5Constants.forceChallengeModePrefix);
+        int offset = find(arm9, Gen5Constants.forceChallengeModeLocator);
         if (offset > 0) {
-            offset += Gen5Constants.forceChallengeModePrefix.length() / 2; // because it was a prefix
-
-            // offset is now pointing to the instruction "add r0, r2, #0x0" within the function that determines
-            // the player's current difficulty mode; r2 stores the difficulty mode as determined by the save file,
-            // and the game is moving it to r0 to return it to the caller. We want to enable Challenge Mode
-            // *without* requiring the user to previously have a save file, so we need to override this behavior.
-            // The below code just replaces this instruction with "mov r0, #0x2" to force this function to always
-            // return 2 (the value for Challenge Mode) regardless of what keys are enabled on the user's save file
-            // or regardless of whether they even have a save file or not.
+            // offset is now pointing at the start of sub_2010528, which is the function that
+            // determines which difficulty the player currently has enabled. It returns 0 for
+            // Easy Mode, 1 for Normal Mode, and 2 for Challenge Mode. Since we're just trying
+            // to force Challenge Mode, all we need to do is:
+            // mov r0, #0x2
+            // bx lr
             arm9[offset] = 0x02;
             arm9[offset + 1] = 0x20;
+            arm9[offset + 2] = 0x70;
+            arm9[offset + 3] = 0x47;
         }
     }
 

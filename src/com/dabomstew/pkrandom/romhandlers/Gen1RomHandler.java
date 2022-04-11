@@ -1324,6 +1324,17 @@ public class Gen1RomHandler extends AbstractGBCRomHandler {
         writeEvosAndMovesLearnt(false, movesets);
     }
 
+    @Override
+    public Map<Integer, List<Integer>> getEggMoves() {
+        // Gen 1 does not have egg moves
+        return new TreeMap<>();
+    }
+
+    @Override
+    public void setEggMoves(Map<Integer, List<Integer>> eggMoves) {
+        // Gen 1 does not have egg moves
+    }
+
     private static class StaticPokemon {
         protected int[] speciesOffsets;
         protected int[] levelOffsets;

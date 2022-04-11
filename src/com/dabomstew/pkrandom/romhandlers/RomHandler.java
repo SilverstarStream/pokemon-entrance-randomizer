@@ -304,7 +304,13 @@ public interface RomHandler {
 
     List<Integer> getMovesBannedFromLevelup();
 
+    Map<Integer, List<Integer>> getEggMoves();
+
+    void setEggMoves(Map<Integer, List<Integer>> eggMoves);
+
     void randomizeMovesLearnt(Settings settings);
+
+    void randomizeEggMoves(Settings settings);
 
     void orderDamagingMovesByDamage();
 

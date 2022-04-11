@@ -117,7 +117,9 @@ public class Utils {
 
     public static File getExecutionLocation() throws UnsupportedEncodingException {
         URL location = NewRandomizerGUI.class.getProtectionDomain().getCodeSource().getLocation();
-        return new File(java.net.URLDecoder.decode(location.getFile(), "UTF-8"));
+        String file = location.getFile();
+        String plusEncoded = file.replaceAll("\\+", "%2b");
+        return new File(java.net.URLDecoder.decode(plusEncoded, "UTF-8"));
     }
 
     public static class InvalidROMException extends Exception {
