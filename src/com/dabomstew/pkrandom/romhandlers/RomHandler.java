@@ -668,7 +668,7 @@ public interface RomHandler {
 
     List<ScriptData> getGymScripts();
 
-    void editGymScripts(List<ScriptData> scripts);
+    void editGymScripts(List<ScriptData> scripts, List<Integer> gymOrder);
 
     List<Trainer> getGymLeaders(List<Trainer> allTrainers);
 

@@ -2256,4 +2256,12 @@ public class Gen5Constants {
 
         return cities;
     }
+
+    public static Map<Integer, Integer> extraGymScripts() {
+        Map<Integer, Integer> scriptMap = new HashMap<>();
+        // map each script number to which gym it belongs to
+        scriptMap.put(58, 2);
+        scriptMap.put(196, 4);
+        return scriptMap;
+    }
 }

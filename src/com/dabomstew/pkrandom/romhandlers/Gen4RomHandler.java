@@ -696,17 +696,17 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
             throw new RandomizerIOException(e);
         }
         try {
-            writeNARC(romEntry.getString("Text"), msgNarc);
+            writeNARC(romEntry.getFile("Text"), msgNarc);
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
         try {
-            writeNARC(romEntry.getString("Scripts"), scriptNarc);
+            writeNARC(romEntry.getFile("Scripts"), scriptNarc);
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
         try {
-            writeNARC(romEntry.getString("Events"), eventNarc);
+            writeNARC(romEntry.getFile("Events"), eventNarc);
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
@@ -731,7 +731,7 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
         }
 
         try {
-            this.writeNARC(romEntry.getString("MoveData"), moveNarc);
+            this.writeNARC(romEntry.getFile("MoveData"), moveNarc);
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
@@ -768,7 +768,7 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
         setStrings(romEntry.getInt("PokemonNamesTextOffset"), namesList, false);
 
         try {
-            String pstatsnarc = romEntry.getString("PokemonStats");
+            String pstatsnarc = romEntry.getFile("PokemonStats");
             this.writeNARC(pstatsnarc, pokeNarc);
         } catch (IOException e) {
             throw new RandomizerIOException(e);
@@ -2590,8 +2590,8 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
                 }
                 trpokes.files.add(trpoke);
             }
-            this.writeNARC(romEntry.getString("TrainerData"), trainers);
-            this.writeNARC(romEntry.getString("TrainerPokemon"), trpokes);
+            this.writeNARC(romEntry.getFile("TrainerData"), trainers);
+            this.writeNARC(romEntry.getFile("TrainerPokemon"), trpokes);
 
             // In Gen 4, the game prioritizes showing the special double battle intro over almost any
             // other kind of intro. Since the trainer music is tied to the intro, this results in the
@@ -2665,7 +2665,7 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
                 NARCArchive battleSkillSubSeq = readNARC(romEntry.getFile("BattleSkillSubSeq"));
                 byte[] trainerEndFile = battleSkillSubSeq.files.get(romEntry.getInt("TrainerEndFileNumber"));
                 trainerEndFile[romEntry.getInt("TrainerEndTextBoxOffset")] = 0;
-                writeNARC(romEntry.getString("BattleSkillSubSeq"), battleSkillSubSeq);
+                writeNARC(romEntry.getFile("BattleSkillSubSeq"), battleSkillSubSeq);
 
             }
         } catch (IOException ex) {
@@ -2788,7 +2788,7 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
         //}
         // Save
         try {
-            this.writeNARC(romEntry.getString("PokemonMovesets"), movesLearnt);
+            this.writeNARC(romEntry.getFile("PokemonMovesets"), movesLearnt);
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
@@ -3081,7 +3081,7 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
                         replaceAllStringsInEntry(romEntry.getInt("KenyaTextOffset"), replacements);
                     }
                 }
-                writeNARC(romEntry.getString("InGameTrades"), tradeNARC);
+                writeNARC(romEntry.getFile("InGameTrades"), tradeNARC);
             }
             if (romEntry.getInt("MysteryEggOffset") > 0) {
                 // Same overlay as MT moves
@@ -3532,7 +3532,7 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
                 }
             }
             if (romEntry.romType == Gen4Constants.Type_HGSS) {
-                writeFile(romEntry.getString("MoveTutorCompat"), mtcFile);
+                writeFile(romEntry.getFile("MoveTutorCompat"), mtcFile);
             } else {
                 writeOverlay(romEntry.getInt("MoveTutorCompatOvlNumber"), mtcFile);
             }
@@ -3728,7 +3728,7 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
                     evosWritten++;
                 }
             }
-            writeNARC(romEntry.getString("PokemonEvolutions"), evoNARC);
+            writeNARC(romEntry.getFile("PokemonEvolutions"), evoNARC);
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
@@ -4048,7 +4048,7 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
                     itemID = 135;
                 }
             }
-            writeNARC(romEntry.getString("ItemData"),itemPriceNarc);
+            writeNARC(romEntry.getFile("ItemData"),itemPriceNarc);
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
@@ -4608,7 +4608,7 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
                     writeLong(tfile, 0x50, 0); // disable gender
                 }
             }
-            this.writeNARC(romEntry.getString("InGameTrades"), tradeNARC);
+            this.writeNARC(romEntry.getFile("InGameTrades"), tradeNARC);
             this.setStrings(romEntry.getInt("IngameTradesTextOffset"), tradeStrings);
             // update what the people say when they talk to you
             if (romEntry.arrayEntries.containsKey("IngameTradePersonTextOffsets")) {
@@ -4705,7 +4705,7 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
                 writeWord(babyPokes, i * 2, baby.number);
             }
             // finish up
-            writeFile(romEntry.getString("BabyPokemon"), babyPokes);
+            writeFile(romEntry.getFile("BabyPokemon"), babyPokes);
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
@@ -5328,7 +5328,7 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
             ScriptData scriptData = new ScriptData(offset, script);
             parseScript(scriptData, instructionMap);
             // the instructions need to be removed before the offsets get swapped, so remove upon instantiation
-            removeFlagInsts(scriptData);
+            storeFlagCommands(scriptData);
             scripts.add(scriptData);
         }
         return scripts;
@@ -5392,17 +5392,17 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
         }
         scriptData.allOffs.addAll(scriptData.setVarOffs);
         scriptData.allOffs.addAll(scriptData.flagOffs);
-        Collections.sort(scriptData.allOffs);
     }
 
-    private void removeFlagInsts(ScriptData scriptData) {
+    private void storeFlagCommands(ScriptData scriptData) {
+        Collections.sort(scriptData.allOffs);
         for (int i = scriptData.allOffs.size() - 1; i >= 0; i--) {
             int offset = scriptData.allOffs.get(i);
             int removeCount = 4;
             if (scriptData.setVarMap.containsKey(offset)) {
                 removeCount = 6;
             }
-            scriptData.storedByteCount += removeCount;
+            scriptData.flagsSize += removeCount;
             while (removeCount > 0) {
                 scriptData.scriptList.remove(offset);
                 removeCount--;
@@ -5412,72 +5412,77 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
     }
 
     @Override
-    public void editGymScripts(List<ScriptData> scripts) {
+    public void editGymScripts(List<ScriptData> scripts, List<Integer> gymOrder) {
         if (!romEntry.arrayEntries.containsKey("GymBadgeNumbers")) {
             throw new RandomizationException("No GymBadgeNumbers in the gen4_offsets ini.");
         }
         int[] badges = romEntry.arrayEntries.get("GymBadgeNumbers");
 
         for (int i = 0; i < badges.length; i++) {
-            ScriptData script = scripts.get(i);
+            int gymNum = gymOrder.get(i);
+            ScriptData script = scripts.get(gymNum);
             changeBadge(script, badges[i]);
-            addInstructions(script);
-            adjustRelativeOffs(script);
+            insertStoredCommands(script, scripts.get(i));
             longAlign(script);
-            byte[] scriptBytes = script.updateScriptArray();
-            scriptNarc.files.set(script.scriptNum, scriptBytes);
+            script.updateScriptArray();
+            scriptNarc.files.set(script.scriptNum, script.script);
         }
     }
 
     private void changeBadge(ScriptData scriptData, int badgeNum) {
+        scriptData.updateScriptArray();
         byte[] search = {0x5B, 0x01};
-        // get the offsets for the instruction that checks for the badge that's given and the instruction that give the badge
+        // get the offsets for the instruction that checks for the badge and the instruction that give the badge
         List<Integer> offsets = RomFunctions.search(scriptData.script, scriptData.headerEndOff, search);
         offsets.add(scriptData.enableOff);
-        for(int offset : offsets) {
+        for (int offset : offsets) {
             scriptData.scriptList.set(offset + 2, (byte) (badgeNum & 0xFF));
             scriptData.scriptList.set(offset + 3, (byte) (badgeNum >> 8 & 0xFF));
         }
     }
 
-    private void addInstructions(ScriptData scriptData) {
+    private void insertStoredCommands(ScriptData script, ScriptData donorScript) {
         // preserve the original order of the instructions, in case it matters.
-        Collections.sort(scriptData.allOffs);
-        int targetOff = scriptData.enableOff + 8;
-        for (int offset : scriptData.allOffs) {
-            if (scriptData.setVarMap.containsKey(offset)) {
-                int value = scriptData.setVarMap.get(offset);
-                scriptData.scriptList.add(targetOff, (byte) 0x28);
-                scriptData.scriptList.add(targetOff + 1, (byte) 0x00);
-                scriptData.scriptList.add(targetOff + 2, (byte) (value & 0xFF));
-                scriptData.scriptList.add(targetOff + 3, (byte) (value >> 8 & 0xFF));
-                scriptData.scriptList.add(targetOff + 4, (byte) (value >> 16 & 0xFF));
-                scriptData.scriptList.add(targetOff + 5, (byte) (value >> 24 & 0xFF));
+        List<Integer> allOffs = donorScript.allOffs;
+        Collections.sort(allOffs);
+        int targetOff = script.enableOff + 8;
+        for (int offset : allOffs) {
+            if (donorScript.setVarMap.containsKey(offset)) {
+                int value = donorScript.setVarMap.get(offset);
+                script.scriptList.add(targetOff, (byte) 0x28);
+                script.scriptList.add(targetOff + 1, (byte) 0x00);
+                script.scriptList.add(targetOff + 2, (byte) (value & 0xFF));
+                script.scriptList.add(targetOff + 3, (byte) (value >> 8 & 0xFF));
+                script.scriptList.add(targetOff + 4, (byte) (value >> 16 & 0xFF));
+                script.scriptList.add(targetOff + 5, (byte) (value >> 24 & 0xFF));
                 targetOff += 6;
             }
-            else if (scriptData.flagMap.containsKey(offset)) {
-                int value = scriptData.flagMap.get(offset);
-                // otherMap includes the instruction in the 2 upper bytes of value
-                scriptData.scriptList.add(targetOff, (byte) (value >> 16 & 0xFF));
-                scriptData.scriptList.add(targetOff + 1, (byte) (value >> 24 & 0xFF));
-                scriptData.scriptList.add(targetOff + 2, (byte) (value & 0xFF));
-                scriptData.scriptList.add(targetOff + 3, (byte) (value >> 8 & 0xFF));
+            else if (donorScript.flagMap.containsKey(offset)) {
+                int value = donorScript.flagMap.get(offset);
+                // flagMap includes the instruction in the 2 upper bytes of value as big-endian
+                script.scriptList.add(targetOff, (byte) (value >> 16 & 0xFF));
+                script.scriptList.add(targetOff + 1, (byte) (value >> 24 & 0xFF));
+                script.scriptList.add(targetOff + 2, (byte) (value & 0xFF));
+                script.scriptList.add(targetOff + 3, (byte) (value >> 8 & 0xFF));
                 targetOff += 4;
             }
             else {
-                throw new RandomizationException("Invalid offset used in addInstructions(): " + String.format("%x", offset));
+                throw new RandomizationException("Invalid offset used in insertStoredCommands(): " + String.format("%x", offset));
             }
         }
-        scriptData.nextJumpOff += scriptData.setVarOffs.size() * 6 + scriptData.flagOffs.size() * 4;
+        int insertedSize = donorScript.setVarOffs.size() * 6 + donorScript.flagOffs.size() * 4;
+        script.nextJumpOff += insertedSize;
+        int difference = insertedSize - script.flagsSize;
+        adjustRelativeOffs(script, difference);
     }
 
-    private void adjustRelativeOffs(ScriptData scriptData) {
-        int difference = scriptData.setVarOffs.size() * 6 + scriptData.flagOffs.size() * 4 - scriptData.storedByteCount;
-
-        // Adjust header info
+    private void adjustRelativeOffs(ScriptData scriptData, int difference) {
+        scriptData.updateScriptArray();
+        // Adjust header pointers
         for (int offset = 0; offset < scriptData.headerEndOff; offset += 4) {
             int target = readLong(scriptData.script, offset);
-            if ((offset + 1) * 4 + target > scriptData.enableOff) {
+            // The start of the 1st script is at 4 + readLong(0), the 2nd at 8 + readLong(4)...
+            if (offset + 4 + target > scriptData.enableOff) {
                 int newTarget = target + difference;
                 scriptData.scriptList.set(offset, (byte) (newTarget & 0xFF));
                 scriptData.scriptList.set(offset + 1, (byte) (newTarget >> 8 & 0xFF));
@@ -5518,6 +5523,7 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
                 // Jump targets shouldn't use more than the smallest 2 bytes, so the largest 2 should only be 00 or FF
                 continue;
             }
+            // I have no idea why this works, maybe just because the jumps in scripts are big enough where it doesn't matter
             if ((offset < scriptData.enableOff && (offset + jumpTarget) > scriptData.enableOff) ||
                     (offset > scriptData.enableOff && (offset + jumpTarget) < scriptData.enableOff)) {
                 int newTarget;

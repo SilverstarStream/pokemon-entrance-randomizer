@@ -6630,13 +6630,13 @@ public abstract class AbstractRomHandler implements RomHandler {
             gymOrder.add(i);
         }
         List<Location> gymLocations = this.getGymLocations();
-        List<Location> cityLocations = this.getGymCityLocations(); // The only reason isGymCity is true on these is lore reason
-        List<ScriptData> scripts = this.getGymScripts();
+        List<Location> cityLocations = this.getGymCityLocations();
         // jArray is for testing
-        //int[] jArray = {6, 6, 5, 5, 6, 7, 6, 7}; // Should result in gym order: 7 1 6 3 2 8 5 4
+        int[] jArray = {6, 6, 5, 5, 6, 7, 6, 7}; // Should result in gym order: 7 1 6 3 2 8 5 4
+        //int[] jArray = {0, 1, 2, 3, 4, 5, 6, 7}; // Should result in gym order: 1, 2, 3, 4, 5, 6, 7, 8
         for (int i = 0; i < gymCount; i++) {
-            int j = random.nextInt(gymLocations.size() - i) + i;
-            //int j = jArray[i];
+            //int j = random.nextInt(gymLocations.size() - i) + i;
+            int j = jArray[i];
             if (i != j) {
                 // Swap the numbers in the reference array
                 Collections.swap(gymOrder, i, j);
@@ -6650,14 +6650,11 @@ public abstract class AbstractRomHandler implements RomHandler {
             Location gymi = gymLocations.get(i);
             Exit.connectExits(gymi.exits.get(0), cityi.exits.get(0), random);
             log("Gym " + (i + 1) + " " + cityi.name + ": " + gymi.name);
-
-            // Swap specific instructions between scripts
-            scripts.get(i).swapScriptData(scripts.get(j));
         }
         this.changeGymTeams(gymLocations, gymOrder);
         this.setWarps(gymLocations);
         this.setWarps(cityLocations);
-        this.editGymScripts(scripts);
+        this.editGymScripts(this.getGymScripts(), gymOrder);
         this.editGymText(gymOrder);
         logBlankLine();
     }
@@ -7246,8 +7243,6 @@ public abstract class AbstractRomHandler implements RomHandler {
     }
 
     private int locPriorityIndex(List<Location> validLocs, int badge) {
-        // Assumes a list of Locations sorted by maxWeight
-        // Return the largest index of the Location with a maxWeight = badge
         if (validLocs.isEmpty()) {
             log("Error: Bad priority index for badge " + badge);
             StringBuilder errorOutput = new StringBuilder();
@@ -7264,6 +7259,8 @@ public abstract class AbstractRomHandler implements RomHandler {
             return -1;
         }
 
+        // Assumes a list of Locations sorted by maxWeight
+        // Return the largest index of the Location with a maxWeight <= badge
         if (validLocs.get(0).maxWeight > badge) {
             return validLocs.size();
         }
@@ -7434,6 +7431,7 @@ public abstract class AbstractRomHandler implements RomHandler {
 
     @Override
     // This method needs to be rewritten for gen 5+ for the non-linear E4s
+    // Instead of logging them like a -> b -> c, log them noting which room replaces which.
     public void shuffleE4() {
         log("--Shuffle Elite 4--");
         List<Location> locations = getE4Locations();
@@ -7576,7 +7574,7 @@ public abstract class AbstractRomHandler implements RomHandler {
     }
 
     @Override
-    public void editGymScripts(List<ScriptData> scripts) {}
+    public void editGymScripts(List<ScriptData> scripts, List<Integer> gymOrder) {}
 
     @Override
     public List<Trainer> getGymLeaders(List<Trainer> allTrainers) {

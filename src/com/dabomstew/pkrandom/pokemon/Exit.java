@@ -24,7 +24,7 @@ package com.dabomstew.pkrandom.pokemon;
 /*--  along with this program. If not, see <http://www.gnu.org/licenses/>.  --*/
 /*----------------------------------------------------------------------------*/
 
-import java.util.Random;
+import java.util.*;
 
 public class Exit {
     public int minWeight; // the lowest badge required to reach this exit from the other exits
@@ -47,6 +47,16 @@ public class Exit {
         this.fileNum = fileNum;
         this.mapIndex = mapIndex;
         this.thisLocation = thisLocation;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder output = new StringBuilder("file " + fileNum + ": " + this.destName + " map " + this.mapIndex + " [");
+        output.append(this.warps[0].warp);
+        for (int i = 1; i < this.warps.length; i++) {
+            output.append(",").append(this.warps[i].warp);
+        }
+        return output + "]";
     }
 
     public static void connectExits(Exit exitA, Exit exitB, Random rand) {

@@ -23,17 +23,17 @@ package com.dabomstew.pkrandom.pokemon;
 /*--  along with this program. If not, see <http://www.gnu.org/licenses/>.  --*/
 /*----------------------------------------------------------------------------*/
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.dabomstew.pkrandom.exceptions.*;
+
+import java.io.*;
+import java.util.*;
 
 public class ScriptData {
     public int scriptNum; // file number
-    public int headerEndOff; // The offset of the headerEnd delimiter, typically 0x13FD
-    public int enableOff; // The offset of the instruction that grants the player the badge
+    public int headerEndOff = 0; // The offset of the headerEnd delimiter, typically 0x13FD
+    public int enableOff; // The offset of the command that grants the player the badge
     public int nextJumpOff; // The offset of the end of the section of the script that resolves the player defeating the leader
-    public int storedByteCount = 0; // holds how many bytes of stored flag and setVar commands there are
+    public int flagsSize = 0; // obsolete
     public byte[] script;
     public List<Byte> scriptList = new ArrayList<>(); // The script in list form for easy insertion and deletion of elements
 
@@ -43,6 +43,11 @@ public class ScriptData {
     public Map<Integer, Integer> setVarMap = new HashMap<>(); // maps the offset of each setVar command to its argument
     public Map<Integer, Integer> flagMap = new HashMap<>(); // ^ for flag commands
 
+    public List<JumpCommand> jumpCommands = new ArrayList<>();
+
+    public List<Integer> effectOffs = new ArrayList<>();
+    public Map<Integer, Integer> effectMap = new HashMap<>(); // map the offset to the argument of the visuals of a player getting a badge
+
     public ScriptData(int scriptNum, byte[] script) {
         this.scriptNum = scriptNum;
         this.script = script.clone();
@@ -51,35 +56,52 @@ public class ScriptData {
         }
     }
 
-    public byte[] updateScriptArray() {
+    public void updateScriptArray() {
         this.script = new byte[this.scriptList.size()];
         for (int i = 0; i < this.scriptList.size(); i++) {
             this.script[i] = this.scriptList.get(i);
         }
-        return this.script;
+        for (JumpCommand jump : jumpCommands) {
+            int addr = jump.address;
+            int argBytes = jump.argByteCount;
+            int jumpDist = jump.jumpDist;
+            this.scriptList.set(addr + argBytes + 2, (byte) (jumpDist & 0xFF));
+            this.scriptList.set(addr + argBytes + 3, (byte) (jumpDist >> 8 & 0xFF));
+            this.scriptList.set(addr + argBytes + 4, (byte) (jumpDist >> 16 & 0xFF));
+            this.scriptList.set(addr + argBytes + 5, (byte) (jumpDist >> 24 & 0xFF));
+            this.script[addr + argBytes + 2] = (byte) (jumpDist & 0xFF);
+            this.script[addr + argBytes + 3] = (byte) (jumpDist >> 8 & 0xFF);
+            this.script[addr + argBytes + 4] = (byte) (jumpDist >> 16 & 0xFF);
+            this.script[addr + argBytes + 5] = (byte) (jumpDist >> 24 & 0xFF);
+        }
     }
 
-    public void swapScriptData(ScriptData that) {
-        int temp = this.scriptNum;
-        this.scriptNum = that.scriptNum;
-        that.scriptNum = temp;
-        temp = this.headerEndOff;
-        this.headerEndOff = that.headerEndOff;
-        that.headerEndOff = temp;
-        temp = this.enableOff;
-        this.enableOff = that.enableOff;
-        that.enableOff = temp;
-        temp = this.nextJumpOff;
-        this.nextJumpOff = that.nextJumpOff;
-        that.nextJumpOff = temp;
-        temp = this.storedByteCount;
-        this.storedByteCount = that.storedByteCount;
-        that.storedByteCount = temp;
-        byte[] tempArray = this.script;
-        this.script = that.script;
-        that.script = tempArray;
-        List<Byte> tempList = this.scriptList;
-        this.scriptList = that.scriptList;
-        that.scriptList = tempList;
+    public int readWord(int offset) {
+        return (this.scriptList.get(offset) & 0xFF) | ((this.scriptList.get(offset + 1) & 0xFF) << 8);
+    }
+
+    public int readLong(int offset) {
+        return (this.scriptList.get(offset) & 0xFF) | ((this.scriptList.get(offset + 1) & 0xFF) << 8) |
+                ((this.scriptList.get(offset + 2) & 0xFF) << 16) | ((this.scriptList.get(offset + 3) & 0xFF) << 24);
+    }
+
+    public void toFile() {
+        File outputFile = new File("" + this.scriptNum);
+        try (FileOutputStream outputStream = new FileOutputStream(outputFile)) {
+            outputStream.write(this.script);
+        } catch (IOException e) {
+            throw new RandomizationException("Error writing script file " + this.scriptNum);
+        }
+        System.out.println("Exported script file " + this.scriptNum + " to system.");
+    }
+
+    public static class JumpCommand {
+        public int address, argByteCount, jumpDist;
+
+        public JumpCommand(int address, int argByteCount, int jumpDist) {
+            this.address = address;
+            this.argByteCount = argByteCount;
+            this.jumpDist = jumpDist;
+        }
     }
 }
