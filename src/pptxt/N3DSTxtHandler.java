@@ -288,7 +288,7 @@ public class N3DSTxtHandler {
         String variable = noArgs ? text : text.substring(0,bracket);
         int varVal = getVariableNumber(variable,romType);
         if (!noArgs) {
-            String[] args = text.substring(bracket + 1, text.length() - 2).split(",");
+            String[] args = text.substring(bracket + 1, text.length() - 1).split(",");
             vals.add(1 + args.length);
             vals.add(varVal);
             vals.addAll(Arrays.stream(args)

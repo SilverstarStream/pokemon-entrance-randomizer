@@ -72,7 +72,7 @@ public class CustomNamesSet {
     private List<String> readNamesBlock(InputStream in) throws IOException {
         // Read the size of the block to come.
         byte[] szData = FileFunctions.readFullyIntoBuffer(in, 4);
-        int size = FileFunctions.readFullInt(szData, 0);
+        int size = FileFunctions.readFullIntBigEndian(szData, 0);
         if (in.available() < size) {
             throw new IOException("Invalid size specified.");
         }
@@ -119,7 +119,7 @@ public class CustomNamesSet {
         }
         byte[] namesData = outNames.toString().getBytes("UTF-8");
         byte[] szData = new byte[4];
-        FileFunctions.writeFullInt(szData, 0, namesData.length);
+        FileFunctions.writeFullIntBigEndian(szData, 0, namesData.length);
         out.write(szData);
         out.write(namesData);
     }

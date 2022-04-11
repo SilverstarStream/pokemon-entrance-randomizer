@@ -47,7 +47,7 @@ public class DSDecmp {
         int length = (data[offset] & 0xFF) | ((data[offset + 1] & 0xFF) << 8) | ((data[offset + 2] & 0xFF) << 16);
         offset += 3;
         if (length == 0) {
-            length = FileFunctions.readFullInt(data, offset);
+            length = FileFunctions.readFullIntBigEndian(data, offset);
             offset += 4;
         }
 
@@ -96,7 +96,7 @@ public class DSDecmp {
         int length = (data[offset] & 0xFF) | ((data[offset + 1] & 0xFF) << 8) | ((data[offset + 2] & 0xFF) << 16);
         offset += 3;
         if (length == 0) {
-            length = FileFunctions.readFullInt(data, offset);
+            length = FileFunctions.readFullIntBigEndian(data, offset);
             offset += 4;
         }
 

@@ -34,6 +34,7 @@ import cuecompressors.BLZCoder;
 public class NDSRom {
 
     private String romCode;
+    private byte version;
     private String romFilename;
     private RandomAccessFile baseRom;
     private boolean romOpen;
@@ -102,6 +103,9 @@ public class NDSRom {
         byte[] sig = new byte[4];
         baseRom.readFully(sig);
         this.romCode = new String(sig, "US-ASCII");
+
+        baseRom.seek(0x1E);
+        this.version = baseRom.readByte();
 
         baseRom.seek(0x28);
         this.arm9_ramoffset = readFromFile(baseRom, 4);
@@ -441,6 +445,10 @@ public class NDSRom {
     // get rom code for opened rom
     public String getCode() {
         return this.romCode;
+    }
+
+    public byte getVersion() {
+        return this.version;
     }
 
     // returns null if file doesn't exist

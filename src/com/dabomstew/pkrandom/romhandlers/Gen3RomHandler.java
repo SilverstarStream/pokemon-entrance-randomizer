@@ -214,7 +214,7 @@ public class Gen3RomHandler extends AbstractGBRomHandler {
                             int csp = parseRIInt(r[1]);
                             current.copyStaticPokemon = (csp > 0);
                         } else if (r[0].equals("CRC32")) {
-                            current.expectedCRC32 = parseRIILong("0x" + r[1]);
+                            current.expectedCRC32 = parseRILong("0x" + r[1]);
                         } else if (r[0].endsWith("Tweak")) {
                             current.codeTweaks.put(r[0], r[1]);
                         } else if (r[0].equals("CopyFrom")) {
@@ -283,7 +283,7 @@ public class Gen3RomHandler extends AbstractGBRomHandler {
         }
     }
 
-    private static long parseRIILong(String off) {
+    private static long parseRILong(String off) {
         int radix = 10;
         off = off.trim().toLowerCase();
         if (off.startsWith("0x") || off.startsWith("&h")) {
@@ -1499,11 +1499,6 @@ public class Gen3RomHandler extends AbstractGBRomHandler {
     }
 
     @Override
-    public String[] getShopNames() {
-        return Gen3Constants.getShopNames(romEntry.romType).toArray(new String[0]);
-    }
-
-    @Override
     public List<Integer> getEvolutionItems() {
         return Gen3Constants.evolutionItems;
     }
@@ -1647,6 +1642,11 @@ public class Gen3RomHandler extends AbstractGBRomHandler {
     @Override
     public Pokemon getAltFormeOfPokemon(Pokemon pk, int forme) {
         return pk;
+    }
+
+    @Override
+    public List<Pokemon> getIrregularFormes() {
+        return new ArrayList<>();
     }
 
     @Override
@@ -2029,7 +2029,7 @@ public class Gen3RomHandler extends AbstractGBRomHandler {
         rom[offset + 22] = 0x57;
 
         // In the space formerly occupied by the first 0x2000000, write Latios's ID
-        FileFunctions.writeFullIntLittleEndian(rom, offset + 128, pokedexToInternal[Species.latios]);
+        FileFunctions.writeFullInt(rom, offset + 128, pokedexToInternal[Species.latios]);
 
         // Where the original function computes Latios's ID by setting r0 to 0xCC << 1, just pc-relative
         // load our constant. We have four bytes of space to play with, and we need to make sure the offset
@@ -2048,7 +2048,7 @@ public class Gen3RomHandler extends AbstractGBRomHandler {
         // Latios's species ID.
         rom[offset + 182] = 0x00;
         rom[offset + 183] = (byte) 0xBD;
-        FileFunctions.writeFullIntLittleEndian(rom, offset + 184, pokedexToInternal[Species.latios]);
+        FileFunctions.writeFullInt(rom, offset + 184, pokedexToInternal[Species.latios]);
 
         // Now write a pc-relative load to this new species ID constant over the original move and lsl. Similar
         // to before, we need to write a nop first for alignment, then pc-relative load into r6.
@@ -2068,7 +2068,7 @@ public class Gen3RomHandler extends AbstractGBRomHandler {
         rom[offset + 14] = 0x41;
 
         // In the space formerly occupied by the first 0x03005D8C, write Latios's ID
-        FileFunctions.writeFullIntLittleEndian(rom, offset + 28, pokedexToInternal[Species.latios]);
+        FileFunctions.writeFullInt(rom, offset + 28, pokedexToInternal[Species.latios]);
 
         // In the original function, we "lsl r0, r0, #0x10" then compare r0 to 0. The thing is, this left
         // shift doesn't actually matter, because 0 << 0x10 = 0, and [non-zero] << 0x10 = [non-zero].
@@ -2771,12 +2771,11 @@ public class Gen3RomHandler extends AbstractGBRomHandler {
     }
 
     @Override
-    public Map<Integer, List<Integer>> getShopItems() {
-        List<Integer> skipShops =
-                Arrays.stream(romEntry.arrayEntries.get("SkipShops"))
-                .boxed()
-                .collect(Collectors.toList());
-        Map<Integer, List<Integer>> shopItemsMap = new TreeMap<>();
+    public Map<Integer, Shop> getShopItems() {
+        List<String> shopNames = Gen3Constants.getShopNames(romEntry.romType);
+        List<Integer> mainGameShops = Arrays.stream(romEntry.arrayEntries.get("MainGameShops")).boxed().collect(Collectors.toList());
+        List<Integer> skipShops = Arrays.stream(romEntry.arrayEntries.get("SkipShops")).boxed().collect(Collectors.toList());
+        Map<Integer, Shop> shopItemsMap = new TreeMap<>();
         int[] shopItemOffsets = romEntry.arrayEntries.get("ShopItemOffsets");
         for (int i = 0; i < shopItemOffsets.length; i++) {
             if (!skipShops.contains(i)) {
@@ -2788,20 +2787,24 @@ public class Gen3RomHandler extends AbstractGBRomHandler {
                     offset += 2;
                     val = FileFunctions.read2ByteInt(rom, offset);
                 }
-                shopItemsMap.put(i, items);
+                Shop shop = new Shop();
+                shop.items = items;
+                shop.name = shopNames.get(i);
+                shop.isMainGame = mainGameShops.contains(i);
+                shopItemsMap.put(i, shop);
             }
         }
         return shopItemsMap;
     }
 
     @Override
-    public void setShopItems(Map<Integer, List<Integer>> shopItems) {
+    public void setShopItems(Map<Integer, Shop> shopItems) {
         int[] shopItemOffsets = romEntry.arrayEntries.get("ShopItemOffsets");
         for (int i = 0; i < shopItemOffsets.length; i++) {
-            List<Integer> thisShopItems = shopItems.get(i);
-            if (thisShopItems != null) {
+            Shop thisShop = shopItems.get(i);
+            if (thisShop != null && thisShop.items != null) {
                 int offset = shopItemOffsets[i];
-                Iterator<Integer> iterItems = thisShopItems.iterator();
+                Iterator<Integer> iterItems = thisShop.items.iterator();
                 while (iterItems.hasNext()) {
                     FileFunctions.write2ByteInt(rom, offset, iterItems.next());
                     offset += 2;
@@ -2820,13 +2823,6 @@ public class Gen3RomHandler extends AbstractGBRomHandler {
             int offset = itemDataOffset + (i * entrySize) + 16;
             FileFunctions.write2ByteInt(rom, offset, balancedPrice);
         }
-    }
-
-    @Override
-    public List<Integer> getMainGameShops() {
-        return Arrays.stream(romEntry.arrayEntries.get("MainGameShops"))
-                .boxed()
-                .collect(Collectors.toList());
     }
 
     @Override

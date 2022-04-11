@@ -203,7 +203,7 @@ public class Gen1RomHandler extends AbstractGBCRomHandler {
                         } else if (r[0].equals("CRCInHeader")) {
                             current.crcInHeader = parseRIInt(r[1]);
                         } else if (r[0].equals("CRC32")) {
-                            current.expectedCRC32 = parseRIILong("0x" + r[1]);
+                            current.expectedCRC32 = parseRILong("0x" + r[1]);
                         } else if (r[0].endsWith("Tweak")) {
                             current.tweakFiles.put(r[0], r[1]);
                         } else if (r[0].equals("ExtraTypes")) {
@@ -307,7 +307,7 @@ public class Gen1RomHandler extends AbstractGBCRomHandler {
         }
     }
 
-    private static long parseRIILong(String off) {
+    private static long parseRILong(String off) {
         int radix = 10;
         off = off.trim().toLowerCase();
         if (off.startsWith("0x") || off.startsWith("&h")) {
@@ -775,14 +775,9 @@ public class Gen1RomHandler extends AbstractGBCRomHandler {
     }
 
     @Override
-    public String[] getShopNames() {
-        return null;
-    }
-    @Override
     public List<Integer> getEvolutionItems() {
         return null;
     }
-    
 
     @Override
     public List<EncounterSet> getEncounters(boolean useTimeOfDay) {
@@ -1027,6 +1022,11 @@ public class Gen1RomHandler extends AbstractGBCRomHandler {
     @Override
     public Pokemon getAltFormeOfPokemon(Pokemon pk, int forme) {
         return pk;
+    }
+
+    @Override
+    public List<Pokemon> getIrregularFormes() {
+        return new ArrayList<>();
     }
 
     @Override
@@ -1633,23 +1633,18 @@ public class Gen1RomHandler extends AbstractGBCRomHandler {
     }
 
     @Override
-    public Map<Integer, List<Integer>> getShopItems() {
+    public Map<Integer, Shop> getShopItems() {
         return null; // Not implemented
     }
 
     @Override
-    public void setShopItems(Map<Integer, List<Integer>> shopItems) {
+    public void setShopItems(Map<Integer, Shop> shopItems) {
         // Not implemented
     }
 
     @Override
     public void setShopPrices() {
         // Not implemented
-    }
-
-    @Override
-    public List<Integer> getMainGameShops() {
-        return new ArrayList<>();
     }
 
     private List<String> getTrainerClassesForText() {

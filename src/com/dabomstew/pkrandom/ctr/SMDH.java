@@ -71,7 +71,7 @@ public class SMDH {
     }
 
     private boolean isValid() {
-        int magic = FileFunctions.readFullIntLittleEndian(data, 0x0);
+        int magic = FileFunctions.readFullInt(data, 0x0);
         return magic == smdh_magic;
     }
 

@@ -27,9 +27,7 @@ package com.dabomstew.pkrandom.romhandlers;
 
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -46,6 +44,8 @@ import com.dabomstew.pkrandom.exceptions.RandomizerIOException;
 import com.dabomstew.pkrandom.newnds.NARCArchive;
 import compressors.DSDecmp;
 
+import com.dabomstew.pkrandom.pokemon.ScriptData.JumpCommand;
+
 public class Gen5RomHandler extends AbstractDSRomHandler {
 
     public static class Factory extends RomHandler.Factory {
@@ -56,7 +56,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
         }
 
         public boolean isLoadable(String filename) {
-            return detectNDSRomInner(getROMCodeFromFile(filename));
+            return detectNDSRomInner(getROMCodeFromFile(filename), getVersionFromFile(filename));
         }
     }
 
@@ -99,10 +99,17 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
         private int offset;
     }
 
+    private static class FileWithCRC32Entry {
+        public String path;
+        public long expectedCRC32;
+    }
+
     private static class RomEntry {
         private String name;
         private String romCode;
+        private byte version;
         private int romType;
+        private long arm9ExpectedCRC32;
         private boolean staticPokemonSupport = false, copyStaticPokemon = false, copyRoamingPokemon = false,
                 copyTradeScripts = false, isBlack = false;
         private Map<String, String> strings = new HashMap<>();
@@ -110,6 +117,8 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
         private Map<String, String> tweakFiles = new HashMap<>();
         private Map<String, int[]> arrayEntries = new HashMap<>();
         private Map<String, OffsetWithinEntry[]> offsetArrayEntries = new HashMap<>();
+        private Map<String, FileWithCRC32Entry> files = new HashMap<>();
+        private Map<Integer, Long> overlayExpectedCRC32s = new HashMap<>();
         private List<StaticPokemon> staticPokemon = new ArrayList<>();
         private List<StaticPokemon> staticPokemonFakeBall = new ArrayList<>();
         private List<RoamingPokemon> roamingPokemon = new ArrayList<>();
@@ -128,6 +137,13 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
                 strings.put(key, "");
             }
             return strings.get(key);
+        }
+
+        private String getFile(String key) {
+            if (!files.containsKey(key)) {
+                files.put(key, new FileWithCRC32Entry());
+            }
+            return files.get(key).path;
         }
     }
 
@@ -165,6 +181,8 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
                         r[1] = r[1].trim();
                         if (r[0].equals("Game")) {
                             current.romCode = r[1];
+                        } else if (r[0].equals("Version")) {
+                            current.version = Byte.parseByte(r[1]);
                         } else if (r[0].equals("Type")) {
                             if (r[1].equalsIgnoreCase("BW2")) {
                                 current.romType = Gen5Constants.Type_BW2;
@@ -179,6 +197,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
                                     current.numbers.putAll(otherEntry.numbers);
                                     current.strings.putAll(otherEntry.strings);
                                     current.offsetArrayEntries.putAll(otherEntry.offsetArrayEntries);
+                                    current.files.putAll(otherEntry.files);
                                     if (current.copyStaticPokemon) {
                                         current.staticPokemon.addAll(otherEntry.staticPokemon);
                                         current.staticPokemonFakeBall.addAll(otherEntry.staticPokemonFakeBall);
@@ -194,6 +213,20 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
                                     }
                                 }
                             }
+                        } else if (r[0].startsWith("File<")) {
+                            String key = r[0].split("<")[1].split(">")[0];
+                            String[] values = r[1].substring(1, r[1].length() - 1).split(",");
+                            FileWithCRC32Entry entry = new FileWithCRC32Entry();
+                            entry.path = values[0].trim();
+                            entry.expectedCRC32 = parseRILong("0x" + values[1].trim());
+                            current.files.put(key, entry);
+                        } else if (r[0].equals("Arm9CRC32")) {
+                            current.arm9ExpectedCRC32 = parseRILong("0x" + r[1]);
+                        } else if (r[0].startsWith("OverlayCRC32<")) {
+                            String keyString = r[0].split("<")[1].split(">")[0];
+                            int key = parseRIInt(keyString);
+                            long value = parseRILong("0x" + r[1]);
+                            current.overlayExpectedCRC32s.put(key, value);
                         } else if (r[0].equals("StaticPokemon{}")) {
                             current.staticPokemon.add(parseStaticPokemon(r[1]));
                         } else if (r[0].equals("StaticPokemonFakeBall{}")) {
@@ -291,6 +324,21 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
         }
     }
 
+    private static long parseRILong(String off) {
+        int radix = 10;
+        off = off.trim().toLowerCase();
+        if (off.startsWith("0x") || off.startsWith("&h")) {
+            radix = 16;
+            off = off.substring(2);
+        }
+        try {
+            return Long.parseLong(off, radix);
+        } catch (NumberFormatException ex) {
+            System.err.println("invalid base " + radix + "number " + off);
+            return 0;
+        }
+    }
+
     private static StaticPokemon parseStaticPokemon(String staticPokemonString) {
         StaticPokemon sp = new StaticPokemon();
         String pattern = "[A-z]+=\\[([0-9]+:0x[0-9a-fA-F]+,?\\s?)+]";
@@ -376,25 +424,28 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
     private List<Integer> originalDoubleTrainers = new ArrayList<>();
     private boolean effectivenessUpdated;
     private int pickupItemsTableOffset;
+    private long actualArm9CRC32;
+    private Map<Integer, Long> actualOverlayCRC32s;
+    private Map<String, Long> actualFileCRC32s;
     
-    private NARCArchive pokeNarc, moveNarc, stringsNarc, storyTextNarc, scriptNarc, shopNarc;
+    private NARCArchive pokeNarc, moveNarc, stringsNarc, storyTextNarc, scriptNarc, shopNarc, mapNarc;
 
     @Override
-    protected boolean detectNDSRom(String ndsCode) {
-        return detectNDSRomInner(ndsCode);
+    protected boolean detectNDSRom(String ndsCode, byte version) {
+        return detectNDSRomInner(ndsCode, version);
     }
 
-    private static boolean detectNDSRomInner(String ndsCode) {
-        return entryFor(ndsCode) != null;
+    private static boolean detectNDSRomInner(String ndsCode, byte version) {
+        return entryFor(ndsCode, version) != null;
     }
 
-    private static RomEntry entryFor(String ndsCode) {
+    private static RomEntry entryFor(String ndsCode, byte version) {
         if (ndsCode == null) {
             return null;
         }
 
         for (RomEntry re : roms) {
-            if (ndsCode.equals(re.romCode)) {
+            if (ndsCode.equals(re.romCode) && re.version == version) {
                 return re;
             }
         }
@@ -402,31 +453,36 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
     }
 
     @Override
-    protected void loadedROM(String romCode) {
-        this.romEntry = entryFor(romCode);
+    protected void loadedROM(String romCode, byte version) {
+        this.romEntry = entryFor(romCode, version);
         try {
             arm9 = readARM9();
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
         try {
-            stringsNarc = readNARC(romEntry.getString("TextStrings"));
-            storyTextNarc = readNARC(romEntry.getString("TextStory"));
+            stringsNarc = readNARC(romEntry.getFile("TextStrings"));
+            storyTextNarc = readNARC(romEntry.getFile("TextStory"));
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
 
         try {
-            scriptNarc = readNARC(romEntry.getString("Scripts"));
+            scriptNarc = readNARC(romEntry.getFile("Scripts"));
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
         if (romEntry.romType == Gen5Constants.Type_BW2) {
             try {
-                shopNarc = readNARC(romEntry.getString("ShopItems"));
+                shopNarc = readNARC(romEntry.getFile("ShopItems"));
             } catch (IOException e) {
                 throw new RandomizerIOException(e);
             }
+        }
+        try {
+            mapNarc = readNARC(romEntry.getFile("MapFiles"));
+        } catch (IOException e) {
+            throw new RandomizerIOException(e);
         }
         loadPokemonStats();
         pokemonListInclFormes = Arrays.asList(pokes);
@@ -448,11 +504,17 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
         nonBadItems = Gen5Constants.nonBadItems.copy();
         regularShopItems = Gen5Constants.regularShopItems;
         opShopItems = Gen5Constants.opShopItems;
+
+        try {
+            computeCRC32sForRom();
+        } catch (IOException e) {
+            throw new RandomizerIOException(e);
+        }
     }
 
     private void loadPokemonStats() {
         try {
-            pokeNarc = this.readNARC(romEntry.getString("PokemonStats"));
+            pokeNarc = this.readNARC(romEntry.getFile("PokemonStats"));
             String[] pokeNames = readPokemonNames();
             int formeCount = Gen5Constants.getFormeCount(romEntry.romType);
             pokes = new Pokemon[Gen5Constants.pokemonCount + formeCount + 1];
@@ -486,7 +548,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
 
     private void loadMoves() {
         try {
-            moveNarc = this.readNARC(romEntry.getString("MoveData"));
+            moveNarc = this.readNARC(romEntry.getFile("MoveData"));
             moves = new Move[Gen5Constants.moveCount + 1];
             List<String> moveNames = getStrings(false, romEntry.getInt("MoveNamesTextOffset"));
             for (int i = 1; i <= Gen5Constants.moveCount; i++) {
@@ -601,14 +663,20 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
             throw new RandomizerIOException(e);
         }
         try {
-            writeNARC(romEntry.getString("TextStrings"), stringsNarc);
-            writeNARC(romEntry.getString("TextStory"), storyTextNarc);
+            writeNARC(romEntry.getFile("TextStrings"), stringsNarc);
+            writeNARC(romEntry.getFile("TextStory"), storyTextNarc);
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
 
         try {
-            writeNARC(romEntry.getString("Scripts"), scriptNarc);
+            writeNARC(romEntry.getFile("Scripts"), scriptNarc);
+        } catch (IOException e) {
+            throw new RandomizerIOException(e);
+        }
+
+        try {
+            writeNARC(romEntry.getFile("MapFiles"), mapNarc);
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
@@ -632,7 +700,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
         }
 
         try {
-            this.writeNARC(romEntry.getString("MoveData"), moveNarc);
+            this.writeNARC(romEntry.getFile("MoveData"), moveNarc);
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
@@ -656,7 +724,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
         setStrings(false, romEntry.getInt("PokemonNamesTextOffset"), nameList);
 
         try {
-            this.writeNARC(romEntry.getString("PokemonStats"), pokeNarc);
+            this.writeNARC(romEntry.getFile("PokemonStats"), pokeNarc);
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
@@ -721,6 +789,11 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
     public Pokemon getAltFormeOfPokemon(Pokemon pk, int forme) {
         int pokeNum = Gen5Constants.getAbsolutePokeNumByBaseForme(pk.number,forme);
         return pokeNum != 0 ? pokes[pokeNum] : pk;
+    }
+
+    @Override
+    public List<Pokemon> getIrregularFormes() {
+        return Gen5Constants.irregularFormes.stream().map(i -> pokes[i]).collect(Collectors.toList());
     }
 
     @Override
@@ -793,12 +866,12 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
             }
 
             // Starter sprites
-            NARCArchive starterNARC = this.readNARC(romEntry.getString("StarterGraphics"));
-            NARCArchive pokespritesNARC = this.readNARC(romEntry.getString("PokemonGraphics"));
+            NARCArchive starterNARC = this.readNARC(romEntry.getFile("StarterGraphics"));
+            NARCArchive pokespritesNARC = this.readNARC(romEntry.getFile("PokemonGraphics"));
             replaceStarterFiles(starterNARC, pokespritesNARC, 0, newStarters.get(0).number);
             replaceStarterFiles(starterNARC, pokespritesNARC, 1, newStarters.get(1).number);
             replaceStarterFiles(starterNARC, pokespritesNARC, 2, newStarters.get(2).number);
-            writeNARC(romEntry.getString("StarterGraphics"), starterNARC);
+            writeNARC(romEntry.getFile("StarterGraphics"), starterNARC);
 
             // Starter cries
             byte[] starterCryOverlay = this.readOverlay(romEntry.getInt("StarterCryOvlNumber"));
@@ -902,7 +975,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
             loadWildMapNames();
         }
         try {
-            NARCArchive encounterNARC = readNARC(romEntry.getString("WildPokemon"));
+            NARCArchive encounterNARC = readNARC(romEntry.getFile("WildPokemon"));
             List<EncounterSet> encounters = new ArrayList<>();
             int idx = -1;
             for (byte[] entry : encounterNARC.files) {
@@ -975,7 +1048,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
     @Override
     public void setEncounters(boolean useTimeOfDay, List<EncounterSet> encountersList) {
         try {
-            NARCArchive encounterNARC = readNARC(romEntry.getString("WildPokemon"));
+            NARCArchive encounterNARC = readNARC(romEntry.getFile("WildPokemon"));
             Iterator<EncounterSet> encounters = encountersList.iterator();
             for (byte[] entry : encounterNARC.files) {
                 writeEncounterEntry(encounters, entry, 0);
@@ -994,7 +1067,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
             }
 
             // Save
-            writeNARC(romEntry.getString("WildPokemon"), encounterNARC);
+            writeNARC(romEntry.getFile("WildPokemon"), encounterNARC);
 
             this.updatePokedexAreaData(encounterNARC);
 
@@ -1003,8 +1076,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
                 // disabled: habitat list changes cause a crash if too many
                 // entries for now.
 
-                // NARCArchive habitatNARC = readNARC(romEntry
-                // .getString("HabitatList"));
+                // NARCArchive habitatNARC = readNARC(romEntry.getFile("HabitatList"));
                 // for (int i = 0; i < habitatNARC.files.size(); i++) {
                 // byte[] oldEntry = habitatNARC.files.get(i);
                 // int[] encounterFiles = habitatListEntries[i];
@@ -1039,7 +1111,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
                 // habitatNARC.files.set(i, habitatEntry);
                 // }
                 // // Save habitat
-                // this.writeNARC(romEntry.getString("HabitatList"),
+                // this.writeNARC(romEntry.getFile("HabitatList"),
                 // habitatNARC);
             }
         } catch (IOException e) {
@@ -1049,7 +1121,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
     }
 
     private void updatePokedexAreaData(NARCArchive encounterNARC) throws IOException {
-        NARCArchive areaNARC = this.readNARC(romEntry.getString("PokedexAreaData"));
+        NARCArchive areaNARC = this.readNARC(romEntry.getFile("PokedexAreaData"));
         int areaDataEntryLength = Gen5Constants.getAreaDataEntryLength(romEntry.romType);
         int encounterAreaCount = Gen5Constants.getEncounterAreaCount(romEntry.romType);
         List<byte[]> newFiles = new ArrayList<>();
@@ -1103,7 +1175,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
             areaNARC.files.set(i, file);
         }
         // Save
-        this.writeNARC(romEntry.getString("PokedexAreaData"), areaNARC);
+        this.writeNARC(romEntry.getFile("PokedexAreaData"), areaNARC);
     }
 
     private void updateAreaDataFromEncounterEntry(byte[] entry, int startOffset, List<byte[]> areaData, int season, int fileNumber) {
@@ -1217,7 +1289,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
     private void loadWildMapNames() {
         try {
             wildMapNames = new HashMap<>();
-            byte[] mapHeaderData = this.readNARC(romEntry.getString("MapTableFile")).files.get(0);
+            byte[] mapHeaderData = this.readNARC(romEntry.getFile("MapTableFile")).files.get(0);
             int numMapHeaders = mapHeaderData.length / 48;
             List<String> allMapNames = getStrings(false, romEntry.getInt("MapNamesTextOffset"));
             for (int map = 0; map < numMapHeaders; map++) {
@@ -1247,8 +1319,8 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
     public List<Trainer> getTrainers() {
         List<Trainer> allTrainers = new ArrayList<>();
         try {
-            NARCArchive trainers = this.readNARC(romEntry.getString("TrainerData"));
-            NARCArchive trpokes = this.readNARC(romEntry.getString("TrainerPokemon"));
+            NARCArchive trainers = this.readNARC(romEntry.getFile("TrainerData"));
+            NARCArchive trpokes = this.readNARC(romEntry.getFile("TrainerPokemon"));
             int trainernum = trainers.files.size();
             List<String> tclasses = this.getTrainerClassNames();
             List<String> tnames = this.getTrainerNames();
@@ -1331,8 +1403,8 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
                 Gen5Constants.tagTrainersBW(allTrainers);
                 Gen5Constants.setMultiBattleStatusBW(allTrainers);
             } else {
-                if (!romEntry.getString("DriftveilPokemon").isEmpty()) {
-                    NARCArchive driftveil = this.readNARC(romEntry.getString("DriftveilPokemon"));
+                if (!romEntry.getFile("DriftveilPokemon").isEmpty()) {
+                    NARCArchive driftveil = this.readNARC(romEntry.getFile("DriftveilPokemon"));
                     int currentFile = 1;
                     for (int trno = 0; trno < 17; trno++) {
                         Trainer tr = new Trainer();
@@ -1393,7 +1465,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
     public void setTrainers(List<Trainer> trainerData, boolean doubleBattleMode) {
         Iterator<Trainer> allTrainers = trainerData.iterator();
         try {
-            NARCArchive trainers = this.readNARC(romEntry.getString("TrainerData"));
+            NARCArchive trainers = this.readNARC(romEntry.getFile("TrainerData"));
             NARCArchive trpokes = new NARCArchive();
             // Get current movesets in case we need to reset them for certain
             // trainer mons.
@@ -1460,12 +1532,12 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
                 }
                 trpokes.files.add(trpoke);
             }
-            this.writeNARC(romEntry.getString("TrainerData"), trainers);
-            this.writeNARC(romEntry.getString("TrainerPokemon"), trpokes);
+            this.writeNARC(romEntry.getFile("TrainerData"), trainers);
+            this.writeNARC(romEntry.getFile("TrainerPokemon"), trpokes);
 
             if (doubleBattleMode) {
 
-                NARCArchive trainerTextBoxes = readNARC(romEntry.getString("TrainerTextBoxes"));
+                NARCArchive trainerTextBoxes = readNARC(romEntry.getFile("TrainerTextBoxes"));
                 byte[] data = trainerTextBoxes.files.get(0);
                 for (int i = 0; i < data.length; i += 4) {
                     int trainerIndex = readWord(data, i);
@@ -1482,7 +1554,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
                 }
 
                 trainerTextBoxes.files.set(0, data);
-                writeNARC(romEntry.getString("TrainerTextBoxes"), trainerTextBoxes);
+                writeNARC(romEntry.getFile("TrainerTextBoxes"), trainerTextBoxes);
 
 
                 try {
@@ -1547,8 +1619,8 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
             }
 
             // Deal with PWT
-            if (romEntry.romType == Gen5Constants.Type_BW2 && !romEntry.getString("DriftveilPokemon").isEmpty()) {
-                NARCArchive driftveil = this.readNARC(romEntry.getString("DriftveilPokemon"));
+            if (romEntry.romType == Gen5Constants.Type_BW2 && !romEntry.getFile("DriftveilPokemon").isEmpty()) {
+                NARCArchive driftveil = this.readNARC(romEntry.getFile("DriftveilPokemon"));
                 int currentFile = 1;
                 for (int trno = 0; trno < 17; trno++) {
                     Trainer tr = allTrainers.next();
@@ -1578,7 +1650,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
                         currentFile++;
                     }
                 }
-                this.writeNARC(romEntry.getString("DriftveilPokemon"), driftveil);
+                this.writeNARC(romEntry.getFile("DriftveilPokemon"), driftveil);
             }
         } catch (IOException ex) {
             throw new RandomizerIOException(ex);
@@ -1589,7 +1661,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
     public Map<Integer, List<MoveLearnt>> getMovesLearnt() {
         Map<Integer, List<MoveLearnt>> movesets = new TreeMap<>();
         try {
-            NARCArchive movesLearnt = this.readNARC(romEntry.getString("PokemonMovesets"));
+            NARCArchive movesLearnt = this.readNARC(romEntry.getFile("PokemonMovesets"));
             int formeCount = Gen5Constants.getFormeCount(romEntry.romType);
             int formeOffset = Gen5Constants.getFormeOffset(romEntry.romType);
             for (int i = 1; i <= Gen5Constants.pokemonCount + formeCount; i++) {
@@ -1622,7 +1694,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
     @Override
     public void setMovesLearnt(Map<Integer, List<MoveLearnt>> movesets) {
         try {
-            NARCArchive movesLearnt = readNARC(romEntry.getString("PokemonMovesets"));
+            NARCArchive movesLearnt = readNARC(romEntry.getFile("PokemonMovesets"));
             int formeCount = Gen5Constants.getFormeCount(romEntry.romType);
             int formeOffset = Gen5Constants.getFormeOffset(romEntry.romType);
             for (int i = 1; i <= Gen5Constants.pokemonCount + formeCount; i++) {
@@ -1645,7 +1717,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
                 }
             }
             // Save
-            this.writeNARC(romEntry.getString("PokemonMovesets"), movesLearnt);
+            this.writeNARC(romEntry.getFile("PokemonMovesets"), movesLearnt);
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
@@ -1929,24 +2001,19 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
         }
 
         // Foongus/Amoongus fake ball encounters
-        try {
-            NARCArchive mapNARC = readNARC(romEntry.getString("MapFiles"));
-            for (int i = 0; i < romEntry.staticPokemonFakeBall.size(); i++) {
-                StaticPokemon statP = romEntry.staticPokemonFakeBall.get(i);
-                StaticEncounter se = new StaticEncounter();
-                Pokemon newPK = statP.getPokemon(this, scriptNARC);
-                se.pkmn = newPK;
-                se.level = statP.getLevel(mapNARC, 0);
-                for (int levelEntry = 1; levelEntry < statP.getLevelCount(); levelEntry++) {
-                    StaticEncounter linkedStatic = new StaticEncounter();
-                    linkedStatic.pkmn = newPK;
-                    linkedStatic.level = statP.getLevel(mapNARC, levelEntry);
-                    se.linkedEncounters.add(linkedStatic);
-                }
-                sp.add(se);
+        for (int i = 0; i < romEntry.staticPokemonFakeBall.size(); i++) {
+            StaticPokemon statP = romEntry.staticPokemonFakeBall.get(i);
+            StaticEncounter se = new StaticEncounter();
+            Pokemon newPK = statP.getPokemon(this, scriptNARC);
+            se.pkmn = newPK;
+            se.level = statP.getLevel(mapNarc, 0);
+            for (int levelEntry = 1; levelEntry < statP.getLevelCount(); levelEntry++) {
+                StaticEncounter linkedStatic = new StaticEncounter();
+                linkedStatic.pkmn = newPK;
+                linkedStatic.level = statP.getLevel(mapNarc, levelEntry);
+                se.linkedEncounters.add(linkedStatic);
             }
-        } catch (IOException e) {
-            throw new RandomizerIOException(e);
+            sp.add(se);
         }
 
         // BW2 hidden grotto encounters
@@ -1957,7 +2024,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
                     Gen5Constants.bw2HiddenHollowUnovaPokemon.stream().map(i -> pokes[i]).collect(Collectors.toList()));
 
             try {
-                NARCArchive hhNARC = this.readNARC(romEntry.getString("HiddenHollows"));
+                NARCArchive hhNARC = this.readNARC(romEntry.getFile("HiddenHollows"));
                 for (byte[] hhEntry : hhNARC.files) {
                     for (int version = 0; version < 2; version++) {
                         if (version != romEntry.getInt("HiddenHollowIndex")) continue;
@@ -2047,26 +2114,20 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
         }
 
         // Foongus/Amoongus fake ball encounters
-        try {
-            NARCArchive mapNARC = readNARC(romEntry.getString("MapFiles"));
-            for (StaticPokemon statP : romEntry.staticPokemonFakeBall) {
-                StaticEncounter se = statics.next();
-                statP.setPokemon(this, scriptNARC, se.pkmn);
-                statP.setLevel(mapNARC, se.level, 0);
-                for (int i = 0; i < se.linkedEncounters.size(); i++) {
-                    StaticEncounter linkedStatic = se.linkedEncounters.get(i);
-                    statP.setLevel(mapNARC, linkedStatic.level, i + 1);
-                }
+        for (StaticPokemon statP : romEntry.staticPokemonFakeBall) {
+            StaticEncounter se = statics.next();
+            statP.setPokemon(this, scriptNARC, se.pkmn);
+            statP.setLevel(mapNarc, se.level, 0);
+            for (int i = 0; i < se.linkedEncounters.size(); i++) {
+                StaticEncounter linkedStatic = se.linkedEncounters.get(i);
+                statP.setLevel(mapNarc, linkedStatic.level, i + 1);
             }
-            this.writeNARC(romEntry.getString("MapFiles"), mapNARC);
-        } catch (IOException e) {
-            throw new RandomizerIOException(e);
         }
 
         // BW2 hidden grotto encounters
         if (romEntry.romType == Gen5Constants.Type_BW2) {
             try {
-                NARCArchive hhNARC = this.readNARC(romEntry.getString("HiddenHollows"));
+                NARCArchive hhNARC = this.readNARC(romEntry.getFile("HiddenHollows"));
                 for (byte[] hhEntry : hhNARC.files) {
                     for (int version = 0; version < 2; version++) {
                         if (version != romEntry.getInt("HiddenHollowIndex")) continue;
@@ -2092,7 +2153,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
                         }
                     }
                 }
-                this.writeNARC(romEntry.getString("HiddenHollows"), hhNARC);
+                this.writeNARC(romEntry.getFile("HiddenHollows"), hhNARC);
             } catch (IOException e) {
                 throw new RandomizerIOException(e);
             }
@@ -2136,12 +2197,12 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
             int firstConstantOffset = find(boxLegendaryOverlay, Gen5Constants.blackBoxLegendaryCheckPrefix1);
             if (firstConstantOffset > 0) {
                 firstConstantOffset += Gen5Constants.blackBoxLegendaryCheckPrefix1.length() / 2; // because it was a prefix
-                FileFunctions.writeFullIntLittleEndian(boxLegendaryOverlay, firstConstantOffset, boxLegendarySpecies);
+                FileFunctions.writeFullInt(boxLegendaryOverlay, firstConstantOffset, boxLegendarySpecies);
             }
             int secondConstantOffset = find(boxLegendaryOverlay, Gen5Constants.blackBoxLegendaryCheckPrefix2);
             if (secondConstantOffset > 0) {
                 secondConstantOffset += Gen5Constants.blackBoxLegendaryCheckPrefix2.length() / 2; // because it was a prefix
-                FileFunctions.writeFullIntLittleEndian(boxLegendaryOverlay, secondConstantOffset, boxLegendarySpecies);
+                FileFunctions.writeFullInt(boxLegendaryOverlay, secondConstantOffset, boxLegendarySpecies);
             }
         } else {
             // In White, Zekrom's species ID is always loaded by loading 161 into a register
@@ -2160,7 +2221,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
                 // In the space that used to hold the address of the "scrcmd_pokemon_fld.c"
                 // string, we're going to instead store the species ID of the box legendary
                 // so that we can do a pc-relative load to it.
-                FileFunctions.writeFullIntLittleEndian(boxLegendaryOverlay, firstFunctionOffset + 320, boxLegendarySpecies);
+                FileFunctions.writeFullInt(boxLegendaryOverlay, firstFunctionOffset + 320, boxLegendarySpecies);
 
                 // Zekrom's species ID is originally loaded by doing a mov into r1 and then a shift
                 // on that same register four instructions later. This nops out the first instruction
@@ -2188,7 +2249,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
                 boxLegendaryOverlay[secondFunctionOffset + 505] = 0x1C;
 
                 // Now replace the 0x00000000 constant with the species ID
-                FileFunctions.writeFullIntLittleEndian(boxLegendaryOverlay, secondFunctionOffset + 556, boxLegendarySpecies);
+                FileFunctions.writeFullInt(boxLegendaryOverlay, secondFunctionOffset + 556, boxLegendarySpecies);
 
                 // Lastly, replace the mov and lsl that originally puts Zekrom's species ID into r1
                 // with a pc-relative of the above constant and a nop.
@@ -2213,7 +2274,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
         overlay[offset + 10] = 0x00;
 
         // Now in the space that used to do "mov r0, #0x2" and return, write Thundurus's ID
-        FileFunctions.writeFullIntLittleEndian(overlay, offset + 20, Species.thundurus);
+        FileFunctions.writeFullInt(overlay, offset + 20, Species.thundurus);
 
         // Lastly, instead of computing Thundurus's ID as TornadusID + 1, pc-relative load it
         // from what we wrote earlier.
@@ -2803,7 +2864,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
 
         // Read NARC
         try {
-            NARCArchive evoNARC = readNARC(romEntry.getString("PokemonEvolutions"));
+            NARCArchive evoNARC = readNARC(romEntry.getFile("PokemonEvolutions"));
             for (int i = 1; i <= Gen5Constants.pokemonCount; i++) {
                 Pokemon pk = pokes[i];
                 byte[] evoEntry = evoNARC.files.get(i);
@@ -2838,7 +2899,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
 
     private void writeEvolutions() {
         try {
-            NARCArchive evoNARC = readNARC(romEntry.getString("PokemonEvolutions"));
+            NARCArchive evoNARC = readNARC(romEntry.getFile("PokemonEvolutions"));
             for (int i = 1; i <= Gen5Constants.pokemonCount; i++) {
                 byte[] evoEntry = evoNARC.files.get(i);
                 Pokemon pk = pokes[i];
@@ -2862,7 +2923,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
                     evosWritten++;
                 }
             }
-            writeNARC(romEntry.getString("PokemonEvolutions"), evoNARC);
+            writeNARC(romEntry.getFile("PokemonEvolutions"), evoNARC);
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
@@ -2871,10 +2932,11 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
     private void writeShedinjaEvolution() throws IOException {
         Pokemon nincada = pokes[Species.nincada];
 
-        // When the "Limit Pokemon" setting is enabled, we clear out the evolutions of
-        // everything *not* in the pool, which could include Nincada. In that case,
-        // there's no point in even worrying about Shedinja, so just return.
-        if (nincada.evolutionsFrom.size() == 0) {
+        // When the "Limit Pokemon" setting is enabled and Gen 3 is disabled, or when
+        // "Random Every Level" evolutions are selected, we end up clearing out Nincada's
+        // vanilla evolutions. In that case, there's no point in even worrying about
+        // Shedinja, so just return.
+        if (nincada.evolutionsFrom.size() < 2) {
             return;
         }
         Pokemon extraEvolution = nincada.evolutionsFrom.get(1).to;
@@ -2916,7 +2978,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
             // Finally, we replace what used to store the address of "shinka_demo.c"
             // with the species ID of Nincada's new extra evolution.
             int newSpeciesIDOffset = functionOffset + patchOffsets[2];
-            FileFunctions.writeFullIntLittleEndian(evolutionOverlay, newSpeciesIDOffset, extraEvolution.number);
+            FileFunctions.writeFullInt(evolutionOverlay, newSpeciesIDOffset, extraEvolution.number);
 
             writeOverlay(romEntry.getInt("EvolutionOvlNumber"), evolutionOverlay);
         }
@@ -3243,7 +3305,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
 
                     // Now write the species ID in the 4 bytes of space now available at the bottom,
                     // and then write a pc-relative load to this species ID at the offset.
-                    FileFunctions.writeFullIntLittleEndian(introCryOverlay, offset + 38, introPokemon);
+                    FileFunctions.writeFullInt(introCryOverlay, offset + 38, introPokemon);
                     introCryOverlay[offset] = 0x9;
                     introCryOverlay[offset + 1] = 0x48;
                     writeOverlay(romEntry.getInt("IntroCryOvlNumber"), introCryOverlay);
@@ -3292,11 +3354,6 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
     @Override
     public String[] getItemNames() {
         return itemNames.toArray(new String[0]);
-    }
-
-    @Override
-    public String[] getShopNames() {
-        return shopNames.toArray(new String[0]);
     }
     
     @Override
@@ -3566,7 +3623,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
     public List<IngameTrade> getIngameTrades() {
         List<IngameTrade> trades = new ArrayList<>();
         try {
-            NARCArchive tradeNARC = this.readNARC(romEntry.getString("InGameTrades"));
+            NARCArchive tradeNARC = this.readNARC(romEntry.getFile("InGameTrades"));
             List<String> tradeStrings = getStrings(false, romEntry.getInt("IngameTradesTextOffset"));
             int[] unused = romEntry.arrayEntries.get("TradesUnused");
             int unusedOffset = 0;
@@ -3605,7 +3662,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
         int tradeOffset = 0;
         List<IngameTrade> oldTrades = this.getIngameTrades();
         try {
-            NARCArchive tradeNARC = this.readNARC(romEntry.getString("InGameTrades"));
+            NARCArchive tradeNARC = this.readNARC(romEntry.getFile("InGameTrades"));
             List<String> tradeStrings = getStrings(false, romEntry.getInt("IngameTradesTextOffset"));
             int tradeCount = tradeNARC.files.size();
             int[] unused = romEntry.arrayEntries.get("TradesUnused");
@@ -3632,7 +3689,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
                     romEntry.tradeScripts.get(i - unusedOffset).setPokemon(this,scriptNarc,trade.requestedPokemon,trade.givenPokemon);
                 }
             }
-            this.writeNARC(romEntry.getString("InGameTrades"), tradeNARC);
+            this.writeNARC(romEntry.getFile("InGameTrades"), tradeNARC);
             this.setStrings(false, romEntry.getInt("IngameTradesTextOffset"), tradeStrings);
             // update what the people say when they talk to you
             unusedOffset = 0;
@@ -3707,7 +3764,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
         }
 
         try {
-            NARCArchive babyNARC = readNARC(romEntry.getString("BabyPokemon"));
+            NARCArchive babyNARC = readNARC(romEntry.getFile("BabyPokemon"));
             // baby pokemon
             for (int i = 1; i <= Gen5Constants.pokemonCount; i++) {
                 Pokemon baby = pokes[i];
@@ -3718,7 +3775,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
                 writeWord(babyNARC.files.get(i), 0, baby.number);
             }
             // finish up
-            writeNARC(romEntry.getString("BabyPokemon"), babyNARC);
+            writeNARC(romEntry.getFile("BabyPokemon"), babyNARC);
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
@@ -3748,14 +3805,14 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
     }
 
     @Override
-    public Map<Integer, List<Integer>> getShopItems() {
+    public Map<Integer, Shop> getShopItems() {
         int[] tmShops = romEntry.arrayEntries.get("TMShops");
         int[] regularShops = romEntry.arrayEntries.get("RegularShops");
         int[] shopItemOffsets = romEntry.arrayEntries.get("ShopItemOffsets");
         int[] shopItemSizes = romEntry.arrayEntries.get("ShopItemSizes");
         int shopCount = romEntry.getInt("ShopCount");
-        List<Integer> shopItems = new ArrayList<>();    
-        Map<Integer,List<Integer>> shopItemsMap = new TreeMap<>();
+        List<Integer> shopItems = new ArrayList<>();
+        Map<Integer, Shop> shopItemsMap = new TreeMap<>();
 
         try {
             byte[] shopItemOverlay = readOverlay(romEntry.getInt("ShopItemOvlNumber"));
@@ -3786,7 +3843,11 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
                             items.add(readWord(shop, j));
                         }
                     }
-                    shopItemsMap.put(i, items);
+                    Shop shop = new Shop();
+                    shop.items = items;
+                    shop.name = shopNames.get(i);
+                    shop.isMainGame = Gen5Constants.getMainGameShops(romEntry.romType).contains(i);
+                    shopItemsMap.put(i, shop);
                 }
             });
             return shopItemsMap;
@@ -3796,7 +3857,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
     }
 
     @Override
-    public void setShopItems(Map<Integer, List<Integer>> shopItems) {
+    public void setShopItems(Map<Integer, Shop> shopItems) {
         int[] shopItemOffsets = romEntry.arrayEntries.get("ShopItemOffsets");
         int[] shopItemSizes = romEntry.arrayEntries.get("ShopItemSizes");
         int[] tmShops = romEntry.arrayEntries.get("TMShops");
@@ -3816,7 +3877,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
                     if (i == regularShop) badShop = true;
                 }
                 if (!badShop) {
-                    List<Integer> shopContents = shopItems.get(i);
+                    List<Integer> shopContents = shopItems.get(i).items;
                     Iterator<Integer> iterItems = shopContents.iterator();
                     if (romEntry.romType == Gen5Constants.Type_BW) {
                         for (int j = 0; j < shopItemSizes[i]; j++) {
@@ -3833,7 +3894,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
                 }
             });
             if (romEntry.romType == Gen5Constants.Type_BW2) {
-                writeNARC(romEntry.getString("ShopItems"), shopNarc);
+                writeNARC(romEntry.getFile("ShopItems"), shopNarc);
             } else {
                 writeOverlay(romEntry.getInt("ShopItemOvlNumber"), shopItemOverlay);
             }
@@ -3845,19 +3906,14 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
     @Override
     public void setShopPrices() {
         try {
-            NARCArchive itemPriceNarc = this.readNARC(romEntry.getString("ItemData"));
+            NARCArchive itemPriceNarc = this.readNARC(romEntry.getFile("ItemData"));
             for (int i = 1; i < itemPriceNarc.files.size(); i++) {
                 writeWord(itemPriceNarc.files.get(i),0,Gen5Constants.balancedItemPrices.get(i));
             }
-            writeNARC(romEntry.getString("ItemData"),itemPriceNarc);
+            writeNARC(romEntry.getFile("ItemData"),itemPriceNarc);
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
-    }
-
-    @Override
-    public List<Integer> getMainGameShops() {
-        return Gen5Constants.getMainGameShops(romEntry.romType);
     }
 
     @Override
@@ -3922,11 +3978,52 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
         }
     }
 
+    private void computeCRC32sForRom() throws IOException {
+        this.actualOverlayCRC32s = new HashMap<>();
+        this.actualFileCRC32s = new HashMap<>();
+        this.actualArm9CRC32 = FileFunctions.getCRC32(arm9);
+        for (int overlayNumber : romEntry.overlayExpectedCRC32s.keySet()) {
+            byte[] overlay = readOverlay(overlayNumber);
+            long crc32 = FileFunctions.getCRC32(overlay);
+            this.actualOverlayCRC32s.put(overlayNumber, crc32);
+        }
+        for (String fileKey : romEntry.files.keySet()) {
+            byte[] file = readFile(romEntry.getFile(fileKey));
+            long crc32 = FileFunctions.getCRC32(file);
+            this.actualFileCRC32s.put(fileKey, crc32);
+        }
+    }
+
+    @Override
+    public boolean isRomValid() {
+        if (romEntry.arm9ExpectedCRC32 != actualArm9CRC32) {
+            return false;
+        }
+
+        for (int overlayNumber : romEntry.overlayExpectedCRC32s.keySet()) {
+            long expectedCRC32 = romEntry.overlayExpectedCRC32s.get(overlayNumber);
+            long actualCRC32 = actualOverlayCRC32s.get(overlayNumber);
+            if (expectedCRC32 != actualCRC32) {
+                return false;
+            }
+        }
+
+        for (String fileKey : romEntry.files.keySet()) {
+            long expectedCRC32 = romEntry.files.get(fileKey).expectedCRC32;
+            long actualCRC32 = actualFileCRC32s.get(fileKey);
+            if (expectedCRC32 != actualCRC32) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     @Override
     public BufferedImage getMascotImage() {
         try {
             Pokemon pk = randomPokemonInclFormes();
-            NARCArchive pokespritesNARC = this.readNARC(romEntry.getString("PokemonGraphics"));
+            NARCArchive pokespritesNARC = this.readNARC(romEntry.getFile("PokemonGraphics"));
 
             // First prepare the palette, it's the easy bit
             int palIndex = pk.getSpriteIndex() * 20 + 18;
@@ -4068,8 +4165,566 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
     // ==========================
 
     @Override
+    public boolean hasEntranceRandomization() {
+        if (romEntry.romType == Gen5Constants.Type_BW2) {
+            return true;
+        }
+        return false;
+    }
+
+    // Shuffle Gyms
+
+    @Override
     public int getGymCount() {
         return 8;
+    }
+
+    @Override
+    public List<Location> getGymLocations() {
+        Map<Integer, Integer> fileMap = getOverworldsToMaps();
+        if (this.romEntry.romType == Gen5Constants.Type_BW) {
+            return Gen5Constants.gymLocationDataBW(fileMap);
+        }
+        return Gen5Constants.gymLocationDataBW2(fileMap);
+    }
+
+    @Override
+    public List<Location> getGymCityLocations() {
+        Map<Integer, Integer> fileMap = getOverworldsToMaps();
+        if (this.romEntry.romType == Gen5Constants.Type_BW) {
+            return Gen5Constants.gymCityLocationDataBW(fileMap);
+        }
+        return Gen5Constants.gymCityLocationDataBW2(fileMap);
+    }
+
+    @Override
+    public Map<String, List<TrainerPokemon>> getGymLeaderTeams(List<Integer> gymOrder) {
+        LeaderTeams leaderTeams = FileFunctions.getLeaderTeams(getLeaderNames(), getGymCount(), getGameAbbr());
+        return leaderTeams.getTeams(gymOrder, pokeNameLookup(), moveNameLookup(), itemNameLookup());
+    }
+
+    // Script functions
+
+    @Override
+    public List<ScriptData> getGymScripts() {
+        List<ScriptData> scripts = new ArrayList<>();
+        Map<Integer, Integer> instructionMap = getInstructionMap();
+        if (!romEntry.arrayEntries.containsKey("GymScriptOffsets")) {
+            throw new RandomizationException("No GymScriptOffsets in the gen5_offsets ini.");
+        }
+        int[] offsets = romEntry.arrayEntries.get("GymScriptOffsets");
+        for (int offset : offsets) {
+            byte[] script = scriptNarc.files.get(offset);
+            ScriptData scriptData = new ScriptData(offset, script);
+            parseScript(scriptData, instructionMap);
+            storeFlagCommands(scriptData);
+            scriptData.updateScriptArray();
+            scripts.add(scriptData);
+        }
+        return scripts;
+    }
+
+    private Map<Integer, Integer> getInstructionMap() {
+        // Maps each 2-byte command code to the number of argument bytes that command uses
+        // Currently only maps commands relevant for swapping commands between gym leader scripts
+        return Gen5Constants.scriptValues();
+    }
+
+    private void parseScript(ScriptData scriptData, Map<Integer, Integer> instructionMap) {
+        int offset = 0;
+        int word = scriptData.readWord(0);
+        // find the end of the header
+        while (word != Gen5Constants.scriptListTerminator) {
+            offset += 4;
+            word = scriptData.readWord(offset);
+        }
+        scriptData.headerEndOff = offset;
+        if (scriptData.scriptNum == this.checkScript) {
+            System.out.println("headerEnd = " + String.format("0x%X", scriptData.headerEndOff));
+        }
+
+        // find the giveBadge offset
+        byte[] search = {(byte) 0xD6, 0x00};
+        List<Integer> offsets = RomFunctions.search(scriptData.script, scriptData.headerEndOff, search);
+        scriptData.enableOff = offsets.get(0);
+        offset = scriptData.enableOff + 4;
+        if (scriptData.scriptNum == this.checkScript) {
+            System.out.println("enableOff = " + String.format("0x%X", scriptData.enableOff));
+        }
+
+        // find the next endRoutine offset after giveBadge, marking flag and setVar commands along the way
+        // However, Opelucid (gym 7, script 242) contains its GiveBadge command in the main script call, not a routine
+        while (true) {
+            int command = scriptData.readWord(offset);
+            if (!instructionMap.containsKey(command)) {
+                throw new RandomizationException("Error: unrecognized command " + String.format("0x%04X", command) +
+                        " at " + String.format("0x%X", offset) + " in script " + scriptData.scriptNum);
+            }
+            else if (command == 0x0005 || command == 0x0002) { // endRoutine || endScript
+                scriptData.nextJumpOff = offset;
+                if (scriptData.scriptNum == this.checkScript) {
+                    System.out.println("nextJumpOff = " + String.format("0x%X", scriptData.nextJumpOff));
+                }
+                break;
+            }
+            else if (command == 0x0023 || command == 0x0024) { // setFlag || clearFlag
+                scriptData.flagOffs.add(offset);
+                // value stores the 2 command bytes in the 2 upper bytes and the 2 argument bytes in the 2 lower bytes.
+                int value = (scriptData.readWord(offset) << 16) | scriptData.readWord(offset + 2);
+                scriptData.flagMap.put(offset, value);
+                if (scriptData.scriptNum == this.checkScript) {
+                    System.out.println(String.format("0x%X", offset) + ": flag = " + String.format("0x%08X", value));
+                }
+            }
+            else if (command == 0x0028) { // setVar
+                int arguments = scriptData.readLong(offset + 2);
+                // from what I've picked up, 4000 variables are permanent, and 8000 variables are just used locally in scripts
+                if ((arguments & 0xF000) == 0x4000) {
+                    scriptData.setVarOffs.add(offset);
+                    scriptData.setVarMap.put(offset, arguments);
+                    if (scriptData.scriptNum == this.checkScript) {
+                        System.out.println(String.format("0x%X", offset) + ": setVar = " + String.format("0x%08X", arguments));
+                    }
+                }
+            }
+            else if (command == 0x019B) { // fieldEffect
+                int argument = scriptData.readWord(offset + 2);
+                scriptData.effectOffs.add(offset);
+                scriptData.effectMap.put(offset, argument);
+            }
+            offset += 2 + instructionMap.get(command);
+        }
+        scriptData.allOffs.addAll(scriptData.flagOffs);
+        scriptData.allOffs.addAll(scriptData.setVarOffs);
+
+        storeJumpCommands(scriptData);
+    }
+
+    private void storeJumpCommands(ScriptData scriptData) {
+        // Store all the jumps and their arguments
+        byte[] callRoutine = {0x04, 0x00}; // 1 inst word 1 addr long
+        byte[] unconditionalJump = {0x1E, 0x00}; // 1 inst word 1 addr long
+        byte[] conditionalJump = {0x1F, 0x00}; // 1 inst word 1 arg 1 addr long
+        byte[] applyMovement = {0x64, 0x00}; // 1 inst word 2 arg 1 addr long
+        byte[] script = scriptData.script;
+        int searchStart = scriptData.headerEndOff + 2;
+        List<Integer> noArgOffs = RomFunctions.search(script, searchStart, callRoutine);
+        noArgOffs.addAll(RomFunctions.search(script, searchStart, unconditionalJump));
+        List<Integer> condOffs = RomFunctions.search(script, searchStart, conditionalJump);
+        List<Integer> movementOffs = RomFunctions.search(script, searchStart, applyMovement);
+
+        List<Integer> allOffs = new ArrayList<>();
+        allOffs.addAll(noArgOffs);
+        allOffs.addAll(condOffs);
+        allOffs.addAll(movementOffs);
+        Collections.sort(allOffs);
+
+        int prevOffset = 0;
+        for (int offset : allOffs) {
+            if (offset < prevOffset + 6) {
+                // There are still bytes in script 1004 that coincidentally match a jump and pass the test.
+                // This is a dirty fix to that problem.
+                continue;
+            }
+            prevOffset = offset;
+            int argBytes = 0;
+            if (condOffs.contains(offset)) {
+                argBytes = 1;
+            }
+            else if (movementOffs.contains(offset)) {
+                argBytes = 2;
+            }
+            int jumpDist = scriptData.readLong(offset + 2 + argBytes);
+            int test = jumpDist & 0xFFFF0000;
+            if (test != 0xFFFF0000 && test != 0) {
+                // ignore if the search found argument bytes that coincidentally matched a jump.
+                // Jump targets shouldn't use more than the smallest 2 bytes, so the largest 2 should only be 00 or FF
+                continue;
+            }
+            scriptData.jumpCommands.add(new JumpCommand(offset, argBytes, jumpDist));
+            if (scriptData.scriptNum == this.checkScript) {
+                System.out.println("registered jump " + String.format("0x%X", offset));
+            }
+        }
+    }
+
+    private void storeFlagCommands(ScriptData scriptData) {
+        List<Integer> commandOffs = scriptData.allOffs;
+        Collections.sort(commandOffs);
+        for (int i = commandOffs.size() - 1; i >= 0; i--) {
+            int offset = commandOffs.get(i);
+            int removeCount = 4;
+            if (scriptData.setVarMap.containsKey(offset)) {
+                removeCount = 6;
+            }
+            for (int j = 0; j < removeCount; j++) {
+                scriptData.scriptList.remove(offset);
+            }
+            scriptData.nextJumpOff -= removeCount;
+            adjustJumpTargets(scriptData, -removeCount, offset);
+            if (scriptData.scriptNum == this.checkScript) {
+                System.out.println("removed " + String.format("0x%X", offset));
+            }
+        }
+    }
+
+    private boolean writeScripts = true;
+    private int checkScript = 126;
+    @Override
+    public void editGymScripts(List<ScriptData> scripts, List<Integer> gymOrder) {
+        // gymOrder represents the new order of gyms, so {7,0,...} means Marlin as gym 1 (Aspertia), Cheren as gym 2, ...
+        if (!romEntry.arrayEntries.containsKey("GymBadgeNumbers")) {
+            throw new RandomizationException("No GymBadgeNumbers in the gen5_offsets ini.");
+        }
+        int[] badges = romEntry.arrayEntries.get("GymBadgeNumbers");
+
+        for (int i = 0; i < badges.length; i++) {
+            int gymNum = gymOrder.get(i);
+            ScriptData script = scripts.get(gymNum);
+            insertStoredCommands(script, scripts.get(i));
+            changeBadge(script, gymNum, badges[i]);
+            script.updateScriptArray();
+            if (writeScripts) {
+                scriptNarc.files.set(script.scriptNum, script.script);
+            }
+            if (script.scriptNum == this.checkScript) {
+                script.toFile();
+            }
+        }
+        // In certain gym setups where the leader is in a separate map,
+        // the main gym map's script can still have checkBadge commands.
+        Map<Integer, List<ScriptData>> extraScripts = getExtraGymScripts();
+        for (Map.Entry<Integer, List<ScriptData>> entry : extraScripts.entrySet()) {
+            int gymNum = entry.getKey();
+            int badgeNum = gymOrder.indexOf(gymNum);
+            List<ScriptData> exScripts = entry.getValue();
+            for (ScriptData exScript : exScripts) {
+                changeBadge(exScript, gymNum, badgeNum);
+                exScript.updateScriptArray();
+                if (writeScripts) {
+                    scriptNarc.files.set(exScript.scriptNum, exScript.script);
+                }
+            }
+        }
+
+        explicitScriptEdits(scripts, gymOrder);
+    }
+
+    private Map<Integer, List<ScriptData>> getExtraGymScripts() {
+        Map<Integer, Integer> indexMap = Gen5Constants.extraGymScripts();
+        Map<Integer, List<ScriptData>> scriptMap = new HashMap<>(); // map gym number to script(s)
+        for (Map.Entry<Integer, Integer> entry : indexMap.entrySet()) {
+            int scriptNum = entry.getKey();
+            int gymNum = entry.getValue();
+            ScriptData script = new ScriptData(scriptNum, scriptNarc.files.get(scriptNum));
+            if (scriptMap.containsKey(gymNum)) {
+                scriptMap.get(gymNum).add(script);
+            } else {
+                scriptMap.put(gymNum, Collections.singletonList(script));
+            }
+        }
+        return scriptMap;
+    }
+
+    private void changeBadge(ScriptData scriptData, int oldBadge, int badgeNum) {
+        scriptData.updateScriptArray();
+        byte[] checkBadge = {(byte) 0xD5, 0x00}; // 4 arg bytes; storage variable then badge number
+        byte[] giveBadge = {(byte) 0xD6, 0x00, (byte) oldBadge, 0x00}; // 2 arg bytes
+        byte[] x011E = {0x1E, 0x01, (byte) oldBadge, 0x00}; // This command is undocumented but it always appears just before giveBadge with that gym's badge number
+
+        List<Integer> checkOffs = RomFunctions.search(scriptData.script, scriptData.headerEndOff, checkBadge);
+        for (int offset : checkOffs) {
+            if (scriptData.scriptList.get(offset + 4) == oldBadge) {
+                scriptData.scriptList.set(offset + 4, (byte) (badgeNum & 0xFF));
+                scriptData.scriptList.set(offset + 5, (byte) (badgeNum >> 8 & 0xFF));
+                if (scriptData.scriptNum == this.checkScript) {
+                    System.out.println("checkBadge " + String.format("0x%X", offset + 4));
+                }
+            }
+        }
+        List<Integer> giveOffs = RomFunctions.search(scriptData.script, scriptData.headerEndOff, giveBadge);
+        giveOffs.addAll(RomFunctions.search(scriptData.script, scriptData.headerEndOff, x011E));
+        for (int offset : giveOffs) {
+            scriptData.scriptList.set(offset + 2, (byte) (badgeNum & 0xFF));
+            scriptData.scriptList.set(offset + 3, (byte) (badgeNum >> 8 & 0xFF));
+            if (scriptData.scriptNum == this.checkScript) {
+                System.out.println("giveBadge " + String.format("0x%X", offset));
+            }
+        }
+    }
+
+    private void insertStoredCommands(ScriptData scriptData, ScriptData donorScript) {
+        List<Integer> allOffs = donorScript.allOffs;
+        // preserve the original order of commands, in case it matters.
+        Collections.sort(allOffs);
+        int oldJumpOff = scriptData.nextJumpOff;
+        for (int offset : allOffs) {
+            if (donorScript.setVarMap.containsKey(offset)) {
+                int value = donorScript.setVarMap.get(offset);
+                int targetAddr = scriptData.nextJumpOff;
+                scriptData.scriptList.add(targetAddr, (byte) 0x28);
+                scriptData.scriptList.add(targetAddr + 1, (byte) 0x00);
+                scriptData.scriptList.add(targetAddr + 2, (byte) (value & 0xFF));
+                scriptData.scriptList.add(targetAddr + 3, (byte) (value >> 8 & 0xFF));
+                scriptData.scriptList.add(targetAddr + 4, (byte) (value >> 16 & 0xFF));
+                scriptData.scriptList.add(targetAddr + 5, (byte) (value >> 24 & 0xFF));
+                scriptData.nextJumpOff += 6;
+                if (scriptData.scriptNum == this.checkScript) {
+                    System.out.println("insert setVar " + String.format("%08X", value) + " at " + String.format("0x%X", scriptData.nextJumpOff - 6));
+                }
+            }
+            else if (donorScript.flagMap.containsKey(offset)) {
+                int value = donorScript.flagMap.get(offset);
+                // flagMap includes the instruction in the 2 upper bytes of value as big-endian
+                int targetAddr = scriptData.nextJumpOff;
+                scriptData.scriptList.add(targetAddr, (byte) (value >> 16 & 0xFF));
+                scriptData.scriptList.add(targetAddr + 1, (byte) (value >> 24 & 0xFF));
+                scriptData.scriptList.add(targetAddr + 2, (byte) (value & 0xFF));
+                scriptData.scriptList.add(targetAddr + 3, (byte) (value >> 8 & 0xFF));
+                scriptData.nextJumpOff += 4;
+                if (scriptData.scriptNum == this.checkScript) {
+                    System.out.println("insert flag " + String.format("%08X", value) + " at " + String.format("0x%X", scriptData.nextJumpOff - 4));
+                }
+            }
+            else {
+                throw new RandomizationException("Invalid offset used in insertStoredCommands(): " + String.format("0x%X", offset));
+            }
+        }
+
+        adjustJumpTargets(scriptData, scriptData.nextJumpOff - oldJumpOff, scriptData.nextJumpOff);
+
+        // Swap the visual effect of getting a badge.
+        // These offsets should be before any removed or added commands so they don't have to be adjusted.
+        for (int i = 0; i < scriptData.effectOffs.size(); i++) {
+            int donorOffset = donorScript.effectOffs.get(i);
+            int donorArg = donorScript.effectMap.get(donorOffset);
+            int offset = scriptData.effectOffs.get(i);
+            scriptData.scriptList.set(offset + 2, (byte) (donorArg & 0xFF));
+            scriptData.scriptList.set(offset + 3, (byte) (donorArg >> 8 & 0xFF));
+        }
+    }
+
+    private void adjustJumpTargets(ScriptData scriptData, int delta, int insertionOff) {
+        // Adjust header pointers
+        for (int offset = 0; offset < scriptData.headerEndOff; offset += 4) {
+            int jumpDist = scriptData.readLong(offset);
+            // The start of script 0 is at 4 + readLong(0), script 1 at 8 + readLong(4)...
+            if (offset + 4 + jumpDist > (insertionOff - delta)) {
+                int newJumpDist = jumpDist + delta;
+                scriptData.scriptList.set(offset, (byte) (newJumpDist & 0xFF));
+                scriptData.scriptList.set(offset + 1, (byte) (newJumpDist >> 8 & 0xFF));
+                scriptData.scriptList.set(offset + 2, (byte) (newJumpDist >> 16 & 0xFF));
+                scriptData.scriptList.set(offset + 3, (byte) (newJumpDist >> 24 & 0xFF));
+                if (scriptData.scriptNum == this.checkScript) {
+                    System.out.println("header " + String.format("0x%X", offset) + " to " + String.format("%08X", newJumpDist));
+                }
+            }
+        }
+
+        List<JumpCommand> jumpCommands = scriptData.jumpCommands;
+        // Update the addresses of the stored jump commands
+        int i = scriptData.jumpCommands.size() - 1;
+        JumpCommand jumpC = jumpCommands.get(i);
+        int offset = jumpC.address;
+        while (offset >= insertionOff - delta) {
+            jumpC.address = offset + delta;
+            if (i == 0) {
+                break;
+            }
+            i--;
+            jumpC = jumpCommands.get(i);
+            offset = jumpC.address;
+        }
+
+        // Change the jumpDists
+        for (JumpCommand jump : scriptData.jumpCommands) {
+            int old = jump.jumpDist;
+            jump.jumpDist = newJumpDist(jump.address, jump.jumpDist, delta, insertionOff);
+            if (scriptData.scriptNum == this.checkScript && old != jump.jumpDist) {
+                System.out.println("jump " + String.format("0x%X", jump.address) + " to " + String.format("%08X", jump.jumpDist));
+            }
+        }
+    }
+
+    private int newJumpDist(int offset, int jumpDist, int delta, int insertionOff) {
+        // insertionOff is specifically the index targeted in List.add(index, E)
+        // AKA the offset of the first byte after all the inserted/removed bytes
+        int absoluteTarget = offset + 4 + jumpDist;
+        if (offset < insertionOff && absoluteTarget >= (insertionOff - delta)) {
+            return jumpDist + delta;
+        }
+        else if (offset > insertionOff && absoluteTarget < insertionOff) {
+            return jumpDist - delta;
+        }
+        return jumpDist;
+    }
+
+    private void explicitScriptEdits(List<ScriptData> scripts, List<Integer> gymOrder) {
+        // Elesa sets a variable and a flag, relating to the catwalk cutscene and the Beauties respectively
+        // Move commands back from their moved script to Nimbasa Gym.
+        Map<Integer, Integer> instructionMap = getInstructionMap();
+        int gymNum = gymOrder.get(3);
+        int scriptNum = scripts.get(gymNum).scriptNum;
+        ScriptData sd = new ScriptData(scriptNum, scriptNarc.files.get(scriptNum));
+        storeJumpCommands(sd);
+        byte[] search = {0x23, 0x00, 0x08, 0x01, 0x28, 0x00, (byte) 0x9C, 0x40,
+                0x01, 0x00}; // SetFlag 264 SetVar 16540, 1
+        List<Integer> result = RomFunctions.search(sd.script, search);
+        removeScriptBytes(sd, search.length, result.get(0));
+        sd.updateScriptArray();
+        scriptNarc.files.set(sd.scriptNum, sd.script);
+
+        ScriptData script126 = new ScriptData(126, scriptNarc.files.get(126));
+        parseScript(script126, instructionMap);
+        byte[] insert = search;
+        for (byte b : insert) {
+            script126.scriptList.add(script126.nextJumpOff, b);
+            script126.nextJumpOff++;
+        }
+        adjustJumpTargets(script126, insert.length, script126.nextJumpOff);
+        script126.updateScriptArray();
+        scriptNarc.files.set(script126.scriptNum, script126.script);
+        script126.toFile();
+
+        // Clay's gym sets some flags in Clay's sequence once his elevator comes into the lobby after beating him
+        // Namely one of the flags is for starting the PWT sequence
+        ScriptData script196 = new ScriptData(196, scriptNarc.files.get(196));
+        storeJumpCommands(script196);
+        search = new byte[] {0x28, 0x00, 0x00, 0x40, 0x01, 0x00}; // SetVar 16384, 1
+        result = RomFunctions.search(script196.script, search);
+        removeScriptBytes(script196, search.length, result.get(0));
+        script196.updateScriptArray();
+        search = new byte[] {0x28, 0x00, (byte) 0xC3, 0x40, 0x04, 0x00}; // SetVar 16579, 4
+        result = RomFunctions.search(script196.script, search);
+        removeScriptBytes(script196, search.length, result.get(0));
+        script196.updateScriptArray();
+        search = new byte[] {0x24, 0x00, (byte) 0xCD, 0x02}; // ClearFlag 717
+        result = RomFunctions.search(script196.script, search);
+        removeScriptBytes(script196, search.length, result.get(0));
+        script196.updateScriptArray();
+        scriptNarc.files.set(script196.scriptNum, script196.script);
+
+        insert = new byte[] {0x28, 0x00, 0x00, 0x40, 0x01, 0x00,
+                0x28, 0x00, (byte) 0xC3, 0x40, 0x04, 0x00, 0x24, 0x00, (byte) 0xCD, 0x02};
+        gymNum = gymOrder.get(4);
+        scriptNum = scripts.get(gymNum).scriptNum;
+        sd = new ScriptData(scriptNum, scriptNarc.files.get(scriptNum));
+        parseScript(sd, instructionMap);
+        for (byte b : insert) {
+            sd.scriptList.add(sd.nextJumpOff, b);
+            sd.nextJumpOff++;
+        }
+        adjustJumpTargets(sd, insert.length, sd.nextJumpOff);
+        sd.updateScriptArray();
+        scriptNarc.files.set(sd.scriptNum, sd.script);
+
+        // Skyla's gym uses the AddToVar command (0x26) to update a flag upon beating Skyla instead of the typical setVar
+        // (The flag relates to progress around Mistralton)
+        // This appears to be the only instance of AddToVar, so I'm leaving it as an explicit edit
+        ScriptData script216 = new ScriptData(216, scriptNarc.files.get(216));
+        storeJumpCommands(script216);
+        search = new byte[] {0x26, 0x00, (byte) 0xC2, 0x40, 0x01, 0x00}; // AddToVar 16578, 1
+        result = RomFunctions.search(script216.script, search);
+        removeScriptBytes(script216, search.length, result.get(0));
+        script216.updateScriptArray();
+        scriptNarc.files.set(script216.scriptNum, script216.script);
+
+        insert = search;
+        gymNum = gymOrder.get(5);
+        scriptNum = scripts.get(gymNum).scriptNum;
+        sd = new ScriptData(scriptNum, scriptNarc.files.get(scriptNum));
+        parseScript(sd, instructionMap);
+        for (byte b : insert) {
+            sd.scriptList.add(sd.nextJumpOff, b);
+            sd.nextJumpOff++;
+        }
+        adjustJumpTargets(sd, insert.length, sd.nextJumpOff);
+        sd.updateScriptArray();
+        scriptNarc.files.set(sd.scriptNum, sd.script);
+
+        // Humilau is unique in that it allows the player to enter the gym building,
+        // but Clyde prevents them from doing anything until they meet Marlin just outside the gym.
+        // Remove the trigger that checks for the Marlin flag.
+        removeTrigger(184, 0);
+        // Remove the trigger for Marlin's cutscene since it's now unnecessary.
+        removeTrigger(183, 0);
+
+        ScriptData script194 = new ScriptData(194, scriptNarc.files.get(194));
+        script194.script[0xE8] = 0;
+        scriptNarc.files.set(script194.scriptNum, script194.script);
+    }
+
+    private void removeScriptBytes(ScriptData scriptData, int count, int offset) {
+        for (int i = 0; i < count; i++) {
+            scriptData.scriptList.remove(offset);
+        }
+        if (offset < scriptData.nextJumpOff) {
+            scriptData.nextJumpOff -= count;
+        }
+        adjustJumpTargets(scriptData, -count, offset);
+    }
+
+    private void removeTrigger(int overworldNum, int triggerNum) {
+        final int triggerLength = 0x16;
+        byte[] overworld = mapNarc.files.get(overworldNum);
+        // Find the offset of the trigger
+        byte furnitureCount = overworld[4];
+        byte npcCount = overworld[5];
+        byte warpCount = overworld[6];
+        int triggerOffset = 8 + furnitureCount * 0x14 + npcCount * 0x24 + warpCount * 0x14 + triggerNum * triggerLength;
+        // convert the array to a list to remove the bytes then back to an array
+        List<Byte> overworldList = new ArrayList<>(overworld.length);
+        for (byte b : overworld) {
+            overworldList.add(b);
+        }
+        for (int i = 0; i < triggerLength; i++) {
+            overworldList.remove(triggerOffset);
+        }
+        overworld = new byte[overworldList.size()];
+        for (int i = 0; i < overworldList.size(); i++) {
+            overworld[i] = overworldList.get(i);
+        }
+        // adjust the pointer at the start of the file
+        int footerPointer = readLong(overworld, 0);
+        writeLong(overworld, 0, footerPointer - triggerLength);
+        // decrement the number of declared triggers
+        overworld[7]--;
+
+        mapNarc.files.set(overworldNum, overworld);
+    }
+
+    // Note to self: when implementing getGymLeaders() and getLeaderNames(), make sure that each function only returns the 10 values for that game
+    // (Drayden and Iris shouldn't be in the same list)
+
+    @Override
+    public List<Trainer> getGymLeaders(List<Trainer> allTrainers) {
+        List<Trainer> leaders = new ArrayList<>();
+        int leaderCount = this.getLeaderNames().size();
+        for (Trainer t : allTrainers) {
+            if (t.tag != null && t.tag.startsWith("GYM") && t.tag.endsWith("-LEADER")) {
+                leaders.add(t);
+            }
+            if (leaders.size() == leaderCount) {
+                // stopgap for just getting non hard mode leaders
+                break;
+            }
+        }
+        leaders.sort((Trainer t1, Trainer t2) -> t1.tag.compareTo(t2.tag));
+        return leaders;
+    }
+
+    @Override
+    public List<String> getLeaderNames() {
+        if (this.romEntry.romType == Gen5Constants.Type_BW2) {
+            return Arrays.asList("Cheren", "Roxie", "Burgh", "Elesa", "Clay", "Skyla", "Drayden", "Marlon");
+        }
+        List<String> names = Arrays.asList("Cilan", "Chili", "Cress", "Lenora", "Burgh", "Elesa", "Clay", "Skyla", "Bryson");
+        if (this.romEntry.isBlack) {
+            names.add("Drayden");
+        } else {
+            names.add("Iris");
+        }
+        return names;
     }
 
     @Override
@@ -4077,9 +4732,57 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
         if (this.romEntry.romType == Gen5Constants.Type_BW) {
             return "bw";
         }
-        return "bw2";
+        return "b2w2";
     }
 
-    // Note to self: when implementing getGymLeaders() and getLeaderNames(), make sure that each function only returns the 8 values for that game
-    // (Drayden and Iris shouldn't be in the same list)
+    @Override
+    public boolean isEnglishROM() {
+        String code = getROMCodeFromFile(loadedFilename());
+        return code.charAt(3) == 'O';
+    }
+
+    // Common Location functions
+
+    private Map<Integer, Integer> getOverworldsToMaps() {
+        try {
+            Map<Integer, Integer> filesToMaps = new HashMap<>();
+            byte[] mapHeaderData = this.readNARC(romEntry.getFile("MapTableFile")).files.get(0);
+            int numMapHeaders = mapHeaderData.length / 48;
+            for (int map = 0; map < numMapHeaders; map++) {
+                int baseOffset = map * 48;
+                int overworld = readWord(mapHeaderData, baseOffset + 22);
+                filesToMaps.put(overworld, map);
+            }
+            return filesToMaps;
+        } catch (IOException e) {
+            throw new RandomizerIOException(e);
+        }
+    }
+
+    @Override
+    public void setWarps(List<Location> locations) {
+        for (Location l : locations) {
+            for (Exit e : l.exits) {
+                writeExit(e);
+            }
+        }
+    }
+
+    private void writeExit(Exit exit) {
+        if (exit.getTargetMap() == -1) {
+            // Since targetMap never got overwritten, its targetMap should be vanilla and shouldn't be overwritten
+            return;
+        }
+        byte[] overworld = mapNarc.files.get(exit.fileNum);
+        int furnitureCount = readByte(overworld, 4);
+        int npcCount = readByte(overworld, 5);
+        int warpsOff = 8 + (0x14 * furnitureCount) + (0x24 * npcCount);
+        Exit.WarpData[] warps = exit.warps;
+        for(Exit.WarpData warp : warps) {
+            int warpOffset = warpsOff + (0x14 * warp.warp);
+            // Set the warp's target map and target warp
+            writeWord(overworld, warpOffset, exit.getTargetMap());
+            writeWord(overworld, warpOffset + 2, warp.targetWarp);
+        }
+    }
 }

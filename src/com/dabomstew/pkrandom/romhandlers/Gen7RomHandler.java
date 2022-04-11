@@ -29,6 +29,7 @@ import com.dabomstew.pkrandom.MiscTweak;
 import com.dabomstew.pkrandom.RomFunctions;
 import com.dabomstew.pkrandom.Settings;
 import com.dabomstew.pkrandom.constants.*;
+import com.dabomstew.pkrandom.ctr.AMX;
 import com.dabomstew.pkrandom.ctr.BFLIM;
 import com.dabomstew.pkrandom.ctr.GARCArchive;
 import com.dabomstew.pkrandom.ctr.Mini;
@@ -37,9 +38,7 @@ import com.dabomstew.pkrandom.pokemon.*;
 import pptxt.N3DSTxtHandler;
 
 import java.awt.image.BufferedImage;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -761,10 +760,11 @@ public class Gen7RomHandler extends Abstract3DSRomHandler {
     private void writeShedinjaEvolution() {
         Pokemon nincada = pokes[Species.nincada];
 
-        // When the "Limit Pokemon" setting is enabled, we clear out the evolutions of
-        // everything *not* in the pool, which could include Nincada. In that case,
-        // there's no point in even worrying about Shedinja, so just return.
-        if (nincada.evolutionsFrom.size() == 0) {
+        // When the "Limit Pokemon" setting is enabled and Gen 3 is disabled, or when
+        // "Random Every Level" evolutions are selected, we end up clearing out Nincada's
+        // vanilla evolutions. In that case, there's no point in even worrying about
+        // Shedinja, so just return.
+        if (nincada.evolutionsFrom.size() < 2) {
             return;
         }
         Pokemon primaryEvolution = nincada.evolutionsFrom.get(0).to;
@@ -779,7 +779,7 @@ public class Gen7RomHandler extends Abstract3DSRomHandler {
         int offset = find(code, Gen7Constants.ninjaskSpeciesPrefix);
         if (offset > 0) {
             offset += Gen7Constants.ninjaskSpeciesPrefix.length() / 2; // because it was a prefix
-            FileFunctions.writeFullIntLittleEndian(code, offset, primaryEvolution.number);
+            FileFunctions.writeFullInt(code, offset, primaryEvolution.number);
         }
 
         // In the game's executable, there's a hardcoded value to indicate what "extra"
@@ -930,6 +930,11 @@ public class Gen7RomHandler extends Abstract3DSRomHandler {
     }
 
     @Override
+    protected boolean isGameUpdateSupported(int version) {
+        return version == romEntry.numbers.get("FullyUpdatedVersionNumber");
+    }
+
+    @Override
     protected String getGameVersion() {
         List<String> titleScreenText = getStrings(false, romEntry.getInt("TitleScreenTextOffset"));
         if (titleScreenText.size() > romEntry.getInt("UpdateStringOffset")) {
@@ -965,6 +970,11 @@ public class Gen7RomHandler extends Abstract3DSRomHandler {
     public Pokemon getAltFormeOfPokemon(Pokemon pk, int forme) {
         int pokeNum = absolutePokeNumByBaseForme.getOrDefault(pk.number,dummyAbsolutePokeNums).getOrDefault(forme,0);
         return pokeNum != 0 && !pokes[pokeNum].actuallyCosmetic ? pokes[pokeNum] : pk;
+    }
+
+    @Override
+    public List<Pokemon> getIrregularFormes() {
+        return Gen7Constants.getIrregularFormes(romEntry.romType).stream().map(i -> pokes[i]).collect(Collectors.toList());
     }
 
     @Override
@@ -1301,7 +1311,7 @@ public class Gen7RomHandler extends Abstract3DSRomHandler {
         byte[] worldData = zoneDataGarc.getFile(1);
         List<String> locationList = createGoodLocationList();
         ZoneData[] zoneData = getZoneData(zoneDataBytes, worldData, locationList, worlds);
-        encounterGarc = readGARC(romEntry.getString("WildPokemon"), Gen7Constants.getRelevantEncounterFiles(romEntry.romType));;
+        encounterGarc = readGARC(romEntry.getString("WildPokemon"), Gen7Constants.getRelevantEncounterFiles(romEntry.romType));
         int fileCount = encounterGarc.files.size();
         int numberOfAreas = fileCount / 11;
         AreaData[] areaData = new AreaData[numberOfAreas];
@@ -1383,7 +1393,7 @@ public class Gen7RomHandler extends Abstract3DSRomHandler {
             zoneData[i].locationName = locationList.get(zoneData[i].parentMap);
 
             byte[] world = worlds.get(zoneData[i].worldIndex);
-            int mappingOffset = FileFunctions.readFullIntLittleEndian(world, 0x8);
+            int mappingOffset = FileFunctions.readFullInt(world, 0x8);
             for (int offset = mappingOffset; offset < world.length; offset += 4) {
                 int potentialZoneIndex = FileFunctions.read2ByteInt(world, offset);
                 if (potentialZoneIndex == i) {
@@ -1477,7 +1487,7 @@ public class Gen7RomHandler extends Abstract3DSRomHandler {
                     tpk.spatkEVs = trpoke[pokeOffs + 5];
                     tpk.spdefEVs = trpoke[pokeOffs + 6];
                     tpk.speedEVs = trpoke[pokeOffs + 7];
-                    tpk.IVs = FileFunctions.readFullIntLittleEndian(trpoke, pokeOffs + 8);
+                    tpk.IVs = FileFunctions.readFullInt(trpoke, pokeOffs + 8);
                     tpk.level = level;
                     if (romEntry.romType == Gen7Constants.Type_USUM) {
                         if (i == 78) {
@@ -1571,7 +1581,7 @@ public class Gen7RomHandler extends Abstract3DSRomHandler {
                     trpoke[pokeOffs + 5] = tp.spatkEVs;
                     trpoke[pokeOffs + 6] = tp.spdefEVs;
                     trpoke[pokeOffs + 7] = tp.speedEVs;
-                    FileFunctions.writeFullIntLittleEndian(trpoke, pokeOffs + 8, tp.IVs);
+                    FileFunctions.writeFullInt(trpoke, pokeOffs + 8, tp.IVs);
                     writeWord(trpoke, pokeOffs + 14, tp.level);
                     writeWord(trpoke, pokeOffs + 16, tp.pokemon.number);
                     writeWord(trpoke, pokeOffs + 18, tp.forme);
@@ -1911,6 +1921,9 @@ public class Gen7RomHandler extends Abstract3DSRomHandler {
                 StaticEncounter se = readStaticEncounter(staticEncountersFile, offset);
                 statics.add(se);
             }
+
+            // Zygarde created via Assembly on Route 16 is hardcoded
+            readAssemblyZygarde(statics);
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
@@ -1950,6 +1963,62 @@ public class Gen7RomHandler extends Abstract3DSRomHandler {
         }
         for (StaticEncounter encounter : encountersToRemove) {
             statics.remove(encounter);
+        }
+    }
+
+    private void readAssemblyZygarde(List<StaticEncounter> statics) throws IOException {
+        GARCArchive scriptGarc = readGARC(romEntry.getString("Scripts"), true);
+        int[] scriptLevelOffsets = romEntry.arrayEntries.get("ZygardeScriptLevelOffsets");
+        int[] levels = new int[scriptLevelOffsets.length];
+        byte[] zygardeAssemblyScriptBytes = scriptGarc.getFile(Gen7Constants.zygardeAssemblyScriptFile);
+        AMX zygardeAssemblyScript = new AMX(zygardeAssemblyScriptBytes);
+        for (int i = 0; i < scriptLevelOffsets.length; i++) {
+            levels[i] = zygardeAssemblyScript.decData[scriptLevelOffsets[i]];
+        }
+
+        int speciesOffset = find(code, Gen7Constants.zygardeAssemblySpeciesPrefix);
+        int formeOffset = find(code, Gen7Constants.zygardeAssemblyFormePrefix);
+        if (speciesOffset > 0 && formeOffset > 0) {
+            speciesOffset += Gen7Constants.zygardeAssemblySpeciesPrefix.length() / 2; // because it was a prefix
+            formeOffset += Gen7Constants.zygardeAssemblyFormePrefix.length() / 2; // because it was a prefix
+            int species = FileFunctions.read2ByteInt(code, speciesOffset);
+
+            // The original code for this passed in the forme via a parameter, stored that onto
+            // the stack, then did a ldr to put that stack variable into r0 before finally
+            // storing that value in the right place. If we already modified this code, then we
+            // don't care about all of this; we just wrote a "mov r0, #forme" over the ldr instead.
+            // Thus, if the original ldr instruction is still there, assume we haven't touched it.
+            int forme = 0;
+            if (FileFunctions.readFullInt(code, formeOffset) == 0xE59D0040) {
+                // Since we haven't modified the code yet, this is Zygarde. For SM, use 10%,
+                // since you can get it fairly early. For USUM, use 50%, since it's only
+                // obtainable in the postgame.
+                forme = isSM ? 1 : 0;
+            } else {
+                // We have modified the code, so just read the constant forme number we wrote.
+                forme = code[formeOffset];
+            }
+
+            StaticEncounter lowLevelAssembly = new StaticEncounter();
+            Pokemon pokemon = pokes[species];
+            if (forme > pokemon.cosmeticForms && forme != 30 && forme != 31) {
+                int speciesWithForme = absolutePokeNumByBaseForme
+                        .getOrDefault(species, dummyAbsolutePokeNums)
+                        .getOrDefault(forme, 0);
+                pokemon = pokes[speciesWithForme];
+            }
+            lowLevelAssembly.pkmn = pokemon;
+            lowLevelAssembly.forme = forme;
+            lowLevelAssembly.level = levels[0];
+            for (int i = 1; i < levels.length; i++) {
+                StaticEncounter higherLevelAssembly = new StaticEncounter();
+                higherLevelAssembly.pkmn = pokemon;
+                higherLevelAssembly.forme = forme;
+                higherLevelAssembly.level = levels[i];
+                lowLevelAssembly.linkedEncounters.add(higherLevelAssembly);
+            }
+
+            statics.add(lowLevelAssembly);
         }
     }
 
@@ -1998,6 +2067,9 @@ public class Gen7RomHandler extends Abstract3DSRomHandler {
                 }
             }
 
+            // Zygarde created via Assembly on Route 16 is hardcoded
+            writeAssemblyZygarde(staticIter.next());
+
             writeGARC(romEntry.getString("StaticPokemon"), staticGarc);
             return true;
         } catch (IOException e) {
@@ -2017,6 +2089,38 @@ public class Gen7RomHandler extends Abstract3DSRomHandler {
         for (Map.Entry<Integer, Integer> entry : romEntry.linkedStaticOffsets.entrySet()) {
             StaticEncounter baseEncounter = statics.get(entry.getKey());
             statics.set(entry.getValue(), baseEncounter.linkedEncounters.get(0));
+        }
+    }
+
+    private void writeAssemblyZygarde(StaticEncounter se) throws IOException {
+        int[] levels = new int[se.linkedEncounters.size() + 1];
+        levels[0] = se.level;
+        for (int i = 0; i < se.linkedEncounters.size(); i++) {
+            levels[i + 1] = se.linkedEncounters.get(i).level;
+        }
+
+        GARCArchive scriptGarc = readGARC(romEntry.getString("Scripts"), true);
+        int[] scriptLevelOffsets = romEntry.arrayEntries.get("ZygardeScriptLevelOffsets");
+        byte[] zygardeAssemblyScriptBytes = scriptGarc.getFile(Gen7Constants.zygardeAssemblyScriptFile);
+        AMX zygardeAssemblyScript = new AMX(zygardeAssemblyScriptBytes);
+        for (int i = 0; i < scriptLevelOffsets.length; i++) {
+            zygardeAssemblyScript.decData[scriptLevelOffsets[i]] = (byte) levels[i];
+        }
+        scriptGarc.setFile(Gen7Constants.zygardeAssemblyScriptFile, zygardeAssemblyScript.getBytes());
+        writeGARC(romEntry.getString("Scripts"), scriptGarc);
+
+        int speciesOffset = find(code, Gen7Constants.zygardeAssemblySpeciesPrefix);
+        int formeOffset = find(code, Gen7Constants.zygardeAssemblyFormePrefix);
+        if (speciesOffset > 0 && formeOffset > 0) {
+            speciesOffset += Gen7Constants.zygardeAssemblySpeciesPrefix.length() / 2; // because it was a prefix
+            formeOffset += Gen7Constants.zygardeAssemblyFormePrefix.length() / 2; // because it was a prefix
+            FileFunctions.write2ByteInt(code, speciesOffset, se.pkmn.getBaseNumber());
+
+            // Just write "mov r0, #forme" to where the game originally loaded the forme.
+            code[formeOffset] = (byte) se.forme;
+            code[formeOffset + 1] = 0x00;
+            code[formeOffset + 2] = (byte) 0xA0;
+            code[formeOffset + 3] = (byte) 0xE3;
         }
     }
 
@@ -2544,7 +2648,11 @@ public class Gen7RomHandler extends Abstract3DSRomHandler {
                 }
             }
         }
+    }
 
+    @Override
+    public boolean altFormesCanHaveDifferentEvolutions() {
+        return true;
     }
 
     @Override
@@ -2691,11 +2799,6 @@ public class Gen7RomHandler extends Abstract3DSRomHandler {
     @Override
     public String[] getItemNames() {
         return itemNames.toArray(new String[0]);
-    }
-
-    @Override
-    public String[] getShopNames() {
-        return shopNames.toArray(new String[0]);
     }
 
     @Override
@@ -2944,7 +3047,7 @@ public class Gen7RomHandler extends Abstract3DSRomHandler {
                 trade.requestedPokemon = requestedPokemon;
                 trade.nickname = tradeStrings.get(FileFunctions.read2ByteInt(tradesFile, offset + 2));
                 trade.otName = tradeStrings.get(FileFunctions.read2ByteInt(tradesFile, offset + 0x18));
-                trade.otId = FileFunctions.readFullIntLittleEndian(tradesFile, offset + 0x10);
+                trade.otId = FileFunctions.readFullInt(tradesFile, offset + 0x10);
                 trade.ivs = new int[6];
                 for (int iv = 0; iv < 6; iv++) {
                     trade.ivs[iv] = tradesFile[offset + 6 + iv];
@@ -2964,8 +3067,10 @@ public class Gen7RomHandler extends Abstract3DSRomHandler {
     @Override
     public void setIngameTrades(List<IngameTrade> trades) {
         try {
+            List<IngameTrade> oldTrades = this.getIngameTrades();
             GARCArchive staticGarc = readGARC(romEntry.getString("StaticPokemon"), true);
             List<String> tradeStrings = getStrings(true, romEntry.getInt("IngameTradesTextOffset"));
+            Map<Integer, List<Integer>> hardcodedTradeTextOffsets = Gen7Constants.getHardcodedTradeTextOffsets(romEntry.romType);
             byte[] tradesFile = staticGarc.files.get(4).get(0);
             int numberOfIngameTrades = tradesFile.length / 0x34;
             for (int i = 0; i < numberOfIngameTrades; i++) {
@@ -2982,16 +3087,36 @@ public class Gen7RomHandler extends Abstract3DSRomHandler {
                 FileFunctions.write2ByteInt(tradesFile, offset + 0x2C, trade.requestedPokemon.number);
                 tradeStrings.set(FileFunctions.read2ByteInt(tradesFile, offset + 2), trade.nickname);
                 tradeStrings.set(FileFunctions.read2ByteInt(tradesFile, offset + 0x18), trade.otName);
-                FileFunctions.writeFullIntLittleEndian(tradesFile, offset + 0x10, trade.otId);
+                FileFunctions.writeFullInt(tradesFile, offset + 0x10, trade.otId);
                 for (int iv = 0; iv < 6; iv++) {
                     tradesFile[offset + 6 + iv] = (byte) trade.ivs[iv];
                 }
                 FileFunctions.write2ByteInt(tradesFile, offset + 0x14, trade.item);
+
+                List<Integer> hardcodedTextOffsetsForThisTrade = hardcodedTradeTextOffsets.get(i);
+                if (hardcodedTextOffsetsForThisTrade != null) {
+                    updateHardcodedTradeText(oldTrades.get(i), trade, tradeStrings, hardcodedTextOffsetsForThisTrade);
+                }
             }
             writeGARC(romEntry.getString("StaticPokemon"), staticGarc);
             setStrings(true, romEntry.getInt("IngameTradesTextOffset"), tradeStrings);
         } catch (IOException e) {
             throw new RandomizerIOException(e);
+        }
+    }
+
+    // NOTE: This method is kind of stupid, in that it doesn't try to reflow the text to better fit; it just
+    // blindly replaces the Pokemon's name. However, it seems to work well enough for what we need.
+    private void updateHardcodedTradeText(IngameTrade oldTrade, IngameTrade newTrade, List<String> tradeStrings, List<Integer> hardcodedTextOffsets) {
+        for (int offset : hardcodedTextOffsets) {
+            String hardcodedText = tradeStrings.get(offset);
+            String oldRequestedName = oldTrade.requestedPokemon.name;
+            String oldGivenName = oldTrade.givenPokemon.name;
+            String newRequestedName = newTrade.requestedPokemon.name;
+            String newGivenName = newTrade.givenPokemon.name;
+            hardcodedText = hardcodedText.replace(oldRequestedName, newRequestedName);
+            hardcodedText = hardcodedText.replace(oldGivenName, newGivenName);
+            tradeStrings.set(offset, hardcodedText);
         }
     }
 
@@ -3066,12 +3191,12 @@ public class Gen7RomHandler extends Abstract3DSRomHandler {
     }
 
     @Override
-    public Map<Integer, List<Integer>> getShopItems() {
+    public Map<Integer, Shop> getShopItems() {
         int[] tmShops = romEntry.arrayEntries.get("TMShops");
         int[] regularShops = romEntry.arrayEntries.get("RegularShops");
         int[] shopItemSizes = romEntry.arrayEntries.get("ShopItemSizes");
         int shopCount = romEntry.getInt("ShopCount");
-        Map<Integer,List<Integer>> shopItemsMap = new TreeMap<>();
+        Map<Integer, Shop> shopItemsMap = new TreeMap<>();
         try {
             byte[] shopsCRO = readFile(romEntry.getString("ShopsAndTutors"));
             int offset = Gen7Constants.getShopItemsOffset(romEntry.romType);
@@ -3098,7 +3223,11 @@ public class Gen7RomHandler extends Abstract3DSRomHandler {
                         items.add(FileFunctions.read2ByteInt(shopsCRO, offset));
                         offset += 2;
                     }
-                    shopItemsMap.put(i, items);
+                    Shop shop = new Shop();
+                    shop.items = items;
+                    shop.name = shopNames.get(i);
+                    shop.isMainGame = Gen7Constants.getMainGameShops(romEntry.romType).contains(i);
+                    shopItemsMap.put(i, shop);
                 }
             }
             return shopItemsMap;
@@ -3108,7 +3237,7 @@ public class Gen7RomHandler extends Abstract3DSRomHandler {
     }
 
     @Override
-    public void setShopItems(Map<Integer, List<Integer>> shopItems) {
+    public void setShopItems(Map<Integer, Shop> shopItems) {
         int[] tmShops = romEntry.arrayEntries.get("TMShops");
         int[] regularShops = romEntry.arrayEntries.get("RegularShops");
         int[] shopItemSizes = romEntry.arrayEntries.get("ShopItemSizes");
@@ -3134,7 +3263,7 @@ public class Gen7RomHandler extends Abstract3DSRomHandler {
                     }
                 }
                 if (!badShop) {
-                    List<Integer> shopContents = shopItems.get(i);
+                    List<Integer> shopContents = shopItems.get(i).items;
                     Iterator<Integer> iterItems = shopContents.iterator();
                     for (int j = 0; j < shopItemSizes[i]; j++) {
                         Integer item = iterItems.next();
@@ -3163,17 +3292,12 @@ public class Gen7RomHandler extends Abstract3DSRomHandler {
     }
 
     @Override
-    public List<Integer> getMainGameShops() {
-        return Gen7Constants.getMainGameShops(romEntry.romType);
-    }
-
-    @Override
     public List<PickupItem> getPickupItems() {
         List<PickupItem> pickupItems = new ArrayList<>();
         try {
             GARCArchive pickupGarc = this.readGARC(romEntry.getString("PickupData"), false);
             byte[] pickupData = pickupGarc.getFile(0);
-            int numberOfPickupItems = FileFunctions.readFullIntLittleEndian(pickupData, 0) - 1; // GameFreak why???
+            int numberOfPickupItems = FileFunctions.readFullInt(pickupData, 0) - 1; // GameFreak why???
             for (int i = 0; i < numberOfPickupItems; i++) {
                 int offset = 4 + (i * 0xC);
                 int item = FileFunctions.read2ByteInt(pickupData, offset);
@@ -3235,7 +3359,7 @@ public class Gen7RomHandler extends Abstract3DSRomHandler {
         public ZoneData(byte[] zoneDataBytes, int index) {
             data = new byte[size];
             System.arraycopy(zoneDataBytes, index * size, data, 0, size);
-            parentMap = FileFunctions.readFullIntLittleEndian(data, 0x1C);
+            parentMap = FileFunctions.readFullInt(data, 0x1C);
         }
     }
 

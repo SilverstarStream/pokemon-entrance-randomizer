@@ -255,6 +255,7 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
 
         try {
             stringsGarc = readGARC(romEntry.getString("TextStrings"),true);
+            storyTextGarc = readGARC(romEntry.getString("StoryText"), true);
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
@@ -578,6 +579,7 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
         try {
             writeCode(code);
             writeGARC(romEntry.getString("TextStrings"), stringsGarc);
+            writeGARC(romEntry.getString("StoryText"), storyTextGarc);
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
@@ -586,6 +588,11 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
     @Override
     protected String getGameAcronym() {
         return romEntry.acronym;
+    }
+
+    @Override
+    protected boolean isGameUpdateSupported(int version) {
+        return version == romEntry.numbers.get("FullyUpdatedVersionNumber");
     }
 
     @Override
@@ -694,10 +701,11 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
     private void writeShedinjaEvolution() throws IOException {
         Pokemon nincada = pokes[Species.nincada];
 
-        // When the "Limit Pokemon" setting is enabled, we clear out the evolutions of
-        // everything *not* in the pool, which could include Nincada. In that case,
-        // there's no point in even worrying about Shedinja, so just return.
-        if (nincada.evolutionsFrom.size() == 0) {
+        // When the "Limit Pokemon" setting is enabled and Gen 3 is disabled, or when
+        // "Random Every Level" evolutions are selected, we end up clearing out Nincada's
+        // vanilla evolutions. In that case, there's no point in even worrying about
+        // Shedinja, so just return.
+        if (nincada.evolutionsFrom.size() < 2) {
             return;
         }
         Pokemon primaryEvolution = nincada.evolutionsFrom.get(0).to;
@@ -889,6 +897,11 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
     }
 
     @Override
+    public List<Pokemon> getIrregularFormes() {
+        return Gen6Constants.irregularFormes.stream().map(i -> pokes[i]).collect(Collectors.toList());
+    }
+
+    @Override
     public boolean hasFunctionalFormes() {
         return true;
     }
@@ -921,7 +934,7 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
                 se.pkmn = pokemon;
                 se.forme = forme;
                 se.level = staticCRO[offset+i*size + 5];
-                int heldItem = FileFunctions.readFullIntLittleEndian(staticCRO,offset+i*size + 12);
+                int heldItem = FileFunctions.readFullInt(staticCRO,offset+i*size + 12);
                 if (heldItem < 0) {
                     heldItem = 0;
                 }
@@ -1060,7 +1073,7 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
                 wildMapNames.put(i, "? Unknown ?");
             }
             String mapName = wildMapNames.get(i);
-            int offset = FileFunctions.readFullIntLittleEndian(b, 0x10) + 0x10;
+            int offset = FileFunctions.readFullInt(b, 0x10) + 0x10;
             int length = b.length - offset;
             if (length < 0x178) { // No encounters in this map
                 continue;
@@ -1183,8 +1196,8 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
                 wildMapNames.put(i, "? Unknown ?");
             }
             String mapName = wildMapNames.get(i);
-            int offset = FileFunctions.readFullIntLittleEndian(b, 0x10) + 0xE;
-            int offset2 = FileFunctions.readFullIntLittleEndian(b, 0x14);
+            int offset = FileFunctions.readFullInt(b, 0x10) + 0xE;
+            int offset2 = FileFunctions.readFullInt(b, 0x14);
             int length = offset2 - offset;
             if (length < 0xF6) { // No encounters in this map
                 continue;
@@ -1340,7 +1353,7 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
         Iterator<EncounterSet> encounters = encountersList.iterator();
         for (int i = 0; i < encounterGarc.files.size() - 1; i++) {
             byte[] b = encounterGarc.files.get(i).get(0);
-            int offset = FileFunctions.readFullIntLittleEndian(b, 0x10) + 0x10;
+            int offset = FileFunctions.readFullInt(b, 0x10) + 0x10;
             int length = b.length - offset;
             if (length < 0x178) { // No encounters in this map
                 continue;
@@ -1441,8 +1454,8 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
         byte[] decStorage = encounterGarc.files.get(encounterGarc.files.size() - 1).get(0);
         for (int i = 0; i < encounterGarc.files.size() - 2; i++) {
             byte[] b = encounterGarc.files.get(i).get(0);
-            int offset = FileFunctions.readFullIntLittleEndian(b, 0x10) + 0xE;
-            int offset2 = FileFunctions.readFullIntLittleEndian(b, 0x14);
+            int offset = FileFunctions.readFullInt(b, 0x10) + 0xE;
+            int offset2 = FileFunctions.readFullInt(b, 0x14);
             int length = offset2 - offset;
             if (length < 0xF6) { // No encounters in this map
                 continue;
@@ -1508,7 +1521,7 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
             System.arraycopy(encounterData, 0, b, offset, 0xF6);
 
             // Also write the encounter data to the decStorage file
-            int decStorageOffset = FileFunctions.readFullIntLittleEndian(decStorage, (i + 1) * 4) + 0xE;
+            int decStorageOffset = FileFunctions.readFullInt(decStorage, (i + 1) * 4) + 0xE;
             System.arraycopy(encounterData, 0, decStorage, decStorageOffset, 0xF4);
         }
 
@@ -1529,7 +1542,7 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
         // Read all the "normal" encounters in the encounters GARC.
         for (int i = 0; i < encounterGarc.files.size() - 1; i++) {
             byte[] b = encounterGarc.files.get(i).get(0);
-            int offset = FileFunctions.readFullIntLittleEndian(b, 0x10) + 0x10;
+            int offset = FileFunctions.readFullInt(b, 0x10) + 0x10;
             int length = b.length - offset;
             if (length < 0x178) { // No encounters in this map
                 continue;
@@ -1594,8 +1607,8 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
         int currentMapNum = 0;
         for (int i = 0; i < encounterGarc.files.size() - 2; i++) {
             byte[] b = encounterGarc.files.get(i).get(0);
-            int offset = FileFunctions.readFullIntLittleEndian(b, 0x10) + 0xE;
-            int offset2 = FileFunctions.readFullIntLittleEndian(b, 0x14);
+            int offset = FileFunctions.readFullInt(b, 0x10) + 0xE;
+            int offset2 = FileFunctions.readFullInt(b, 0x14);
             int length = offset2 - offset;
             if (length < 0xF6) { // No encounters in this map
                 continue;
@@ -1645,9 +1658,9 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
             int perPokemonAreaDataLength = romEntry.romType == Gen6Constants.Type_XY ?
                     Gen6Constants.perPokemonAreaDataLengthXY : Gen6Constants.perPokemonAreaDataLengthORAS;
             int offset = pkmn.getBaseNumber() * perPokemonAreaDataLength + areaIndex * 4;
-            int value = FileFunctions.readFullIntLittleEndian(pokedexAreaData, offset);
+            int value = FileFunctions.readFullInt(pokedexAreaData, offset);
             value |= encounterType;
-            FileFunctions.writeFullIntLittleEndian(pokedexAreaData, offset, value);
+            FileFunctions.writeFullInt(pokedexAreaData, offset, value);
         }
     }
 
@@ -2031,7 +2044,7 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
                 se.pkmn = pokemon;
                 se.forme = forme;
                 se.level = staticCRO[offset+i*size + 5];
-                int heldItem = FileFunctions.readFullIntLittleEndian(staticCRO,offset+i*size + 12);
+                int heldItem = FileFunctions.readFullInt(staticCRO,offset+i*size + 12);
                 if (heldItem < 0) {
                     heldItem = 0;
                 }
@@ -2225,7 +2238,7 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
             for (int i = 0; i < roamers.length; i++) {
                 int offset = freeSpaceOffset + 8 + (i * 4);
                 int species = roamers[i].pkmn.getBaseNumber();
-                FileFunctions.writeFullIntLittleEndian(code, offset, species);
+                FileFunctions.writeFullInt(code, offset, species);
             }
 
             // To load the species ID, the game currently does "moveq r4, #0x90" for Articuno and similar
@@ -2364,7 +2377,7 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
                 // beq returnFromFunction
                 // The below code nops out that comparison and makes the move and branch instructions
                 // non-conditional; no matter what's on the save file, the player will have all dexes.
-                FileFunctions.writeFullIntLittleEndian(code, offset, 0);
+                FileFunctions.writeFullInt(code, offset, 0);
                 code[offset + 7] = (byte) 0xE3;
                 code[offset + 11] = (byte) 0xEA;
             }
@@ -2389,15 +2402,15 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
                 // cmp r0, #0x0
                 // moveq r0, #0x1
                 // ldmia sp!,{r4 r5 r6 r7 r8 r9 r10 r11 r12 pc}
-                FileFunctions.writeFullInt(code, offset + 32, 0x0700A0E1);
-                FileFunctions.writeFullInt(code, offset + 36, 0x000050E3);
-                FileFunctions.writeFullInt(code, offset + 40, 0x0100A003);
-                FileFunctions.writeFullInt(code, offset + 44, 0xF09FBDE8);
+                FileFunctions.writeFullIntBigEndian(code, offset + 32, 0x0700A0E1);
+                FileFunctions.writeFullIntBigEndian(code, offset + 36, 0x000050E3);
+                FileFunctions.writeFullIntBigEndian(code, offset + 40, 0x0100A003);
+                FileFunctions.writeFullIntBigEndian(code, offset + 44, 0xF09FBDE8);
 
                 // At the end of the function, the game normally does "mov r0, r7" and then returns, where r7
                 // contains the number of Pokemon caught in the Hoenn Pokedex. Instead, branch to the code we
                 // wrote above.
-                FileFunctions.writeFullInt(code, offset + 208, 0xD2FFFFEA);
+                FileFunctions.writeFullIntBigEndian(code, offset + 208, 0xD2FFFFEA);
             }
         }
     }
@@ -3147,11 +3160,6 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
     }
 
     @Override
-    public String[] getShopNames() {
-        return shopNames.toArray(new String[0]);
-    }
-
-    @Override
     public String abilityName(int number) {
         return abilityNames.get(number);
     }
@@ -3441,7 +3449,9 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
 
     @Override
     public void setIngameTrades(List<IngameTrade> trades) {
-
+        List<IngameTrade> oldTrades = this.getIngameTrades();
+        int[] hardcodedTradeOffsets = romEntry.arrayEntries.get("HardcodedTradeOffsets");
+        int[] hardcodedTradeTexts = romEntry.arrayEntries.get("HardcodedTradeTexts");
         int count = romEntry.getInt("IngameTradeCount");
         String prefix = Gen6Constants.getIngameTradesPrefix(romEntry.romType);
         List<String> tradeStrings = getStrings(false, romEntry.getInt("IngameTradesTextOffset"));
@@ -3462,9 +3472,39 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
                 FileFunctions.write2ByteInt(code,offset + 0x20,
                         trade.requestedPokemon == null ? 0 : trade.requestedPokemon.number);
                 offset += Gen6Constants.ingameTradeSize;
+
+                // In XY, there are some trades that use hardcoded strings. Go and forcibly update
+                // the story text so that the trainer says what they want to trade.
+                if (romEntry.romType == Gen6Constants.Type_XY && Gen6Constants.xyHardcodedTradeOffsets.contains(i)) {
+                    int hardcodedTradeIndex = Gen6Constants.xyHardcodedTradeOffsets.indexOf(i);
+                    updateHardcodedTradeText(oldTrades.get(i), trade, Gen6Constants.xyHardcodedTradeTexts.get(hardcodedTradeIndex));
+                }
             }
             this.setStrings(false, romEntry.getInt("IngameTradesTextOffset"), tradeStrings);
         }
+    }
+
+    // NOTE: This method is kind of stupid, in that it doesn't try to reflow the text to better fit; it just
+    // blindly replaces the Pokemon's name. However, it seems to work well enough for what we need.
+    private void updateHardcodedTradeText(IngameTrade oldTrade, IngameTrade newTrade, int hardcodedTradeTextFile) {
+        List<String> hardcodedTradeStrings = getStrings(true, hardcodedTradeTextFile);
+        Pokemon oldRequested = oldTrade.requestedPokemon;
+        String oldRequestedName = oldRequested != null ? oldRequested.name : null;
+        String oldGivenName = oldTrade.givenPokemon.name;
+        Pokemon newRequested = newTrade.requestedPokemon;
+        String newRequestedName = newRequested != null ? newRequested.name : null;
+        String newGivenName = newTrade.givenPokemon.name;
+        for (int i = 0; i < hardcodedTradeStrings.size(); i++) {
+            String hardcodedTradeString = hardcodedTradeStrings.get(i);
+            if (oldRequestedName != null && newRequestedName != null && hardcodedTradeString.contains(oldRequestedName)) {
+                hardcodedTradeString = hardcodedTradeString.replace(oldRequestedName, newRequestedName);
+            }
+            if (hardcodedTradeString.contains(oldGivenName)) {
+                hardcodedTradeString = hardcodedTradeString.replace(oldGivenName, newGivenName);
+            }
+            hardcodedTradeStrings.set(i, hardcodedTradeString);
+        }
+        this.setStrings(true, hardcodedTradeTextFile, hardcodedTradeStrings);
     }
 
     @Override
@@ -3539,12 +3579,12 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
     }
 
     @Override
-    public Map<Integer, List<Integer>> getShopItems() {
+    public Map<Integer, Shop> getShopItems() {
         int[] tmShops = romEntry.arrayEntries.get("TMShops");
         int[] regularShops = romEntry.arrayEntries.get("RegularShops");
         int[] shopItemSizes = romEntry.arrayEntries.get("ShopItemSizes");
         int shopCount = romEntry.getInt("ShopCount");
-        Map<Integer,List<Integer>> shopItemsMap = new TreeMap<>();
+        Map<Integer, Shop> shopItemsMap = new TreeMap<>();
 
         int offset = getShopItemsOffset();
         if (offset <= 0) {
@@ -3573,14 +3613,18 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
                     items.add(FileFunctions.read2ByteInt(code,offset));
                     offset += 2;
                 }
-                shopItemsMap.put(i,items);
+                Shop shop = new Shop();
+                shop.items = items;
+                shop.name = shopNames.get(i);
+                shop.isMainGame = Gen6Constants.getMainGameShops(romEntry.romType).contains(i);
+                shopItemsMap.put(i, shop);
             }
         }
         return shopItemsMap;
     }
 
     @Override
-    public void setShopItems(Map<Integer, List<Integer>> shopItems) {
+    public void setShopItems(Map<Integer, Shop> shopItems) {
         int[] shopItemSizes = romEntry.arrayEntries.get("ShopItemSizes");
         int[] tmShops = romEntry.arrayEntries.get("TMShops");
         int[] regularShops = romEntry.arrayEntries.get("RegularShops");
@@ -3609,7 +3653,7 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
                 }
             }
             if (!badShop) {
-                List<Integer> shopContents = shopItems.get(i);
+                List<Integer> shopContents = shopItems.get(i).items;
                 Iterator<Integer> iterItems = shopContents.iterator();
                 for (int j = 0; j < shopItemSizes[i]; j++) {
                     Integer item = iterItems.next();
@@ -3641,11 +3685,6 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
         } catch (IOException e) {
             throw new RandomizerIOException(e);
         }
-    }
-
-    @Override
-    public List<Integer> getMainGameShops() {
-        return Gen6Constants.getMainGameShops(romEntry.romType);
     }
 
     @Override
