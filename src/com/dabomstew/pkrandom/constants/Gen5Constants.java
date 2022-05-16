@@ -2279,4 +2279,33 @@ public class Gen5Constants {
         scriptMap.put(196, 4);
         return scriptMap;
     }
+
+    public static List<Location> e4LocationDataBW2(Map<Integer, Integer> fm) {
+        List<Location> locations = new ArrayList<>();
+        Location l;
+        l = new Location(0, "League Hub", false);
+        l.addExit(0,"to Shauntal",new int[] {1},150,fm); // far left
+        l.addExit(0,"to Grimsley",new int[] {4},150,fm); // middle left
+        l.addExit(0,"to Caitlin",new int[] {3},150,fm); // middle right
+        l.addExit(0,"to Marshal",new int[] {2},150,fm); // far right
+        locations.add(l);
+
+        l = new Location(0, "Shauntal", false);
+        l.addExit(0,"to Hub",new int[] {0},153,fm);
+        locations.add(l);
+
+        l = new Location(0, "Grimsley", false);
+        l.addExit(0,"to Hub",new int[] {0},154,fm);
+        locations.add(l);
+
+        l = new Location(0, "Caitlin", false);
+        l.addExit(0,"to Hub",new int[] {0},156,fm);
+        locations.add(l);
+
+        l = new Location(0, "Marshal", false);
+        l.addExit(0,"to Hub",new int[] {0},155,fm);
+        locations.add(l);
+
+        return locations;
+    }
 }

@@ -5878,6 +5878,11 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
     // Shuffle E4
 
     @Override
+    public boolean hasLinearE4() {
+        return true;
+    }
+
+    @Override
     public List<Location> getE4Locations() {
         Map<Integer, Integer> fileMap = getEventsToMaps();
         if (romEntry.romType == Gen4Constants.Type_DP) {

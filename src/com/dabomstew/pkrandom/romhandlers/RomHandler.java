@@ -700,5 +700,7 @@ public interface RomHandler {
 
     void shuffleE4();
 
+    boolean hasLinearE4();
+
     List<Location> getE4Locations();
 }

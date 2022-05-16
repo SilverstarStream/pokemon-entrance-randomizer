@@ -4116,4 +4116,12 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
         }
         return "oras";
     }
+
+    @Override
+    public boolean hasLinearE4() {
+        if (romEntry.romType == Gen6Constants.Type_XY) {
+            return false;
+        }
+        return true;
+    }
 }

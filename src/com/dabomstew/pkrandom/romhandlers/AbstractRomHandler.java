@@ -7553,68 +7553,104 @@ public abstract class AbstractRomHandler implements RomHandler {
     // Shuffle E4
 
     @Override
-    // This method needs to be rewritten for gen 5+ for the non-linear E4s
-    // Instead of logging them like a -> b -> c, log them noting which room replaces which.
     public void shuffleE4() {
         log("--Shuffle Elite 4--");
         List<Location> locations = getE4Locations();
-        if (locations.size() != 6) {
-            throw new RandomizationException("Error: bad number of Elite Four Locations found.");
-        }
         List<Trainer> allTrainers = this.getTrainers();
-        boolean rematch;
-        if (locations.get(1).trGroups.get(0).indices.length > 1) {
-            rematch = true;
-        }
-        else {
-            rematch = false;
-        }
 
-        // assume that there are 6 Locations in the locations list in order:
-        // the League entrance, then the 4 E4 rooms, then champion
-        for (int i = 1; i <= 3; i++) {
-            int j = random.nextInt(5 - i) + i;
-            if (i == j) {
-                continue;
+        if (hasLinearE4()) {
+            // check if the first E4 Member has multiple fights.
+            boolean rematch;
+            rematch = locations.get(1).trGroups.get(0).indices.length > 1;
+
+            if (locations.size() != 6) {
+                throw new RandomizationException("Error: bad number of Elite Four Locations found.");
             }
+            // Initialize log output with the original members
+            List<StringBuilder> logList = new ArrayList<>(4);
+            for (int i = 1; i <= 4; i++) {
+                logList.add(new StringBuilder(i + ": " + locations.get(i).name + " -> "));
+            }
+            // assume that there are 6 Locations in the locations list in order:
+            // the League entrance, then the 4 E4 rooms, then champion
+            for (int i = 1; i <= 3; i++) {
+                int j = random.nextInt(5 - i) + i;
+                if (i == j) {
+                    continue;
+                }
 
-            Location iLocation = locations.get(i);
-            Location jLocation = locations.get(j);
-            // swap place in list
-            locations.set(i, jLocation);
-            locations.set(j, iLocation);
-            // swap levels of the first battle
-            int[] iTids = iLocation.trGroups.get(0).indices;
-            int[] jTids = jLocation.trGroups.get(0).indices;
-            Trainer iTrainer = allTrainers.get(iTids[0] - 1);
-            Trainer jTrainer = allTrainers.get(jTids[0] - 1);
-            swapE4Levels(iTrainer, jTrainer);
-            // Assuming no more than 1 rematch battle for now
-            if (rematch) {
-                iTrainer = allTrainers.get(iTids[1] - 1);
-                jTrainer = allTrainers.get(jTids[1] - 1);
+                Location iLocation = locations.get(i);
+                Location jLocation = locations.get(j);
+                // swap place in list
+                locations.set(i, jLocation);
+                locations.set(j, iLocation);
+                // swap levels of the first battle
+                int[] iTids = iLocation.trGroups.get(0).indices;
+                int[] jTids = jLocation.trGroups.get(0).indices;
+                Trainer iTrainer = allTrainers.get(iTids[0] - 1);
+                Trainer jTrainer = allTrainers.get(jTids[0] - 1);
                 swapE4Levels(iTrainer, jTrainer);
+                // Assuming no more than 1 rematch battle for now
+                if (rematch) {
+                    iTrainer = allTrainers.get(iTids[1] - 1);
+                    jTrainer = allTrainers.get(jTids[1] - 1);
+                    swapE4Levels(iTrainer, jTrainer);
+                }
             }
+            // connect warps between rooms
+            for (int i = 0; i <= 4; i++) {
+                List<Exit> toExits = locations.get(i).exits;
+                List<Exit> fromExits = locations.get(i + 1).exits;
+                Exit toWarp = toExits.get(toExits.size() - 1);
+                Exit fromWarp = fromExits.get(0);
+                Exit.connectExits(toWarp, fromWarp, random);
+
+                logList.get(i).append(locations.get(i + 1).name);
+            }
+            for (StringBuilder sb : logList) {
+                log(sb.toString());
+            }
+            logBlankLine();
+            this.setWarps(locations);
+            this.setTrainers(allTrainers, false);
         }
-        StringBuilder logOrder = new StringBuilder();
-        // connect warps between rooms
-        for (int i = 0; i <= 4; i++) {
-            List<Exit> toExits = locations.get(i).exits;
-            List<Exit> fromExits = locations.get(i + 1).exits;
-            if (i < 4) {
-                logOrder.append(locations.get(i + 1).name);
+        else { // Non-linear E4
+            if (locations.size() != 5) {
+                throw new RandomizationException("Error: bad number of Elite Four Locations found.");
             }
-            if (i < 3) {
-                logOrder.append(" -> ");
+            // Initialize log output with the original members
+            List<StringBuilder> logList = new ArrayList<>(4);
+            for (int i = 1; i <= 4; i++) {
+                logList.add(new StringBuilder(locations.get(i).name + " -> "));
             }
-            Exit toWarp = toExits.get(toExits.size() - 1);
-            Exit fromWarp = fromExits.get(0);
-            Exit.connectExits(toWarp, fromWarp, random);
+            // Assume that the first Location in the list is the hub with 4 Exits, and that the rest are the E4 rooms
+            for (int i = 1; i <= 4; i++) {
+                int j = random.nextInt(5 - i) + i;
+                if (i == j) {
+                    continue;
+                }
+                // swap place in list
+                Location temp = locations.get(i);
+                locations.set(i, locations.get(j));
+                locations.set(j, temp);
+            }
+
+            // connect warps between rooms
+            List<Exit> hubExits = locations.get(0).exits;
+            for (int i = 0; i <= 3; i++) {
+                Exit hubExit = hubExits.get(i);
+                Exit roomExit = locations.get(i + 1).exits.get(0);
+                Exit.connectExits(hubExit, roomExit, random);
+
+                logList.get(i).append(locations.get(i + 1).name);
+            }
+            for (StringBuilder sb : logList) {
+                log(sb.toString());
+            }
+            logBlankLine();
+            this.setWarps(locations);
+            this.setTrainers(allTrainers, false);
         }
-        log(logOrder.toString());
-        this.setWarps(locations);
-        this.setTrainers(allTrainers, false);
-        logBlankLine();
     }
 
     private void swapE4Levels(Trainer memberA, Trainer memberB) {
@@ -7724,6 +7760,11 @@ public abstract class AbstractRomHandler implements RomHandler {
 
     @Override
     public void setWarps(List<Location> locations) {}
+
+    @Override
+    public boolean hasLinearE4() {
+        return false;
+    }
 
     @Override
     public List<Location> getE4Locations() {

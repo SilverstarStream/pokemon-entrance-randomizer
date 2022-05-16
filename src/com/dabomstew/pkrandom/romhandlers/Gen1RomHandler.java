@@ -2642,4 +2642,9 @@ public class Gen1RomHandler extends AbstractGBCRomHandler {
         }
         return "rb";
     }
+
+    @Override
+    public boolean hasLinearE4() {
+        return true;
+    }
 }

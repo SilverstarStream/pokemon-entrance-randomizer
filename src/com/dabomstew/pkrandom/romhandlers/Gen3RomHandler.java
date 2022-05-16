@@ -3994,4 +3994,9 @@ public class Gen3RomHandler extends AbstractGBRomHandler {
         }
         return "rs";
     }
+
+    @Override
+    public boolean hasLinearE4() {
+        return true;
+    }
 }

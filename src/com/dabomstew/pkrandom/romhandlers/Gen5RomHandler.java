@@ -4781,6 +4781,19 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
         return code.charAt(3) == 'O';
     }
 
+    // Shuffle E4
+
+    @Override
+    public boolean hasLinearE4() {
+        return false;
+    }
+
+    @Override
+    public List<Location> getE4Locations() {
+        Map<Integer, Integer> fileMap = getOverworldsToMaps();
+        return Gen5Constants.e4LocationDataBW2(fileMap);
+    }
+
     // Common Location functions
 
     private Map<Integer, Integer> getOverworldsToMaps() {
