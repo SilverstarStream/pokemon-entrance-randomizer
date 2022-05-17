@@ -216,6 +216,10 @@ public class Gen7Constants {
         }
     }
 
+    public static final int noDamageStatusQuality = 1, noDamageStatChangeQuality = 2, damageStatusQuality = 4,
+            noDamageStatusAndStatChangeQuality = 5, damageTargetDebuffQuality = 6, damageUserBuffQuality = 7,
+            damageAbsorbQuality = 8;
+
     public static List<Integer> bannedMoves = Arrays.asList(Moves.darkVoid, Moves.hyperspaceFury);
 
     public static final Type[] typeTable = constructTypeTable();

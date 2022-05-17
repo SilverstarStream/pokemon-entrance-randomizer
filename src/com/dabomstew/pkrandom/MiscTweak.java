@@ -59,6 +59,7 @@ public class MiscTweak implements Comparable<MiscTweak> {
     public static final MiscTweak RETAIN_ALT_FORMES = new MiscTweak(1 << 17, "retainAltFormes",0);
     public static final MiscTweak RUN_WITHOUT_RUNNING_SHOES = new MiscTweak(1 << 18, "runWithoutRunningShoes", 0);
     public static final MiscTweak FASTER_HP_AND_EXP_BARS = new MiscTweak(1 << 19, "fasterHpAndExpBars", 0);
+    public static final MiscTweak FAST_DISTORTION_WORLD = new MiscTweak(1 << 20, "fastDistortionWorld", 0);
     /* @formatter:on */
 
     private final int value;

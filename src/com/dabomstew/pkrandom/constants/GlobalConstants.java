@@ -210,6 +210,13 @@ public class GlobalConstants {
             Abilities.shadowShield, Abilities.prismArmor, Abilities.libero, Abilities.stalwart
     );
 
+    public static final List<Integer> noPowerNonStatusMoves = Arrays.asList(
+            Moves.guillotine, Moves.hornDrill, Moves.sonicBoom, Moves.lowKick, Moves.counter, Moves.seismicToss,
+            Moves.dragonRage, Moves.fissure, Moves.nightShade, Moves.bide, Moves.psywave, Moves.superFang,
+            Moves.flail, Moves.revenge, Moves.returnTheMoveNotTheKeyword, Moves.present, Moves.frustration,
+            Moves.magnitude, Moves.mirrorCoat, Moves.beatUp, Moves.spitUp, Moves.sheerCold
+    );
+
     public static final int MIN_DAMAGING_MOVE_POWER = 50;
 
     public static final int HIGHEST_POKEMON_GEN = 8;

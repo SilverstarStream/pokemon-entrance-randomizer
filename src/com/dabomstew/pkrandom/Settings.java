@@ -158,7 +158,7 @@ public class Settings {
     private boolean evolutionMovesForAll;
 
     public enum TrainersMod {
-        UNCHANGED, RANDOM, DISTRIBUTED, MAINPLAYTHROUGH, TYPE_THEMED
+        UNCHANGED, RANDOM, DISTRIBUTED, MAINPLAYTHROUGH, TYPE_THEMED, TYPE_THEMED_ELITE4_GYMS
     }
 
     private TrainersMod trainersMod = TrainersMod.UNCHANGED;
@@ -175,6 +175,7 @@ public class Settings {
     private int trainersForceFullyEvolvedLevel = 30;
     private boolean trainersLevelModified;
     private int trainersLevelModifier = 0; // -50 ~ 50
+    private int eliteFourUniquePokemonNumber = 0; // 0 ~ 2
     private boolean allowTrainerAlternateFormes;
     private boolean swapTrainerMegaEvos;
     private int additionalBossTrainerPokemon = 0;
@@ -411,7 +412,8 @@ public class Settings {
                 trainersMod == TrainersMod.RANDOM,
                 trainersMod == TrainersMod.DISTRIBUTED,
                 trainersMod == TrainersMod.MAINPLAYTHROUGH,
-                trainersMod == TrainersMod.TYPE_THEMED));
+                trainersMod == TrainersMod.TYPE_THEMED,
+                trainersMod == TrainersMod.TYPE_THEMED_ELITE4_GYMS));
         
         // 14 trainer pokemon force evolutions
         out.write((trainersForceFullyEvolved ? 0x80 : 0) | trainersForceFullyEvolvedLevel);
@@ -581,7 +583,10 @@ public class Settings {
                 pickupItemsMod == PickupItemsMod.UNCHANGED, banBadRandomPickupItems,
                 banIrregularAltFormes));
 
-        // 50 randomize entrances
+        // 50 elite four unique pokemon (3 bits)
+        out.write(eliteFourUniquePokemonNumber);
+
+        // 51 randomize entrances
         out.write(makeByteSelected(randomizeMap, shuffleGyms, shuffleE4, randomizeLeaderTeams));
 
         try {
@@ -679,7 +684,8 @@ public class Settings {
                 1, // RANDOM
                 2, // DISTRIBUTED
                 3, // MAINPLAYTHROUGH 
-                4 // TYPE_THEMED
+                4, // TYPE_THEMED
+                5 // TYPE_THEMED_ELITE4_GYMS
         ));
 
         settings.setTrainersForceFullyEvolved(restoreState(data[14], 7));
@@ -869,11 +875,13 @@ public class Settings {
         settings.setBanBadRandomPickupItems(restoreState(data[49], 2));
         settings.setBanIrregularAltFormes(restoreState(data[49], 3));
 
+        settings.setEliteFourUniquePokemonNumber(data[50] & 0x7);
+
         // Randomize Entrances
-        settings.setRandomizeMap(restoreState(data[50], 0));
-        settings.setShuffleGyms(restoreState(data[50], 1));
-        settings.setShuffleE4(restoreState(data[50], 2));
-        settings.setRandomizeLeaderTeams(restoreState(data[50], 3));
+        settings.setRandomizeMap(restoreState(data[51], 0));
+        settings.setShuffleGyms(restoreState(data[51], 1));
+        settings.setShuffleE4(restoreState(data[51], 2));
+        settings.setRandomizeLeaderTeams(restoreState(data[51], 3));
 
         int romNameLength = data[LENGTH_OF_SETTINGS_DATA] & 0xFF;
         String romName = new String(data, LENGTH_OF_SETTINGS_DATA + 1, romNameLength, "US-ASCII");
@@ -1637,6 +1645,15 @@ public class Settings {
     public void setTrainersLevelModifier(int trainersLevelModifier) {
         this.trainersLevelModifier = trainersLevelModifier;
     }
+
+    public int getEliteFourUniquePokemonNumber() {
+        return eliteFourUniquePokemonNumber;
+    }
+
+    public void setEliteFourUniquePokemonNumber(int eliteFourUniquePokemonNumber) {
+        this.eliteFourUniquePokemonNumber = eliteFourUniquePokemonNumber;
+    }
+
 
     public boolean isAllowTrainerAlternateFormes() {
         return allowTrainerAlternateFormes;

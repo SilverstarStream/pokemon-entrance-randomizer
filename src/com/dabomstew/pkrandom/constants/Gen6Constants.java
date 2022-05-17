@@ -23,10 +23,7 @@ package com.dabomstew.pkrandom.constants;
 /*--  along with this program. If not, see <http://www.gnu.org/licenses/>.  --*/
 /*----------------------------------------------------------------------------*/
 
-import com.dabomstew.pkrandom.pokemon.ItemList;
-import com.dabomstew.pkrandom.pokemon.MoveCategory;
-import com.dabomstew.pkrandom.pokemon.Trainer;
-import com.dabomstew.pkrandom.pokemon.Type;
+import com.dabomstew.pkrandom.pokemon.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -194,6 +191,10 @@ public class Gen6Constants {
                 return 0;
         }
     }
+
+    public static final int noDamageStatusQuality = 1, noDamageStatChangeQuality = 2, damageStatusQuality = 4,
+            noDamageStatusAndStatChangeQuality = 5, damageTargetDebuffQuality = 6, damageUserBuffQuality = 7,
+            damageAbsorbQuality = 8;
 
     public static List<Integer> bannedMoves = Collections.singletonList(Moves.hyperspaceFury);
 

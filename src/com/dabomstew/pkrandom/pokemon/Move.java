@@ -25,6 +25,11 @@ package com.dabomstew.pkrandom.pokemon;
 /*----------------------------------------------------------------------------*/
 
 public class Move {
+    public class StatChange {
+        public StatChangeType type;
+        public int stages;
+        public double percentChance;
+    }
 
     public String name;
     public int number;
@@ -33,13 +38,34 @@ public class Move {
     public int pp;
     public double hitratio;
     public Type type;
-    public int effectIndex;
     public MoveCategory category;
+    public StatChangeMoveType statChangeMoveType = StatChangeMoveType.NONE_OR_UNKNOWN;
+    public StatChange[] statChanges = new StatChange[3];
+    public StatusMoveType statusMoveType = StatusMoveType.NONE_OR_UNKNOWN;
+    public StatusType statusType = StatusType.NONE;
+    public CriticalChance criticalChance = CriticalChance.NORMAL;
+    public double statusPercentChance;
+    public double flinchPercentChance;
+    public int recoilPercent;
+    public int absorbPercent;
+    public int priority;
+    public boolean makesContact;
+    public int effectIndex;
+    public int target;
     public double hitCount = 1; // not saved, only used in randomized move powers.
+
+    public Move() {
+        // Initialize all statStageChanges to something sensible so that we don't need to have
+        // each RomHandler mess with them if they don't need to.
+        for (int i = 0; i < this.statChanges.length; i++) {
+            this.statChanges[i] = new StatChange();
+            this.statChanges[i].type = StatChangeType.NONE;
+        }
+    }
 
     public String toString() {
         return "#" + number + " " + name + " - Power: " + power + ", Base PP: " + pp + ", Type: " + type + ", Hit%: "
-                + (hitratio) + ", Effect: " + effectIndex;
+                + (hitratio) + ", Effect: " + effectIndex + ", Priority: " + priority;
     }
 
 }

@@ -679,7 +679,27 @@ public class Gen7RomHandler extends Abstract3DSRomHandler {
                 moves[i].power = moveData[3] & 0xFF;
                 moves[i].pp = moveData[5] & 0xFF;
                 moves[i].type = Gen7Constants.typeTable[moveData[0] & 0xFF];
+                moves[i].flinchPercentChance = moveData[15] & 0xFF;
+                moves[i].target = moveData[20] & 0xFF;
                 moves[i].category = Gen7Constants.moveCategoryIndices[moveData[2] & 0xFF];
+                moves[i].priority = moveData[6];
+
+                int critStages = moveData[14] & 0xFF;
+                if (critStages == 6) {
+                    moves[i].criticalChance = CriticalChance.GUARANTEED;
+                } else if (critStages > 0) {
+                    moves[i].criticalChance = CriticalChance.INCREASED;
+                }
+
+                int flags = FileFunctions.readFullInt(moveData, 36);
+                moves[i].makesContact = (flags & 1) != 0;
+                int qualities = moveData[1];
+                int recoilOrAbsorbPercent = moveData[18];
+                if (qualities == Gen7Constants.damageAbsorbQuality) {
+                    moves[i].absorbPercent = recoilOrAbsorbPercent;
+                } else {
+                    moves[i].recoilPercent = -recoilOrAbsorbPercent;
+                }
 
                 if (i == Moves.swift) {
                     perfectAccuracy = (int)moves[i].hitratio;
@@ -691,6 +711,56 @@ public class Gen7RomHandler extends Abstract3DSRomHandler {
                     moves[i].hitCount = 2;
                 } else if (i == Moves.tripleKick) {
                     moves[i].hitCount = 2.71; // this assumes the first hit lands
+                }
+
+                switch (qualities) {
+                    case Gen7Constants.noDamageStatChangeQuality:
+                    case Gen7Constants.noDamageStatusAndStatChangeQuality:
+                        // All Allies or Self
+                        if (moves[i].target == 6 || moves[i].target == 7) {
+                            moves[i].statChangeMoveType = StatChangeMoveType.NO_DAMAGE_USER;
+                        } else if (moves[i].target == 2) {
+                            moves[i].statChangeMoveType = StatChangeMoveType.NO_DAMAGE_ALLY;
+                        } else if (moves[i].target == 8) {
+                            moves[i].statChangeMoveType = StatChangeMoveType.NO_DAMAGE_ALL;
+                        } else {
+                            moves[i].statChangeMoveType = StatChangeMoveType.NO_DAMAGE_TARGET;
+                        }
+                        break;
+                    case Gen7Constants.damageTargetDebuffQuality:
+                        moves[i].statChangeMoveType = StatChangeMoveType.DAMAGE_TARGET;
+                        break;
+                    case Gen7Constants.damageUserBuffQuality:
+                        moves[i].statChangeMoveType = StatChangeMoveType.DAMAGE_USER;
+                        break;
+                    default:
+                        moves[i].statChangeMoveType = StatChangeMoveType.NONE_OR_UNKNOWN;
+                        break;
+                }
+
+                for (int statChange = 0; statChange < 3; statChange++) {
+                    moves[i].statChanges[statChange].type = StatChangeType.values()[moveData[21 + statChange]];
+                    moves[i].statChanges[statChange].stages = moveData[24 + statChange];
+                    moves[i].statChanges[statChange].percentChance = moveData[27 + statChange];
+                }
+
+                int internalStatusType = readWord(moveData, 8);
+                // Exclude status types that aren't in the StatusType enum.
+                if (internalStatusType < 7) {
+                    moves[i].statusType = StatusType.values()[internalStatusType];
+                    if (moves[i].statusType == StatusType.POISON && (i == Moves.toxic || i == Moves.poisonFang)) {
+                        moves[i].statusType = StatusType.TOXIC_POISON;
+                    }
+                    moves[i].statusPercentChance = moveData[10] & 0xFF;
+                    switch (qualities) {
+                        case Gen7Constants.noDamageStatusQuality:
+                        case Gen7Constants.noDamageStatusAndStatChangeQuality:
+                            moves[i].statusMoveType = StatusMoveType.NO_DAMAGE;
+                            break;
+                        case Gen7Constants.damageStatusQuality:
+                            moves[i].statusMoveType = StatusMoveType.DAMAGE;
+                            break;
+                    }
                 }
             }
         } catch (IOException e) {
@@ -1591,6 +1661,11 @@ public class Gen7RomHandler extends Abstract3DSRomHandler {
     @Override
     public List<Integer> getMainPlaythroughTrainers() {
         return new ArrayList<>();
+    }
+
+    @Override
+    public List<Integer> getEliteFourTrainers(boolean isChallengeMode) {
+        return Arrays.stream(romEntry.arrayEntries.get("EliteFourIndices")).boxed().collect(Collectors.toList());
     }
 
     @Override
@@ -3555,6 +3630,11 @@ public class Gen7RomHandler extends Abstract3DSRomHandler {
     @Override
     public List<Integer> getAllHeldItems() {
         return Gen7Constants.allHeldItems;
+    }
+
+    @Override
+    public boolean hasRivalFinalBattle() {
+        return true;
     }
 
     @Override
