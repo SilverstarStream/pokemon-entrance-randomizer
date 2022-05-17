@@ -7752,6 +7752,21 @@ public abstract class AbstractRomHandler implements RomHandler {
 
     @Override
     public boolean hasEntranceRandomization() {
+        return hasMapRandomization() || hasGymShuffle() || hasE4Shuffle();
+    }
+
+    @Override
+    public boolean hasMapRandomization() {
+        return false;
+    }
+
+    @Override
+    public boolean hasGymShuffle() {
+        return false;
+    }
+
+    @Override
+    public boolean hasE4Shuffle() {
         return false;
     }
 }

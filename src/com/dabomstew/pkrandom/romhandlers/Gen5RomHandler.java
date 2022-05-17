@@ -4283,7 +4283,23 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
     // ==========================
 
     @Override
-    public boolean hasEntranceRandomization() {
+    public boolean hasMapRandomization() {
+        if (romEntry.romType == Gen5Constants.Type_BW2) {
+            return false;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean hasGymShuffle() {
+        if (romEntry.romType == Gen5Constants.Type_BW2) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean hasE4Shuffle() {
         if (romEntry.romType == Gen5Constants.Type_BW2) {
             return true;
         }

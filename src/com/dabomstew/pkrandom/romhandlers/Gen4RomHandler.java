@@ -5748,7 +5748,29 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
     // ==========================
 
     @Override
-    public boolean hasEntranceRandomization() {
+    public boolean hasMapRandomization() {
+        if (romEntry.romType == Gen4Constants.Type_DP) {
+            return false;
+        }
+        else if (romEntry.romType == Gen4Constants.Type_Plat) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean hasGymShuffle() {
+        if (romEntry.romType == Gen4Constants.Type_DP) {
+            return false;
+        }
+        else if (romEntry.romType == Gen4Constants.Type_Plat) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean hasE4Shuffle() {
         if (romEntry.romType == Gen4Constants.Type_DP) {
             return false;
         }

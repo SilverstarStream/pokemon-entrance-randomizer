@@ -2921,13 +2921,16 @@ public class NewRandomizerGUI {
 
             // Randomize Entrances
             boolean entranceRando = romHandler.hasEntranceRandomization();
-            reRandomizeMapCheckBox.setEnabled(entranceRando);
+            boolean reMapRando = romHandler.hasMapRandomization();
+            boolean reGymShuffle = romHandler.hasGymShuffle();
+            boolean reE4Shuffle = romHandler.hasE4Shuffle();
+            reRandomizeMapCheckBox.setEnabled(reMapRando);
             reRandomizeMapCheckBox.setVisible(entranceRando);
-            reShuffleGymsCheckBox.setEnabled(entranceRando);
+            reShuffleGymsCheckBox.setEnabled(reGymShuffle);
             reShuffleGymsCheckBox.setVisible(entranceRando);
-            reShuffleE4CheckBox.setEnabled(entranceRando);
+            reShuffleE4CheckBox.setEnabled(reE4Shuffle);
             reShuffleE4CheckBox.setVisible(entranceRando);
-            tpRandomizeLeaderTeamsCheckBox.setVisible(entranceRando);
+            tpRandomizeLeaderTeamsCheckBox.setVisible(reGymShuffle);
             tpRandomizeLeaderTeamsCheckBox.setEnabled(false);
 
             reUnsupportedWarningLabel.setVisible(!entranceRando);

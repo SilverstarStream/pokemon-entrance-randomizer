@@ -656,6 +656,12 @@ public interface RomHandler {
 
     boolean hasEntranceRandomization();
 
+    boolean hasMapRandomization();
+
+    boolean hasGymShuffle();
+
+    boolean hasE4Shuffle();
+
     // Shuffle Gyms
 
     void shuffleGyms();
