@@ -132,9 +132,11 @@ public class LeaderTeams {
             String absPath = this.file.getAbsolutePath();
             String parentPath = absPath.substring(0, absPath.lastIndexOf(File.separatorChar));
             String randomizerPath = parentPath.substring(0, parentPath.lastIndexOf(File.separatorChar));
-            throw new LeaderTeamsException("The randomizer could not find " + this.file.getName() + ".\n" +
+            LeaderTeamsException ex = new LeaderTeamsException("The randomizer could not find " + this.file.getName() + ".\n" +
                     "Please make sure that there is a `leader_teams` folder in " + randomizerPath + ",\n" +
                     "and that the `" + this.file.getName() + "` file is in that folder.");
+            ex.fileNotFound = true;
+            throw ex;
         }
     }
 }

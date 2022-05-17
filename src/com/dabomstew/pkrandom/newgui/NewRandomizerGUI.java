@@ -939,6 +939,25 @@ public class NewRandomizerGUI {
         }
     }
 
+    private String editFileNotFoundMessage(Exception ex) {
+        // get the exception's stack trace as String
+        ByteArrayOutputStream baosTemp = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(baosTemp);
+        ex.printStackTrace(ps);
+        ps.close();
+        String trace = baosTemp.toString();
+        // remove the 2nd and 3rd line
+        String[] split = trace.split("\n");
+        StringBuilder aliasSB = new StringBuilder();
+        for (int i = 0; i < split.length; i++) {
+            if (i != 1 && i != 2) {
+                aliasSB.append(split[i]).append('\n');
+            }
+        }
+        aliasSB.replace(aliasSB.length() - 1, aliasSB.length(), "");
+        return aliasSB.toString();
+    }
+
     private void performRandomization(final String filename, final long seed, CustomNamesSet customNames, boolean saveAsDirectory) {
         final Settings settings = createSettingsFromState(customNames);
         final boolean raceMode = settings.isRaceMode();
@@ -971,8 +990,13 @@ public class NewRandomizerGUI {
                         verboseLog.close();
                     }
                 } catch (LeaderTeamsException ex) {
-                    attemptToLogException(ex, "GUI.leaderTeamsError",
-                            "GUI.leaderTeamsErrorNoLog", true, settings.toString(), Long.toString(seed));
+                    String alias = null;
+                    // remove the user's path from the stack trace if the file was not found
+                    if (ex.fileNotFound) {
+                        alias = editFileNotFoundMessage(ex);
+                    }
+                    attemptToLogExceptionAlias(ex, "GUI.leaderTeamsError",
+                            "GUI.leaderTeamsErrorNoLog", alias,true, settings.toString(), Long.toString(seed));
                     if (verboseLog != null) {
                         verboseLog.close();
                     }
@@ -1824,10 +1848,18 @@ public class NewRandomizerGUI {
 
     private void attemptToLogException(Exception ex, String baseMessageKey, String noLogMessageKey,
                                        String settingsString, String seedString) {
-        attemptToLogException(ex, baseMessageKey, noLogMessageKey, false, settingsString, seedString);
+        attemptToLogExceptionAlias(ex, baseMessageKey, noLogMessageKey, null,false, settingsString, seedString);
     }
 
     private void attemptToLogException(Exception ex, String baseMessageKey, String noLogMessageKey, boolean showMessage,
+                                            String settingsString, String seedString) {
+        attemptToLogExceptionAlias(ex, baseMessageKey, noLogMessageKey, null,showMessage, settingsString, seedString);
+    }
+
+    // If the user has an error from not finding the leader_teams file,
+    // I want to be able to omit the user's path from the log file while still showing it in the dialog box.
+    // I also want to do this without changing the existing logging logic much.
+    private void attemptToLogExceptionAlias(Exception ex, String baseMessageKey, String noLogMessageKey, String aliasStackTrace, boolean showMessage,
                                        String settingsString, String seedString) {
 
         // Make sure the operation dialog doesn't show up over the error
@@ -1839,7 +1871,8 @@ public class NewRandomizerGUI {
         try {
             String errlog = "error_" + ft.format(now) + ".txt";
             PrintStream ps = new PrintStream(new FileOutputStream(errlog));
-            ps.println("Randomizer Version: " + Version.ZX_VERSION_STRING);
+            ps.println("Entrance Randomizer Version: " + Version.ENTRANCE_VERSION_STRING);
+            ps.println("ZX Randomizer Version: " + Version.ZX_VERSION_STRING);
             if (seedString != null) {
                 ps.println("Seed: " + seedString);
             }
@@ -1859,7 +1892,12 @@ public class NewRandomizerGUI {
                     // Do nothing, just don't fail
                 }
             }
-            ex.printStackTrace();
+            if (aliasStackTrace != null) {
+                ps.println(aliasStackTrace);
+            }
+            else {
+                ex.printStackTrace();
+            }
             ps.println();
             ps.println("--ROM Diagnostics--");
             if (!romHandler.isRomValid()) {

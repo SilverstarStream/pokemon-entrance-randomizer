@@ -1,7 +1,7 @@
 Gym Leader Team Format Specification
 
 Before you begin designing and writing your own custom gym teams for the randomizer, you need to know a few things, mainly what the randomizer expects from the input files.
-First of all, the gym leader teams are in the `leader teams` folder as .json files. json files are essentially text files that adhere to a formatting specification that can be easily parsed. So any text editor can edit and create json files, but I strongly recommend that if you plan on making any edit beyond changing a few lines in an existing teams file that you use some kind of json formatter or editor. This way you can ensure that all the formatting is correct.
+First of all, the gym leader teams are in the `leader_teams` folder as .json files. json files are essentially text files that adhere to a formatting specification that can be easily parsed. So any text editor can edit and create json files, but I strongly recommend that if you plan on making any edit beyond changing a few lines in an existing teams file that you use some kind of json formatter or editor. This way you can ensure that all the formatting is correct.
 
 The following lists what the randomizer expects for how the json is structured. It likely isn't the easiest way to understand the requirements from just reading, so please reference the included teams files for an example.
 

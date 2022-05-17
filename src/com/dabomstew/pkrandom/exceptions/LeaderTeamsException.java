@@ -25,6 +25,8 @@ package com.dabomstew.pkrandom.exceptions;
 /*----------------------------------------------------------------------------*/
 
 public class LeaderTeamsException extends RuntimeException {
+    public boolean fileNotFound = false; // mark if the error was because the file wasn't found.
+
     public LeaderTeamsException(Exception e) {
         super(e);
     }

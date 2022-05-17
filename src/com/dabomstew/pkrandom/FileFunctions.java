@@ -356,7 +356,7 @@ public class FileFunctions {
 
     public static LeaderTeams getLeaderTeams(List<String> leaderNames, int gymCount, String gameAbbr) {
         String filename = gameAbbr + "_leader_teams.json";
-        File file = new File(SysConstants.leaderTeamsFolder + "/" + filename);
+        File file = new File(SysConstants.leaderTeamsFolder + File.separator + filename);
         return new LeaderTeams(leaderNames, gymCount, file);
     }
 }

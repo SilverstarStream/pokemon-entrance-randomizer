@@ -6805,7 +6805,7 @@ public abstract class AbstractRomHandler implements RomHandler {
 
         // Scale the teams of gym trainers that aren't leaders
         this.initTrainerAvgs(gyms);
-        int[] avgGymLevels = this.getTrainerAvgs(gyms);
+        int[] avgGymLevels = getLevelAvgs(gyms, "trainer");
         for (Location l : gyms) {
             for (PokemonGroup pg : l.trGroups) {
                 int oldGymNum = pg.badgeRegion;
@@ -6821,7 +6821,7 @@ public abstract class AbstractRomHandler implements RomHandler {
                     for (TrainerPokemon tp : tPokemon) {
                         int newLevel = tp.level + newAvg - oldAvg;
                         Pokemon oldSpecies = tp.pokemon;
-                        Pokemon newSpecies = this.scaleEvolution(oldSpecies, tp.level, newLevel, true);
+                        Pokemon newSpecies = scaleEvolution(oldSpecies, tp.level, newLevel, true);
                         tp.pokemon = newSpecies;
                         tp.level = newLevel;
                         tp.resetMoves = true;
@@ -7025,13 +7025,12 @@ public abstract class AbstractRomHandler implements RomHandler {
             this.allTrainers = getTrainers();
             initWildAvgs(allLocations, this.grassESMap);
             initTrainerAvgs(allLocations);
-            this.avgWildLevels = getWildAvgs(allLocations);
-            this.avgTrainerLevels = getTrainerAvgs(allLocations);
+            this.avgWildLevels = getLevelAvgs(allLocations, "wild");
+            this.avgTrainerLevels = getLevelAvgs(allLocations, "trainer");
         }
 
         private boolean hasOutstandingPrereqs(Location loc) {
             List<Location> prereqs = loc.prereqs;
-            // prereqs is never allowed to be null, it seems
             if (prereqs != null) {
                 for (Location prereq : prereqs) {
                     if (this.pendingPrereqs.contains(prereq)) {
@@ -7123,29 +7122,21 @@ public abstract class AbstractRomHandler implements RomHandler {
         }
     }
 
-    private int[] getWildAvgs(List<Location> locations) {
+    private int[] getLevelAvgs(List<Location> locations, String groupType) {
         int[] avgLevels = new int[getGymCount() + 1];
         int[] counts = new int[avgLevels.length];
         for (Location l : locations) {
-            for (PokemonGroup pg : l.encGroups) {
-                int badge = pg.badgeRegion;
-                avgLevels[badge] += pg.groupAvgLevel;
-                counts[badge]++;
+            List<PokemonGroup> pokeGroups = null;
+            if (groupType.compareTo("wild") == 0) {
+                pokeGroups = l.encGroups;
             }
-        }
-        for (int i = 0; i < avgLevels.length; i++) {
-            if (counts[i] != 0) {
-                avgLevels[i] /= counts[i];
+            else if (groupType.compareTo("trainer") == 0) {
+                pokeGroups = l.trGroups;
             }
-        }
-        return avgLevels;
-    }
-
-    private int[] getTrainerAvgs(List<Location> locations) {
-        int[] avgLevels = new int[getGymCount() + 1];
-        int[] counts = new int[avgLevels.length];
-        for (Location l : locations) {
-            for (PokemonGroup pg : l.trGroups) {
+            else {
+                throw new RandomizationException("Improper string value passed to getLevelAvgs()");
+            }
+            for (PokemonGroup pg : pokeGroups) {
                 int badge = pg.badgeRegion;
                 avgLevels[badge] += pg.groupAvgLevel;
                 counts[badge]++;
